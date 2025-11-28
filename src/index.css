@@ -1,0 +1,29 @@
+:root {
+  --primary: #4a9cf5;
+  --primary-strong: #3f8de4;
+  --primary-soft: rgba(74, 156, 245, 0.12);
+  --danger: #f06f70;
+
+  font-family: 'Inter', 'SF Pro Display', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  line-height: 1.6;
+  font-weight: 400;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background-color: #f8fafc;
+}
+
+a {
+  color: inherit;
+}

@@ -1,38 +1,15 @@
 import { useEffect, useState } from 'react'
-import './App.css'
-import { fetchBasicInfo, fetchStoreList, fetchStorePromote } from './api'
-import type { RespBasicInfoNews, RespStoreListItem } from './api'
-
-type BannerItem = {
-  title: string
-  description: string
-  link: string
-  image: string
-}
-
-type StatItem = {
-  label: string
-  value: string
-  desc: string
-}
-
-type MapItem = {
-  title: string
-  artist: string
-  mode: string
-  cover: string
-  link: string
-  highlight?: string
-  tags?: string[]
-}
-
-type NewsItem = {
-  title: string
-  link: string
-  tag?: string
-  desc?: string
-  time?: number
-}
+import Banner from '../components/Banner'
+import Footer from '../components/Footer'
+import MapCard from '../components/MapCard'
+import NewsList from '../components/NewsList'
+import StatGrid from '../components/StatGrid'
+import Topbar from '../components/Topbar'
+import { fetchBasicInfo, fetchStoreList, fetchStorePromote } from '../network/api'
+import type { RespBasicInfoNews, RespStoreListItem } from '../network/api'
+import type { BannerItem, MapItem, NewsItem, StatItem } from '../types/content'
+import { coverUrl, modeLabel } from '../utils/formatters'
+import './home.css'
 
 const bannerItems: BannerItem[] = [
   {
@@ -224,152 +201,19 @@ const externalLinks = [
   { label: 'Sina', href: 'http://weibo.com/u/5351167572' },
 ]
 
-const navLinks = [
-  { label: 'Home', href: '/' },
-  { label: 'Charts', href: '/all_chart' },
-  { label: 'Wiki', href: '/all_page' },
-  { label: 'Events', href: '/score/event' },
-  { label: 'Players', href: '/all_player' },
-  { label: 'Talk', href: '/talk' },
-]
+const mapStoreToCard = (item: RespStoreListItem): MapItem => ({
+  title: item.title,
+  artist: item.artist,
+  mode: modeLabel(item.mode),
+  cover: coverUrl(item.cover),
+  link: `/song/${item.sid}`,
+  tags: item.tags,
+})
 
-function Topbar() {
-  return (
-    <div className="topbar">
-      <div className="topbar-left">
-        <a className="brand" href="/">
-          Malody
-        </a>
-        <nav>
-          {navLinks.map((item) => (
-            <a key={item.label} href={item.href}>
-              {item.label}
-            </a>
-          ))}
-        </nav>
-      </div>
-      <div className="topbar-actions">
-        <a className="link" href="/login">
-          Sign in
-        </a>
-        <a className="btn primary small" href="/register">
-          Sign up
-        </a>
-      </div>
-    </div>
-  )
-}
-
-function MapCard({ item }: { item: MapItem }) {
-  return (
-    <a className="map-card" href={item.link}>
-      <div className="map-cover" style={{ backgroundImage: `url(${item.cover})` }}>
-        {item.highlight && <span className="pill">{item.highlight}</span>}
-      </div>
-      <div className="map-meta">
-        <p className="map-title">{item.title}</p>
-        <p className="map-artist">{item.artist}</p>
-        <p className="map-mode">{item.mode}</p>
-      </div>
-    </a>
-  )
-}
-
-function Banner() {
-  return (
-    <div className="banner">
-      {bannerItems.map((item) => (
-        <a className="banner-card" href={item.link} key={item.title}>
-          <div className="banner-overlay" />
-          <img className="banner-img" src={item.image} alt={item.title} />
-          <div className="banner-text">
-            <p className="eyebrow">Featured</p>
-            <h3>{item.title}</h3>
-            <p>{item.description}</p>
-          </div>
-        </a>
-      ))}
-    </div>
-  )
-}
-
-function StatGrid() {
-  return (
-    <div className="stat-grid">
-      {stats.map((item) => (
-        <div className="stat-card" key={item.label}>
-          <p className="stat-value">{item.value}</p>
-          <p className="stat-label">{item.label}</p>
-          <p className="stat-desc">{item.desc}</p>
-        </div>
-      ))}
-    </div>
-  )
-}
-
-function NewsList({ items }: { items: NewsItem[] }) {
-  return (
-    <div className="news">
-      <h3>News & Help</h3>
-      <ul>
-        {items.map((item) => (
-          <li key={item.title}>
-            {item.tag && <span className="pill ghost">{item.tag}</span>}
-            <a href={item.link}>{item.title}</a>
-          </li>
-        ))}
-      </ul>
-    </div>
-  )
-}
-
-function Footer() {
-  return (
-    <footer className="footer">
-      <div className="footer-links">
-        <span>External links</span>
-        {externalLinks.map((item) => (
-          <a key={item.label} href={item.href} target="_blank" rel="noreferrer">
-            {item.label}
-          </a>
-        ))}
-      </div>
-      <p className="footer-copy">Copyright © 2013 ~ 2025 Mugzone</p>
-    </footer>
-  )
-}
-
-function App() {
+function HomePage() {
   const [newsItems, setNewsItems] = useState<NewsItem[]>(newsFallback)
   const [arrivalItems, setArrivalItems] = useState<MapItem[]>(newArrivalsFallback)
   const [weeklyItems, setWeeklyItems] = useState<MapItem[]>(weeklyShowFallback)
-
-  const coverUrl = (cover?: string) => {
-    if (!cover || cover.length === 0) return '//cni.mugzone.net/static/img/empty.jpg'
-    return cover.startsWith('http') ? cover : `//cni.mugzone.net/${cover}`
-  }
-
-  const modeLabel = (mode?: number) => {
-    if (mode === undefined || mode === null) return 'Mode'
-    const map: Record<number, string> = {
-      0: 'Key',
-      1: 'Step',
-      2: 'Taiko',
-      3: 'Catch',
-      4: 'Pad',
-      5: 'Live',
-    }
-    return map[mode] ?? `Mode ${mode}`
-  }
-
-  const mapStoreToCard = (item: RespStoreListItem): MapItem => ({
-    title: item.title,
-    artist: item.artist,
-    mode: modeLabel(item.mode),
-    cover: coverUrl(item.cover),
-    link: `/song/${item.sid}`,
-    tags: item.tags,
-  })
 
   useEffect(() => {
     fetchBasicInfo()
@@ -441,8 +285,8 @@ function App() {
         </div>
       </header>
 
-      <Banner />
-      <StatGrid />
+      <Banner items={bannerItems} />
+      <StatGrid items={stats} />
 
       <section className="section">
         <div className="section-header">
@@ -479,9 +323,9 @@ function App() {
         </div>
       </section>
 
-      <Footer />
+      <Footer links={externalLinks} />
     </div>
   )
 }
 
-export default App
+export default HomePage

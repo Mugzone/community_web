@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react'
+import AuthModal from '../components/AuthModal'
 import Banner from '../components/Banner'
 import Footer from '../components/Footer'
 import MapCard from '../components/MapCard'
 import NewsList from '../components/NewsList'
 import StatGrid from '../components/StatGrid'
 import Topbar from '../components/Topbar'
-import { fetchBasicInfo, fetchStoreList, fetchStorePromote } from '../network/api'
+import { fetchBasicInfo, fetchStoreList, fetchStorePromote, setSession } from '../network/api'
 import type { RespBasicInfoNews, RespStoreListItem } from '../network/api'
 import type { BannerItem, MapItem, NewsItem, StatItem } from '../types/content'
 import { coverUrl, modeLabel } from '../utils/formatters'
@@ -214,6 +215,9 @@ function HomePage() {
   const [newsItems, setNewsItems] = useState<NewsItem[]>(newsFallback)
   const [arrivalItems, setArrivalItems] = useState<MapItem[]>(newArrivalsFallback)
   const [weeklyItems, setWeeklyItems] = useState<MapItem[]>(weeklyShowFallback)
+  const [authOpen, setAuthOpen] = useState(false)
+  const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin')
+  const [userName, setUserName] = useState<string>()
 
   useEffect(() => {
     fetchBasicInfo()
@@ -255,7 +259,21 @@ function HomePage() {
 
   return (
     <div className="page">
-      <Topbar />
+      <Topbar
+        onSignIn={() => {
+          setAuthMode('signin')
+          setAuthOpen(true)
+        }}
+        onSignUp={() => {
+          setAuthMode('signup')
+          setAuthOpen(true)
+        }}
+        onSignOut={() => {
+          setSession(undefined)
+          setUserName(undefined)
+        }}
+        userName={userName}
+      />
       <header className="hero">
         <div className="hero-text">
           <p className="eyebrow">Malody Web</p>
@@ -324,6 +342,13 @@ function HomePage() {
       </section>
 
       <Footer links={externalLinks} />
+      {authOpen && (
+        <AuthModal
+          mode={authMode}
+          onClose={() => setAuthOpen(false)}
+          onSuccess={({ username }) => setUserName(username)}
+        />
+      )}
     </div>
   )
 }

@@ -6,7 +6,7 @@ type FetchOptions = {
   auth?: boolean
 }
 
-type AuthSession = {
+export type AuthSession = {
   uid: number
   key: string
   storeKey?: string
@@ -65,7 +65,7 @@ export const setSession = (session?: AuthSession) => {
 }
 
 const fetchGuestSession = async (): Promise<AuthSession> => {
-  const url = buildUrl('/auth/guest/wt')
+  const url = buildUrl('/web/auth/guest/wt')
   const res = await fetch(url, { credentials: 'include' })
   if (!res.ok) {
     throw new Error(`Guest token request failed: ${res.status}`)
@@ -95,6 +95,45 @@ const ensureSession = async (): Promise<AuthSession> => {
   return sessionPromise
 }
 
+type PostOptions = FetchOptions & {
+  body?: Record<string, string | number | undefined>
+}
+
+const CLIENT_VER = 327935
+
+const postForm = async <T>(path: string, options?: PostOptions): Promise<T> => {
+  const requiresAuth = options?.auth ?? true
+  const params: Record<string, string | number | undefined> = { ...(options?.params ?? {}) }
+  const body: Record<string, string | number | undefined> = { ...(options?.body ?? {}) }
+
+  if (requiresAuth) {
+    const session = await ensureSession()
+    const isStorePath = path.includes('/store/') || path.includes('/skin/')
+    const keyToUse = isStorePath ? session.storeKey ?? session.key : session.key
+    params.key ??= keyToUse
+    params.uid ??= session.uid
+  }
+
+  const form = new URLSearchParams()
+  Object.entries(body).forEach(([key, value]) => {
+    if (value === undefined) return
+    form.set(key, String(value))
+  })
+
+  const url = buildUrl(path, params)
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    credentials: 'include',
+    body: form.toString(),
+  })
+
+  if (!res.ok) {
+    throw new Error(`Request failed: ${res.status}`)
+  }
+  return (await res.json()) as T
+}
+
 const getJson = async <T>(path: string, options?: FetchOptions): Promise<T> => {
   const requiresAuth = options?.auth ?? true
   const params = { ...(options?.params ?? {}) }
@@ -122,6 +161,17 @@ export type RespBasicInfoNews = {
   time?: number
 }
 
+export type RespLogin = {
+  code: number
+  uid?: number
+  username?: string
+  token?: string
+  tokenStore?: string
+  gold?: number
+  tcp?: string
+  group?: number[]
+}
+
 export type RespBasicInfo = {
   code: number
   news?: RespBasicInfoNews[]
@@ -147,6 +197,25 @@ export type RespStoreList = {
   data?: RespStoreListItem[]
 }
 
+export type RespGlobalRankItem = {
+  uid: number
+  username: string
+  avatar?: string
+  value: number
+  rank: number
+  level?: number
+  playcount?: number
+  acc?: number
+  combo?: number
+}
+
+export type RespGlobalRank = {
+  code: number
+  data?: RespGlobalRankItem[]
+  hasMore?: boolean
+  next?: number
+}
+
 export const fetchBasicInfo = () => getJson<RespBasicInfo>('/push/info/wt', { auth: false })
 
 export const fetchStoreList = (params?: { mode?: number; beta?: number; from?: number; free?: number; word?: string }) =>
@@ -154,3 +223,38 @@ export const fetchStoreList = (params?: { mode?: number; beta?: number; from?: n
 
 export const fetchStorePromote = (params?: { mode?: number; from?: number; free?: number }) =>
   getJson<RespStoreList>('/store/promote', { params })
+
+export const fetchGlobalRank = (params: { mm?: number; mode?: number; from?: number; ver?: number; bver?: number }) =>
+  getJson<RespGlobalRank>('/ranking/global', { params })
+
+export const login = (payload: { name: string; psw: string; ver?: number; h?: string; bver?: number }) =>
+  postForm<RespLogin>('/account/login/wt', {
+    auth: false,
+    body: {
+      name: payload.name,
+      psw: payload.psw,
+      ver: payload.ver ?? CLIENT_VER,
+      h: payload.h,
+      bver: payload.bver,
+    },
+  })
+
+export const register = (payload: {
+  name: string
+  psw: string
+  email: string
+  ver?: number
+  h?: string
+  bver?: number
+}) =>
+  postForm<RespLogin>('/account/register/wt', {
+    auth: false,
+    body: {
+      name: payload.name,
+      psw: payload.psw,
+      email: payload.email,
+      ver: payload.ver ?? CLIENT_VER,
+      h: payload.h,
+      bver: payload.bver,
+    },
+  })

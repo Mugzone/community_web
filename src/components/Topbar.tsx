@@ -1,13 +1,20 @@
+type TopbarProps = {
+  onSignIn: () => void
+  onSignUp: () => void
+  onSignOut?: () => void
+  userName?: string
+}
+
 const navLinks = [
   { label: 'Home', href: '/' },
   { label: 'Charts', href: '/all_chart' },
   { label: 'Wiki', href: '/all_page' },
   { label: 'Events', href: '/score/event' },
-  { label: 'Players', href: '/all_player' },
+  { label: 'Players', href: '/page/all/player' },
   { label: 'Talk', href: '/talk' },
 ]
 
-function Topbar() {
+function Topbar({ onSignIn, onSignUp, onSignOut, userName }: TopbarProps) {
   return (
     <div className="topbar">
       <div className="topbar-left">
@@ -23,12 +30,23 @@ function Topbar() {
         </nav>
       </div>
       <div className="topbar-actions">
-        <a className="link" href="/login">
-          Sign in
-        </a>
-        <a className="btn primary small" href="/register">
-          Sign up
-        </a>
+        {userName ? (
+          <>
+            <span className="user-pill">Hi, {userName}</span>
+            <button className="btn ghost small" type="button" onClick={onSignOut}>
+              Sign out
+            </button>
+          </>
+        ) : (
+          <>
+            <button className="link btn-ghost" type="button" onClick={onSignIn}>
+              Sign in
+            </button>
+            <button className="btn primary small" type="button" onClick={onSignUp}>
+              Sign up
+            </button>
+          </>
+        )}
       </div>
     </div>
   )

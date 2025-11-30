@@ -237,6 +237,25 @@ export type RespGlobalRank = {
   next?: number
 }
 
+export type RespStoreEventItem = {
+  eid: number
+  scoreID?: number
+  active?: boolean
+  cover?: string
+  start?: string | number
+  end?: string | number
+  name?: string
+  type?: string | number
+  wiki?: number
+}
+
+export type RespStoreEvent = {
+  code: number
+  hasMore?: boolean
+  next?: number
+  data?: RespStoreEventItem[]
+}
+
 export const fetchBasicInfo = () => getJson<RespBasicInfo>('/push/info/wt', { auth: false })
 
 export const fetchStoreList = (
@@ -268,6 +287,9 @@ export const fetchStorePromote = (
 
 export const fetchGlobalRank = (params: { mm?: number; mode?: number; from?: number; ver?: number; bver?: number }) =>
   getJson<RespGlobalRank>('/ranking/global', { params })
+
+export const fetchStoreEvents = (params?: { active?: number; from?: number }) =>
+  getJson<RespStoreEvent>('/store/events', { params })
 
 export const login = (payload: { name: string; psw: string; ver?: number; h?: string; bver?: number }) =>
   postForm<RespLogin>('/account/login/wt', {

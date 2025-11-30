@@ -4,7 +4,7 @@ import Footer from '../components/Footer'
 import Topbar from '../components/Topbar'
 import { fetchStoreList, setSession } from '../network/api'
 import type { RespStoreListItem } from '../network/api'
-import { coverUrl, modeLabel } from '../utils/formatters'
+import { coverUrl, modeLabelsFromMask } from '../utils/formatters'
 import { useI18n } from '../i18n'
 import './home.css'
 import './chart-list.css'
@@ -20,7 +20,7 @@ type FilterState = {
 
 type ChartCardItem = RespStoreListItem & {
   cover: string
-  modeLabel: string
+  modeLabels: string[]
 }
 
 const parseInitialFilters = (): FilterState => {
@@ -102,7 +102,7 @@ function ChartListPage() {
     items.map((item) => ({
       ...item,
       cover: coverUrl(item.cover),
-      modeLabel: modeLabel(item.mode),
+      modeLabels: modeLabelsFromMask(item.mode),
     }))
 
   const formatLength = (value?: number) => {
@@ -277,10 +277,14 @@ function ChartListPage() {
         {charts.length ? (
           <div className="chart-grid">
             {charts.map((item) => (
-              <div className="chart-card" key={item.sid}>
+              <a className="chart-card" href={`/song/${item.sid}`} key={item.sid}>
                 <div className="chart-card-cover" style={{ backgroundImage: `url(${item.cover})` }}>
                   <div className="chart-card-badges">
-                    <span className="pill">{item.modeLabel}</span>
+                    {item.modeLabels.slice(0, 3).map((label) => (
+                      <span className="pill chart-mode-pill" key={label}>
+                        {label}
+                      </span>
+                    ))}
                     {filters.free && <span className="pill ghost">{t('charts.badge.freestyle')}</span>}
                     {filters.beta && <span className="pill ghost">{t('charts.badge.beta')}</span>}
                   </div>
@@ -291,19 +295,16 @@ function ChartListPage() {
                       <p className="chart-card-title">{item.title}</p>
                       <p className="chart-card-artist">{item.artist}</p>
                     </div>
-                    <div className="chart-card-tags">
-                      <span className="meta-pill">{formatLength(item.length)}</span>
-                      <span className="meta-pill">{formatBpm(item.bpm)}</span>
-                    </div>
+                  </div>
+                  <div className="chart-card-meta">
+                    <span className="meta-pill">{formatLength(item.length)}</span>
+                    <span className="meta-pill">{formatBpm(item.bpm)}</span>
                   </div>
                   <div className="chart-card-footer">
                     <span className="chart-card-updated">{formatUpdated(item.lastedit)}</span>
-                    <a className="link" href={`/song/${item.sid}`}>
-                      {t('charts.card.view')}
-                    </a>
                   </div>
                 </div>
-              </div>
+              </a>
             ))}
           </div>
         ) : (

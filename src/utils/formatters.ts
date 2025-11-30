@@ -8,17 +8,31 @@ export const avatarUrl = (avatar?: string) => {
   return avatar.startsWith('http') ? avatar : `//cni.machart.top/avatar/${avatar}!avatar64`
 }
 
+const modeMap: Record<number, string> = {
+  0: 'Key',
+  3: 'Catch',
+  4: 'Pad',
+  5: 'Taiko',
+  6: 'Ring',
+  7: 'Slide',
+  8: 'Live',
+  9: 'Cube',
+}
+
 export const modeLabel = (mode?: number) => {
   if (mode === undefined || mode === null) return 'Mode'
-  const map: Record<number, string> = {
-    0: 'Key',
-    3: 'Catch',
-    4: 'Pad',
-    5: 'Taiko',
-    6: 'Ring',
-    7: 'Slide',
-    8: 'Live',
-    9: 'Cube',
-  }
-  return map[mode] ?? `Mode ${mode}`
+  return modeMap[mode] ?? `Mode ${mode}`
+}
+
+export const modeLabelsFromMask = (mask?: number) => {
+  if (mask === undefined || mask === null) return []
+  const labels: string[] = []
+  Object.entries(modeMap).forEach(([modeStr, label]) => {
+    const mode = Number(modeStr)
+    const bit = 1 << mode
+    if ((mask & bit) !== 0) {
+      labels.push(label)
+    }
+  })
+  return labels
 }

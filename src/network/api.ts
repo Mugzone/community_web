@@ -1,9 +1,21 @@
 const API_BASE = (import.meta.env.VITE_API_BASE ?? '/api').replace(/\/$/, '')
+const resolveApiOrigin = () => {
+  if (typeof window === 'undefined') return undefined
+  try {
+    const url = new URL(API_BASE, window.location.origin)
+    return url.origin
+  } catch {
+    return undefined
+  }
+}
+const apiOrigin = resolveApiOrigin()
+const canSendCustomHeaders = typeof window === 'undefined' || apiOrigin === window.location.origin
 
 type FetchOptions = {
   params?: Record<string, string | number | undefined>
   /** Defaults to true for non-/wt endpoints */
   auth?: boolean
+  headers?: Record<string, string>
 }
 
 export type AuthSession = {
@@ -100,6 +112,11 @@ type PostOptions = FetchOptions & {
 }
 
 const CLIENT_VER = 327935
+const MALODY_VERSION = '6.3.22'
+const buildVersionHeader = (clientVersion?: string) => {
+  if (!canSendCustomHeaders) return undefined
+  return { Malody: clientVersion ?? MALODY_VERSION }
+}
 
 const postForm = async <T>(path: string, options?: PostOptions): Promise<T> => {
   const requiresAuth = options?.auth ?? true
@@ -121,9 +138,13 @@ const postForm = async <T>(path: string, options?: PostOptions): Promise<T> => {
   })
 
   const url = buildUrl(path, params)
+  const headers = {
+    'Content-Type': 'application/x-www-form-urlencoded',
+    ...(options?.headers ?? {}),
+  }
   const res = await fetch(url, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    headers,
     credentials: 'include',
     body: form.toString(),
   })
@@ -147,7 +168,7 @@ const getJson = async <T>(path: string, options?: FetchOptions): Promise<T> => {
   }
 
   const url = buildUrl(path, params)
-  const res = await fetch(url, { credentials: 'include' })
+  const res = await fetch(url, { credentials: 'include', headers: options?.headers })
   if (!res.ok) {
     throw new Error(`Request failed: ${res.status}`)
   }
@@ -218,11 +239,32 @@ export type RespGlobalRank = {
 
 export const fetchBasicInfo = () => getJson<RespBasicInfo>('/push/info/wt', { auth: false })
 
-export const fetchStoreList = (params?: { mode?: number; beta?: number; from?: number; free?: number; word?: string }) =>
-  getJson<RespStoreList>('/store/list', { params })
+export const fetchStoreList = (
+  params?: {
+    mode?: number
+    beta?: number
+    from?: number
+    free?: number
+    word?: string
+    lvge?: number
+    lvle?: number
+    mcver?: number
+  },
+  options?: { clientVersion?: string },
+) =>
+  getJson<RespStoreList>('/store/list', {
+    params,
+    headers: buildVersionHeader(options?.clientVersion),
+  })
 
-export const fetchStorePromote = (params?: { mode?: number; from?: number; free?: number }) =>
-  getJson<RespStoreList>('/store/promote', { params })
+export const fetchStorePromote = (
+  params?: { mode?: number; from?: number; free?: number },
+  options?: { clientVersion?: string },
+) =>
+  getJson<RespStoreList>('/store/promote', {
+    params,
+    headers: buildVersionHeader(options?.clientVersion),
+  })
 
 export const fetchGlobalRank = (params: { mm?: number; mode?: number; from?: number; ver?: number; bver?: number }) =>
   getJson<RespGlobalRank>('/ranking/global', { params })

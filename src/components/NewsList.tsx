@@ -16,6 +16,14 @@ function NewsList({ items }: NewsListProps) {
     return <span className="pill ghost">{label}</span>
   }
 
+  if (!items.length) {
+    return (
+      <div className="news">
+        <p className="home-news-empty">{t('home.empty.news')}</p>
+      </div>
+    )
+  }
+
   return (
     <div className="news">
       <ul>

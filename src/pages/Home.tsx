@@ -36,167 +36,6 @@ const statMeta = [
   { value: '210k+', labelKey: 'home.stats.players.label', descKey: 'home.stats.players.desc' },
 ]
 
-const newsFallback: NewsItem[] = [
-  { title: 'Weekly update: editor improvements & new chart states', link: '/page/3001', tag: 'Update' },
-  { title: 'Community event: Summer rank sprint begins', link: '/event/42', tag: 'Event' },
-  { title: 'Help: How to submit your first chart', link: '/wiki/2147', tag: 'Guide' },
-]
-
-const newArrivalsFallback: MapItem[] = [
-  {
-    title: 'Starfall Chronicle',
-    artist: 'Eve of Dawn',
-    mode: 'Key 7',
-    cover: 'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?auto=format&fit=crop&w=600&q=80',
-    link: '/chart/1024',
-    highlight: 'New',
-  },
-  {
-    title: 'Pastel Drive',
-    artist: 'KIRA',
-    mode: 'Catch',
-    cover: 'https://images.unsplash.com/photo-1470229538611-16ba8c7ffbd7?auto=format&fit=crop&w=600&q=80',
-    link: '/chart/2048',
-  },
-  {
-    title: 'Aurora Bloom',
-    artist: 'Sakuzyo',
-    mode: 'Step',
-    cover: 'https://images.unsplash.com/photo-1470229538611-16ba8c7ffbd7?auto=format&fit=crop&w=600&q=80',
-    link: '/chart/4096',
-  },
-  {
-    title: 'Neon Skyline',
-    artist: 'M2U',
-    mode: 'Pad',
-    cover: 'https://images.unsplash.com/photo-1505685296765-3a2736de412f?auto=format&fit=crop&w=600&q=80',
-    link: '/chart/8192',
-  },
-  {
-    title: 'Night Flight',
-    artist: 'Sakuzyo',
-    mode: 'Key 6',
-    cover: 'https://images.unsplash.com/photo-1440404653325-ab127d49abc1?auto=format&fit=crop&w=600&q=80',
-    link: '/chart/9123',
-  },
-  {
-    title: 'Vivid Bloom',
-    artist: 'Mameyudoufu',
-    mode: 'Pad',
-    cover: 'https://images.unsplash.com/photo-1483412033650-1015ddeb83d1?auto=format&fit=crop&w=600&q=80',
-    link: '/chart/10442',
-  },
-  {
-    title: 'Coral Reef',
-    artist: 'VINXIS',
-    mode: 'Catch',
-    cover: 'https://images.unsplash.com/photo-1507878866276-a947ef722fee?auto=format&fit=crop&w=600&q=80',
-    link: '/chart/11990',
-  },
-  {
-    title: 'Solaris',
-    artist: 'Feryquitous',
-    mode: 'Key 4',
-    cover: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&w=600&q=80',
-    link: '/chart/12111',
-  },
-  {
-    title: 'Cobalt Run',
-    artist: 'Technoplanet',
-    mode: 'Step',
-    cover: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=600&q=80',
-    link: '/chart/13331',
-  },
-  {
-    title: 'Velvet Pulse',
-    artist: 'DJ Noriken',
-    mode: 'Pad',
-    cover: 'https://images.unsplash.com/photo-1507878866276-a947ef722fee?auto=format&fit=crop&w=600&q=80',
-    link: '/chart/14001',
-  },
-  {
-    title: 'Cloud Harbor',
-    artist: 'Moe Shop',
-    mode: 'Taiko',
-    cover: 'https://images.unsplash.com/photo-1470229538611-16ba8c7ffbd7?auto=format&fit=crop&w=600&q=80',
-    link: '/chart/15252',
-  },
-  {
-    title: 'Moonlit Stage',
-    artist: 'Nhato',
-    mode: 'Key 5',
-    cover: 'https://images.unsplash.com/photo-1483412033650-1015ddeb83d1?auto=format&fit=crop&w=600&q=80',
-    link: '/chart/16666',
-  },
-  {
-    title: 'Crystal Drive',
-    artist: 'Sakuzyo',
-    mode: 'Pad',
-    cover: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=600&q=80',
-    link: '/chart/17777',
-  },
-]
-
-const weeklyShowFallback: MapItem[] = [
-  {
-    title: 'Re:Moonlight',
-    artist: 'ARForest',
-    mode: 'Key 4',
-    cover: 'https://images.unsplash.com/photo-1440404653325-ab127d49abc1?auto=format&fit=crop&w=600&q=80',
-    link: '/chart/1555',
-    highlight: 'Weekly Pick',
-  },
-  {
-    title: 'Skyline Drift',
-    artist: 'Hyper Potions',
-    mode: 'Taiko',
-    cover: 'https://images.unsplash.com/photo-1470229538611-16ba8c7ffbd7?auto=format&fit=crop&w=600&q=80',
-    link: '/chart/2333',
-  },
-  {
-    title: 'Beyond Reality',
-    artist: 'Laur',
-    mode: 'Catch',
-    cover: 'https://images.unsplash.com/photo-1483412033650-1015ddeb83d1?auto=format&fit=crop&w=600&q=80',
-    link: '/chart/3777',
-  },
-  {
-    title: 'Parallel Nights',
-    artist: 'Nhato',
-    mode: 'Pad',
-    cover: 'https://images.unsplash.com/photo-1507878866276-a947ef722fee?auto=format&fit=crop&w=600&q=80',
-    link: '/chart/4888',
-  },
-  {
-    title: 'Eclipse Bloom',
-    artist: 'kamome sano',
-    mode: 'Key 7',
-    cover: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&w=600&q=80',
-    link: '/chart/5123',
-  },
-  {
-    title: 'Pastorale',
-    artist: 'Mili',
-    mode: 'Step',
-    cover: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=600&q=80',
-    link: '/chart/6233',
-  },
-  {
-    title: 'Radiant Line',
-    artist: 'Tomoya Ohtani',
-    mode: 'Catch',
-    cover: 'https://images.unsplash.com/photo-1470229538611-16ba8c7ffbd7?auto=format&fit=crop&w=600&q=80',
-    link: '/chart/7333',
-  },
-  {
-    title: 'Chrono Dive',
-    artist: 'Sakuzyo',
-    mode: 'Key 4',
-    cover: 'https://images.unsplash.com/photo-1505685296765-3a2736de412f?auto=format&fit=crop&w=600&q=80',
-    link: '/chart/8455',
-  },
-]
-
 const externalLinks = [
   { label: 'Discord', href: 'https://discord.gg/unk9hgF' },
   { label: 'Facebook', href: 'https://www.facebook.com/MalodyHome' },
@@ -214,9 +53,9 @@ const mapStoreToCard = (item: RespStoreListItem): MapItem => ({
 
 function HomePage() {
   const { t } = useI18n()
-  const [newsItems, setNewsItems] = useState<NewsItem[]>(newsFallback)
-  const [arrivalItems, setArrivalItems] = useState<MapItem[]>(newArrivalsFallback)
-  const [weeklyItems, setWeeklyItems] = useState<MapItem[]>(weeklyShowFallback)
+  const [newsItems, setNewsItems] = useState<NewsItem[]>([])
+  const [arrivalItems, setArrivalItems] = useState<MapItem[]>([])
+  const [weeklyItems, setWeeklyItems] = useState<MapItem[]>([])
   const [authOpen, setAuthOpen] = useState(false)
   const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin')
   const [userName, setUserName] = useState<string>()
@@ -244,7 +83,7 @@ function HomePage() {
         if (mapped.length) setNewsItems(mapped)
       })
       .catch(() => {
-        // keep fallback
+        setNewsItems([])
       })
 
     fetchStoreList({ from: 0, free: 0 })
@@ -254,7 +93,7 @@ function HomePage() {
         if (mapped.length) setArrivalItems(mapped)
       })
       .catch(() => {
-        // keep fallback
+        setArrivalItems([])
       })
 
     fetchStorePromote({ from: 0, free: 0 })
@@ -264,7 +103,7 @@ function HomePage() {
         if (mapped.length) setWeeklyItems(mapped)
       })
       .catch(() => {
-        // keep fallback
+        setWeeklyItems([])
       })
   }, [])
 
@@ -328,11 +167,15 @@ function HomePage() {
             {t('home.section.more')}
           </a>
         </div>
-        <div className="map-grid">
-          {arrivalItems.map((item) => (
-            <MapCard item={item} key={item.title} />
-          ))}
-        </div>
+        {arrivalItems.length ? (
+          <div className="map-grid">
+            {arrivalItems.map((item) => (
+              <MapCard item={item} key={item.title} />
+            ))}
+          </div>
+        ) : (
+          <div className="home-empty-card">{t('home.empty.arrival')}</div>
+        )}
       </section>
 
       <section className="section">
@@ -342,11 +185,15 @@ function HomePage() {
             {t('home.section.more')}
           </a>
         </div>
-        <div className="map-grid">
-          {weeklyItems.map((item) => (
-            <MapCard item={item} key={item.title} />
-          ))}
-        </div>
+        {weeklyItems.length ? (
+          <div className="map-grid">
+            {weeklyItems.map((item) => (
+              <MapCard item={item} key={item.title} />
+            ))}
+          </div>
+        ) : (
+          <div className="home-empty-card">{t('home.empty.weekly')}</div>
+        )}
       </section>
 
       <Footer links={externalLinks} showLanguageSelector />

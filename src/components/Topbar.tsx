@@ -13,7 +13,7 @@ const navLinks = [
   { labelKey: 'nav.wiki', href: '/all_page' },
   { labelKey: 'nav.events', href: '/score/event' },
   { labelKey: 'nav.players', href: '/page/all/player' },
-  { labelKey: 'nav.talk', href: '/talk' },
+  { labelKey: 'nav.talk', href: 'https://discord.gg/unk9hgF' },
 ]
 
 function Topbar({ onSignIn, onSignUp, onSignOut, userName }: TopbarProps) {

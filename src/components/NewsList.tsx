@@ -1,16 +1,27 @@
 import type { NewsItem } from '../types/content'
+import { useI18n } from '../i18n'
 
 type NewsListProps = {
   items: NewsItem[]
 }
 
 function NewsList({ items }: NewsListProps) {
+  const { t } = useI18n()
+
+  const renderTag = (tag?: string) => {
+    if (!tag) return null
+    const key = `tag.${tag.toLowerCase()}`
+    const translated = t(key)
+    const label = translated === key ? tag : translated
+    return <span className="pill ghost">{label}</span>
+  }
+
   return (
     <div className="news">
       <ul>
         {items.map((item) => (
           <li key={item.title}>
-            {item.tag && <span className="pill ghost">{item.tag}</span>}
+            {renderTag(item.tag)}
             <a href={item.link}>{item.title}</a>
           </li>
         ))}

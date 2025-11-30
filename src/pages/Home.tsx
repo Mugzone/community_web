@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import AuthModal from '../components/AuthModal'
 import Banner from '../components/Banner'
 import Footer from '../components/Footer'
@@ -9,6 +9,7 @@ import Topbar from '../components/Topbar'
 import { fetchBasicInfo, fetchStoreList, fetchStorePromote, setSession } from '../network/api'
 import type { RespBasicInfoNews, RespStoreListItem } from '../network/api'
 import type { BannerItem, MapItem, NewsItem, StatItem } from '../types/content'
+import { useI18n } from '../i18n'
 import { coverUrl, modeLabel } from '../utils/formatters'
 import './home.css'
 
@@ -29,10 +30,10 @@ const bannerItems: BannerItem[] = [
   },
 ]
 
-const stats: StatItem[] = [
-  { label: 'Pages', value: '12,480+', desc: 'Wiki, songs, charts, guides' },
-  { label: 'Songs', value: '9,300+', desc: 'Multi-mode song entries' },
-  { label: 'Players', value: '210k+', desc: 'Across PC, mobile and web' },
+const statMeta = [
+  { value: '12,480+', labelKey: 'home.stats.pages.label', descKey: 'home.stats.pages.desc' },
+  { value: '9,300+', labelKey: 'home.stats.songs.label', descKey: 'home.stats.songs.desc' },
+  { value: '210k+', labelKey: 'home.stats.players.label', descKey: 'home.stats.players.desc' },
 ]
 
 const newsFallback: NewsItem[] = [
@@ -212,12 +213,22 @@ const mapStoreToCard = (item: RespStoreListItem): MapItem => ({
 })
 
 function HomePage() {
+  const { t } = useI18n()
   const [newsItems, setNewsItems] = useState<NewsItem[]>(newsFallback)
   const [arrivalItems, setArrivalItems] = useState<MapItem[]>(newArrivalsFallback)
   const [weeklyItems, setWeeklyItems] = useState<MapItem[]>(weeklyShowFallback)
   const [authOpen, setAuthOpen] = useState(false)
   const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin')
   const [userName, setUserName] = useState<string>()
+  const stats: StatItem[] = useMemo(
+    () =>
+      statMeta.map((item) => ({
+        value: item.value,
+        label: t(item.labelKey),
+        desc: t(item.descKey),
+      })),
+    [t],
+  )
 
   useEffect(() => {
     fetchBasicInfo()
@@ -277,28 +288,25 @@ function HomePage() {
       <header className="hero">
         <div className="hero-text">
           <p className="eyebrow">Malody Web</p>
-          <h1>Charts, rankings, community. Modernized.</h1>
-          <p className="hero-desc">
-            A refreshed web experience for Malody with faster pages, cleaner layout, and room for new API-driven
-            features. Browse charts, keep track of players, and join discussions from any device.
-          </p>
+          <h1>{t('home.hero.title')}</h1>
+          <p className="hero-desc">{t('home.hero.desc')}</p>
           <div className="hero-actions">
             <a className="btn primary" href="https://store.steampowered.com/app/1512940/Malody_V/">
-              Get Malody V
+              {t('home.hero.cta.primary')}
             </a>
             <a className="btn ghost" href="/wiki/2147">
-              Learn more
+              {t('home.hero.cta.secondary')}
             </a>
           </div>
         </div>
         <div className="hero-card">
-          <p className="eyebrow">Community</p>
-          <h3>Weekly show & new arrivals</h3>
-          <p>Featuring curated charts every week. Submit yours and climb the rankings.</p>
+          <p className="eyebrow">{t('home.hero.communityEyebrow')}</p>
+          <h3>{t('home.hero.cardTitle')}</h3>
+          <p>{t('home.hero.cardDesc')}</p>
           <div className="hero-chips">
-            <span className="chip">Multi-mode</span>
-            <span className="chip">Cross-platform</span>
-            <span className="chip">Creator friendly</span>
+            <span className="chip">{t('home.hero.chip.multi')}</span>
+            <span className="chip">{t('home.hero.chip.cross')}</span>
+            <span className="chip">{t('home.hero.chip.creator')}</span>
           </div>
         </div>
       </header>
@@ -308,16 +316,16 @@ function HomePage() {
 
       <section className="section">
         <div className="section-header">
-          <h2>News &amp; Help</h2>
+          <h2>{t('home.section.news')}</h2>
         </div>
         <NewsList items={newsItems} />
       </section>
 
       <section className="section">
         <div className="section-header">
-          <h2>New Arrival</h2>
+          <h2>{t('home.section.newArrival')}</h2>
           <a className="link" href="/all_chart?type=2">
-            More →
+            {t('home.section.more')}
           </a>
         </div>
         <div className="map-grid">
@@ -329,9 +337,9 @@ function HomePage() {
 
       <section className="section">
         <div className="section-header">
-          <h2>Weekly Show</h2>
+          <h2>{t('home.section.weeklyShow')}</h2>
           <a className="link" href="/all_chart?type=3">
-            More →
+            {t('home.section.more')}
           </a>
         </div>
         <div className="map-grid">
@@ -341,7 +349,7 @@ function HomePage() {
         </div>
       </section>
 
-      <Footer links={externalLinks} />
+      <Footer links={externalLinks} showLanguageSelector />
       {authOpen && (
         <AuthModal
           mode={authMode}

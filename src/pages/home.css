@@ -444,6 +444,14 @@
   font-size: 0.95rem;
 }
 
+.footer-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
 .footer-links {
   display: flex;
   gap: 0.85rem;
@@ -464,6 +472,45 @@
 
 .footer-copy {
   margin: 0;
+}
+
+.language-switch {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.language-label {
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.language-options {
+  display: flex;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.lang-btn {
+  border: 1px solid #e2e8f0;
+  background: white;
+  padding: 0.35rem 0.75rem;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.lang-btn:hover {
+  border-color: var(--primary);
+  color: var(--primary-strong);
+}
+
+.lang-btn.active {
+  background: var(--primary-soft);
+  border-color: var(--primary);
+  color: var(--primary-strong);
 }
 
 .modal-backdrop {

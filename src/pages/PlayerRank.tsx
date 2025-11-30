@@ -1,28 +1,30 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import AuthModal from '../components/AuthModal'
 import Footer from '../components/Footer'
 import Topbar from '../components/Topbar'
 import { fetchGlobalRank, setSession } from '../network/api'
 import type { RespGlobalRankItem } from '../network/api'
 import { avatarUrl } from '../utils/formatters'
+import { useI18n } from '../i18n'
 import './home.css'
 import './player-rank.css'
 
 type RankType = 'exp' | 'mm'
 
-const modes = [
-  { label: 'Key', value: 0 },
+const modeMeta = [
+  { key: 'mode.key', value: 0 },
   // { label: 'Step', value: 1 },
-  { label: 'Catch', value: 3 },
-  { label: 'Taiko', value: 4 },
-  { label: 'Pad', value: 5 },
-  { label: 'Ring', value: 6 },
-  { label: 'Slide', value: 7 },
-  { label: 'Live', value: 8 },
-  { label: 'Cube', value: 9 },
+  { key: 'mode.catch', value: 3 },
+  { key: 'mode.taiko', value: 4 },
+  { key: 'mode.pad', value: 5 },
+  { key: 'mode.ring', value: 6 },
+  { key: 'mode.slide', value: 7 },
+  { key: 'mode.live', value: 8 },
+  { key: 'mode.cube', value: 9 },
 ]
 
 function PlayerRankPage() {
+  const { t } = useI18n()
   const [rankType, setRankType] = useState<RankType>('exp')
   const [mode, setMode] = useState(0)
   const [rows, setRows] = useState<RespGlobalRankItem[]>([])
@@ -33,6 +35,14 @@ function PlayerRankPage() {
   const [authOpen, setAuthOpen] = useState(false)
   const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin')
   const [userName, setUserName] = useState<string>()
+  const modeOptions = useMemo(
+    () =>
+      modeMeta.map((item) => ({
+        value: item.value,
+        label: t(item.key),
+      })),
+    [t],
+  )
 
   const formatAcc = (acc?: number) => {
     if (acc === undefined || Number.isNaN(acc)) return '-'
@@ -47,7 +57,7 @@ function PlayerRankPage() {
       const from = reset ? 0 : next ?? 0
       const resp = await fetchGlobalRank({ mm: rankType === 'mm' ? 1 : 0, mode, from, ver: 0 })
       if (resp.code !== 0 || !resp.data) {
-        setError('无法获取排行榜，请稍后重试')
+        setError(t('rank.error.fetch'))
         setRows(reset ? [] : rows)
         setHasMore(false)
         setNext(undefined)
@@ -58,7 +68,7 @@ function PlayerRankPage() {
       setNext(resp.next)
     } catch (err) {
       console.error(err)
-      setError('无法获取排行榜，请检查网络后重试')
+      setError(t('rank.error.network'))
     } finally {
       setLoading(false)
     }
@@ -89,9 +99,9 @@ function PlayerRankPage() {
 
       <section className="rank-hero">
         <div>
-          <p className="eyebrow">Players</p>
-          <h1>Global Leaderboard</h1>
-          <p>Experience and MM rankings by mode. Browse without login; sign in to save favorites later.</p>
+          <p className="eyebrow">{t('rank.eyebrow')}</p>
+          <h1>{t('rank.title')}</h1>
+          <p>{t('rank.desc')}</p>
           <div className="filters">
             <div className="pill-group">
               <button
@@ -113,9 +123,9 @@ function PlayerRankPage() {
               className="mode-select"
               value={mode}
               onChange={(e) => setMode(Number(e.target.value))}
-              aria-label="Select mode"
+              aria-label={t('rank.selectMode')}
             >
-              {modes.map((m) => (
+              {modeOptions.map((m) => (
                 <option key={m.value} value={m.value}>
                   {m.label}
                 </option>
@@ -124,11 +134,8 @@ function PlayerRankPage() {
           </div>
         </div>
         <div className="card">
-          <p className="eyebrow">About</p>
-          <p>
-            Data comes from `/ranking/global`. EXP ranks use mode experience; MM ranks use grade score. List is capped at
-            200 entries.
-          </p>
+          <p className="eyebrow">{t('rank.about.title')}</p>
+          <p>{t('rank.about.desc')}</p>
         </div>
       </section>
 
@@ -137,9 +144,9 @@ function PlayerRankPage() {
           <thead>
             <tr>
               <th>#</th>
-              <th>Player</th>
-              <th>{rankType === 'mm' ? 'MM Score' : 'EXP'}</th>
-              <th>Stats</th>
+              <th>{t('rank.table.player')}</th>
+              <th>{rankType === 'mm' ? t('rank.table.score.mm') : t('rank.table.score.exp')}</th>
+              <th>{t('rank.table.stats')}</th>
             </tr>
           </thead>
           <tbody>
@@ -147,18 +154,18 @@ function PlayerRankPage() {
               <tr key={`${row.rank}-${row.uid}`}>
                 <td>{row.rank}</td>
                 <td className="player-cell">
-                  <img className="rank-avatar" src={avatarUrl(row.avatar)} alt={row.username ?? 'Player'} />
+                  <img className="rank-avatar" src={avatarUrl(row.avatar)} alt={row.username ?? t('rank.table.player')} />
                   <a className="rank-name" href={`/player/${row.uid}`}>
-                    {row.username || `Player ${row.uid}`}
+                    {row.username || `${t('rank.table.player')} ${row.uid}`}
                   </a>
                 </td>
                 <td className="rank-value">{row.value}</td>
                 <td>
                   <div className="rank-meta">
-                    <span>Lv.{row.level ?? '-'}</span>
-                    <span>Play {row.playcount ?? '-'}</span>
-                    <span>Acc {formatAcc(row.acc)}</span>
-                    <span>Combo {row.combo ?? '-'}</span>
+                    <span>{t('rank.meta.level', { value: row.level ?? '-' })}</span>
+                    <span>{t('rank.meta.play', { value: row.playcount ?? '-' })}</span>
+                    <span>{t('rank.meta.acc', { value: formatAcc(row.acc) })}</span>
+                    <span>{t('rank.meta.combo', { value: row.combo ?? '-' })}</span>
                   </div>
                 </td>
               </tr>
@@ -166,17 +173,17 @@ function PlayerRankPage() {
             {!rows.length && !loading && (
               <tr>
                 <td colSpan={4} className="empty">
-                  No data yet.
+                  {t('rank.table.empty')}
                 </td>
               </tr>
             )}
           </tbody>
         </table>
         <div className="table-actions">
-          <span>{error ? error : `Showing ${rows.length} players`}</span>
+          <span>{error ? error : t('rank.table.showing', { count: rows.length })}</span>
           {hasMore && (
             <button className="load-more" onClick={() => loadRank()} disabled={loading}>
-              {loading ? 'Loading…' : 'Load more'}
+              {loading ? t('rank.table.loading') : t('rank.table.loadMore')}
             </button>
           )}
         </div>

@@ -1,3 +1,5 @@
+import { useI18n } from '../i18n'
+
 type TopbarProps = {
   onSignIn: () => void
   onSignUp: () => void
@@ -6,15 +8,17 @@ type TopbarProps = {
 }
 
 const navLinks = [
-  { label: 'Home', href: '/' },
-  { label: 'Charts', href: '/all_chart' },
-  { label: 'Wiki', href: '/all_page' },
-  { label: 'Events', href: '/score/event' },
-  { label: 'Players', href: '/page/all/player' },
-  { label: 'Talk', href: '/talk' },
+  { labelKey: 'nav.home', href: '/' },
+  { labelKey: 'nav.charts', href: '/all_chart' },
+  { labelKey: 'nav.wiki', href: '/all_page' },
+  { labelKey: 'nav.events', href: '/score/event' },
+  { labelKey: 'nav.players', href: '/page/all/player' },
+  { labelKey: 'nav.talk', href: '/talk' },
 ]
 
 function Topbar({ onSignIn, onSignUp, onSignOut, userName }: TopbarProps) {
+  const { t } = useI18n()
+
   return (
     <div className="topbar">
       <div className="topbar-left">
@@ -23,8 +27,8 @@ function Topbar({ onSignIn, onSignUp, onSignOut, userName }: TopbarProps) {
         </a>
         <nav>
           {navLinks.map((item) => (
-            <a key={item.label} href={item.href}>
-              {item.label}
+            <a key={item.labelKey} href={item.href}>
+              {t(item.labelKey)}
             </a>
           ))}
         </nav>
@@ -32,18 +36,18 @@ function Topbar({ onSignIn, onSignUp, onSignOut, userName }: TopbarProps) {
       <div className="topbar-actions">
         {userName ? (
           <>
-            <span className="user-pill">Hi, {userName}</span>
+            <span className="user-pill">{t('topbar.hi', { name: userName })}</span>
             <button className="btn ghost small" type="button" onClick={onSignOut}>
-              Sign out
+              {t('topbar.signOut')}
             </button>
           </>
         ) : (
           <>
             <button className="link btn-ghost" type="button" onClick={onSignIn}>
-              Sign in
+              {t('topbar.signIn')}
             </button>
             <button className="btn primary small" type="button" onClick={onSignUp}>
-              Sign up
+              {t('topbar.signUp')}
             </button>
           </>
         )}

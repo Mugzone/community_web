@@ -1,10 +1,13 @@
 import type { BannerItem } from '../types/content'
+import { useI18n } from '../i18n'
 
 type BannerProps = {
   items: BannerItem[]
 }
 
 function Banner({ items }: BannerProps) {
+  const { t } = useI18n()
+
   return (
     <div className="banner">
       {items.map((item) => (
@@ -12,7 +15,7 @@ function Banner({ items }: BannerProps) {
           <div className="banner-overlay" />
           <img className="banner-img" src={item.image} alt={item.title} />
           <div className="banner-text">
-            <p className="eyebrow">Featured</p>
+            <p className="eyebrow">{t('banner.featured')}</p>
             <h3>{item.title}</h3>
             <p>{item.description}</p>
           </div>

@@ -4,17 +4,9 @@ import Footer from '../components/Footer'
 import Topbar from '../components/Topbar'
 import type { Locale } from '../i18n'
 import { useI18n } from '../i18n'
-import {
-  fetchWiki,
-  fetchWikiTemplate,
-  getSession,
-  saveWiki,
-  setSession,
-  type RespWiki,
-  type RespWikiTemplate,
-} from '../network/api'
+import { fetchWiki, fetchWikiTemplate, getSession, saveWiki, setSession, type RespWiki } from '../network/api'
 import { renderWiki, type WikiTemplate } from '../utils/wiki'
-import { coverUrl } from '../utils/formatters'
+import { applyTemplateHtml, renderTemplateHtml } from '../utils/wikiTemplates'
 import './home.css'
 import './wiki.css'
 
@@ -186,86 +178,6 @@ function WikiPage() {
     templates.length > 0 ? t('wiki.templates.found', { count: templates.length }) : t('wiki.templates.none')
   const livePreview = useMemo(() => renderWiki(draft, renderOptions), [draft, renderOptions])
 
-  const escapeHtml = (value: string) =>
-    value
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#039;')
-
-  const renderTemplateHtml = (tmpl: WikiTemplate, resp: RespWikiTemplate) => {
-    if (resp.message) {
-      return `<div class="wiki-template-placeholder wiki-template-warning">${escapeHtml(resp.message)}</div>`
-    }
-    const name = tmpl.name
-    const data = resp.data as Record<string, unknown> | Array<unknown> | undefined
-    const asChart = (payload?: unknown) => payload as { title?: string; artist?: string; version?: string; cover?: string; mode?: number; finish?: boolean }
-    const asUser = (payload?: unknown) => payload as { uid?: number; username?: string; avatar?: string }
-
-    if (name === '_login') {
-      return `<div class="wiki-template-card wiki-template-login">${t('wiki.template.login')}</div>`
-    }
-
-    if (name === '_user') {
-      const u = asUser(data)
-      if (!u) return ''
-      return `<div class="wiki-template-card wiki-template-user"><p class="wiki-template-title">${escapeHtml(u.username ?? '')}</p><p class="wiki-template-meta">UID: ${u.uid ?? ''}</p></div>`
-    }
-
-    if (name === '_chart' || name === '_activity' || name === '_event') {
-      const c = asChart(data)
-      if (!c) return ''
-      const finish = c.finish ? `<span class="pill ghost">${t('wiki.template.finish')}</span>` : ''
-      const cover = coverUrl(c.cover ? String(c.cover) : undefined)
-      const coverStyle = cover ? `style="background-image:url('${escapeHtml(cover)}')"` : ''
-      return `<div class="wiki-template-card wiki-template-chart"><div class="wiki-template-cover" ${coverStyle}></div><div class="wiki-template-body"><p class="wiki-template-title">${escapeHtml(c.title ?? '')}</p><p class="wiki-template-meta">${escapeHtml(c.artist ?? '')} · ${escapeHtml(c.version ?? '')}</p>${finish}</div></div>`
-    }
-
-    if (name === '_grouplist') {
-      const group = data as { groupId?: number; users?: Array<{ uid?: number; username?: string }> }
-      if (!group || !group.users?.length) return `<div class="wiki-template-placeholder wiki-template-warning">${t('wiki.template.empty')}</div>`
-      const items = group.users
-        .map((u) => `<li>${escapeHtml(u.username ?? '')}${u.uid ? ` (UID ${u.uid})` : ''}</li>`)
-        .join('')
-      return `<div class="wiki-template-card"><p class="wiki-template-title">${t('wiki.template.group', { id: group.groupId ?? '' })}</p><ul class="wiki-template-list">${items}</ul></div>`
-    }
-
-    if (name === '_eventsum') {
-      const list = Array.isArray(data) ? (data as Array<{ uid?: number; username?: string; total?: number }>) : []
-      if (!list.length) return `<div class="wiki-template-placeholder wiki-template-warning">${t('wiki.template.empty')}</div>`
-      const max = Math.max(...list.map((i) => Number(i.total) || 0), 1)
-      const items = list
-        .map((item) => {
-          const percent = Math.round(((Number(item.total) || 0) / max) * 100)
-          return `<li><div class="wiki-template-bar" style="width:${percent}%"></div><span>${escapeHtml(item.username ?? '')}</span><span class="wiki-template-value">${item.total ?? 0}</span></li>`
-        })
-        .join('')
-      return `<div class="wiki-template-card"><p class="wiki-template-title">${t('wiki.template.eventsum')}</p><ul class="wiki-template-bars">${items}</ul></div>`
-    }
-
-    if (name === '_event3' || name === '_vote' || name === '_voted' || name === '_level') {
-      return `<div class="wiki-template-placeholder wiki-template-warning">${t('wiki.template.unsupported')}</div>`
-    }
-
-    return `<div class="wiki-template-placeholder wiki-template-warning">${t('wiki.template.unknown')}</div>`
-  }
-
-  const applyTemplateHtml = (html: string, templateBlocks: Array<string | undefined>) => {
-    if (!templateBlocks.length) return html
-    const container = document.createElement('div')
-    container.innerHTML = html
-    templateBlocks.forEach((fragment, idx) => {
-      if (!fragment) return
-      const target = container.querySelector(`[data-template-idx="${idx}"]`)
-      if (target) {
-        target.innerHTML = fragment
-        target.classList.add('wiki-template-loaded')
-      }
-    })
-    return container.innerHTML
-  }
-
   const loadTemplates = async (html: string, tmplList: WikiTemplate[]) => {
     if (!tmplList.length) {
       setWikiHtml(html)
@@ -278,8 +190,8 @@ function WikiPage() {
         tmplList.map(async (tmpl) => {
           try {
             const resp = await fetchWikiTemplate({ name: tmpl.name, ...tmpl.params })
-            if (resp.code !== 0) return renderTemplateHtml(tmpl, resp)
-            return renderTemplateHtml(tmpl, resp)
+            if (resp.code !== 0) return renderTemplateHtml(t, tmpl, resp)
+            return renderTemplateHtml(t, tmpl, resp)
           } catch (err) {
             console.error(err)
             return `<div class="wiki-template-placeholder wiki-template-warning">${t('wiki.template.error')}</div>`

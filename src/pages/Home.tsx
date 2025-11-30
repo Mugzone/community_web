@@ -59,6 +59,15 @@ function HomePage() {
   const [authOpen, setAuthOpen] = useState(false)
   const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin')
   const [userName, setUserName] = useState<string>()
+  const wikiEntry = useMemo(
+    () => ({
+      title: t('wiki.testEntry.title'),
+      link: '/wiki/2147',
+      tag: 'Wiki',
+      desc: t('wiki.testEntry.desc'),
+    }),
+    [t],
+  )
   const stats: StatItem[] = useMemo(
     () =>
       statMeta.map((item) => ({
@@ -70,6 +79,11 @@ function HomePage() {
   )
 
   useEffect(() => {
+    const withWikiEntry = (items: NewsItem[]) => {
+      const exists = items.some((item) => item.link === wikiEntry.link)
+      return exists ? items : [wikiEntry, ...items]
+    }
+
     fetchBasicInfo()
       .then((res) => {
         if (res.code !== 0 || !res.news) return
@@ -80,10 +94,11 @@ function HomePage() {
           desc: item.desc,
           time: item.time,
         }))
-        if (mapped.length) setNewsItems(mapped)
+        if (mapped.length) setNewsItems(withWikiEntry(mapped))
+        else setNewsItems(withWikiEntry([]))
       })
       .catch(() => {
-        setNewsItems([])
+        setNewsItems(withWikiEntry([]))
       })
 
     fetchStoreList({ from: 0, free: 0 })
@@ -105,7 +120,7 @@ function HomePage() {
       .catch(() => {
         setWeeklyItems([])
       })
-  }, [])
+  }, [wikiEntry])
 
   return (
     <div className="page">

@@ -1,0 +1,121 @@
+.comment-thread {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.comment-editor {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 0.75rem 0.85rem;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.comment-label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-weight: 700;
+}
+
+.comment-label textarea {
+  width: 100%;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+  padding: 0.65rem 0.75rem;
+  font-size: 1rem;
+  resize: vertical;
+}
+
+.comment-label textarea:focus {
+  outline: 2px solid var(--primary-soft);
+  border-color: var(--primary);
+}
+
+.comment-editor-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.comment-hint {
+  color: #475569;
+  font-size: 0.9rem;
+}
+
+.comment-error {
+  margin: 0;
+  color: #dc2626;
+  font-weight: 700;
+}
+
+.comment-empty {
+  background: white;
+  border: 1px dashed #e2e8f0;
+  border-radius: 12px;
+  padding: 0.9rem;
+  color: #475569;
+  text-align: center;
+}
+
+.comment-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.comment-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 0.75rem 0.85rem;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.05);
+}
+
+.comment-header {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.3rem;
+}
+
+.comment-time {
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+.comment-body {
+  margin: 0;
+  color: #0f172a;
+  white-space: pre-wrap;
+}
+
+.comment-actions {
+  display: flex;
+  justify-content: center;
+}
+
+.comment-skeleton {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 0.75rem;
+}
+
+.comment-skeleton .line {
+  height: 10px;
+  background: #e2e8f0;
+  border-radius: 6px;
+  margin-bottom: 0.45rem;
+}
+
+.comment-skeleton .line.wide {
+  width: 80%;
+}

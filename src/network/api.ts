@@ -18,6 +18,11 @@ type FetchOptions = {
   headers?: Record<string, string>
 }
 
+export type PackBase = {
+  code: number
+  message?: string
+}
+
 export type AuthSession = {
   uid: number
   key: string
@@ -74,6 +79,10 @@ export const setSession = (session?: AuthSession) => {
   } else {
     localStorage.removeItem(STORAGE_STORE_KEY)
   }
+}
+
+export const getSession = (): AuthSession | undefined => {
+  return loadStoredSession()
 }
 
 const fetchGuestSession = async (): Promise<AuthSession> => {
@@ -277,12 +286,143 @@ export type RespSkinList = {
   data?: RespSkinListItem[]
 }
 
+export type RespSongInfo = {
+  code: number
+  sid: number
+  title: string
+  artist: string
+  titleOrg?: string
+  artistOrg?: string
+  cover?: string
+  length?: number
+  bpm?: number
+}
+
+export type RespSongChartsItem = {
+  cid: number
+  uid?: number
+  creator?: string
+  version?: string
+  length?: number
+  level?: number
+  type?: number
+  mode?: number
+  time?: number
+}
+
+export type RespSongCharts = {
+  code: number
+  data?: RespSongChartsItem[]
+  hasMore?: boolean
+  next?: number
+}
+
+export type RespChartInfo = {
+  code: number
+  sid?: number
+  cid: number
+  title?: string
+  artist?: string
+  cover?: string
+  creator?: string
+  type?: number
+  uid?: number
+  version?: string
+  mode?: number
+  length?: number
+  like?: number
+  dislike?: number
+  likeState?: number
+}
+
+export type RespRankingItem = {
+  uid: number
+  username: string
+  score: number
+  combo: number
+  acc: number
+  fc?: boolean
+  judge?: number
+  rank?: number
+  mod?: number
+  time?: number
+  best?: number
+  cool?: number
+  good?: number
+  miss?: number
+  ranking?: number
+  pro?: boolean
+}
+
+export type RespRankingMeta = {
+  level?: number
+  rankStatus?: number
+}
+
+export type RespRanking = {
+  code: number
+  cid?: number
+  sid?: number
+  meta?: RespRankingMeta
+  data?: RespRankingItem[]
+}
+
+export type RespCommentItem = {
+  tid: number
+  name: string
+  uid: number
+  time: number
+  content: string
+  num?: number
+  active?: number
+  playTime?: number
+}
+
+export type RespCommentList = {
+  code: number
+  data?: RespCommentItem[]
+  next?: number
+  hasMore?: boolean
+}
+
+export type RespCommentAdded = {
+  code: number
+  tid?: number
+  time?: number
+  num?: number
+}
+
+export type RespChartDonate = {
+  gold: number
+  time: number
+  uid: number
+  username?: string
+  active?: number
+  playTime?: number
+}
+
+export type RespChartDonateList = {
+  code: number
+  data?: RespChartDonate[]
+}
+
 export type RespWiki = {
   code: number
   wiki?: string
   raw?: boolean
   title?: string
   locked?: boolean
+}
+
+export type RespSaveWiki = {
+  code: number
+}
+
+export type RespWikiTemplate = {
+  code: number
+  name?: string
+  data?: unknown
+  message?: string
 }
 
 export const fetchBasicInfo = () => getJson<RespBasicInfo>('/push/info/wt', { auth: false })
@@ -323,8 +463,60 @@ export const fetchStoreEvents = (params?: { active?: number; from?: number }) =>
 export const fetchSkinList = (params?: { uid?: number; mode?: number; word?: string; from?: number }) =>
   getJson<RespSkinList>('/skin/list', { params })
 
+export const fetchSongInfo = (params: { sid: number }) =>
+  getJson<RespSongInfo>('/community/song/info', { params })
+
+export const fetchSongCharts = (params: { sid: number }) =>
+  getJson<RespSongCharts>('/community/song/charts', { params })
+
+export const fetchChartInfo = (params: { cid: number; hash?: string; org?: number }) =>
+  getJson<RespChartInfo>('/community/chart/info', { params })
+
+export const likeChart = (payload: { cid: number; state: number; hash?: string; score?: string; n?: number; choice?: number }) =>
+  postForm<PackBase>('/community/chart/like', {
+    body: {
+      cid: payload.cid,
+      hash: payload.hash,
+      state: payload.state,
+      score: payload.score,
+      n: payload.n,
+      choice: payload.choice,
+    },
+  })
+
+export const fetchRankingList = (params: { cid: number; pro?: number; order?: number; hash?: string; ver?: number; bver?: number }) =>
+  getJson<RespRanking>('/ranking/list', { params })
+
+export const fetchComments = (params: { cid: number; from?: number; ver?: number; bver?: number }) =>
+  getJson<RespCommentList>('/comment/list', { params })
+
+export const addComment = (payload: { cid: number; content: string }) =>
+  postForm<RespCommentAdded>('/comment/add', { body: { cid: payload.cid, content: payload.content } })
+
+export const deleteComment = (payload: { tid: number }) => postForm<PackBase>('/comment/delete', { body: { tid: payload.tid } })
+
+export const fetchChartDonateList = (params: { cid: number }) => getJson<RespChartDonateList>('/community/chart/donate', { params })
+
+export const donateChart = (payload: { cid: number; gold: number }) =>
+  postForm<PackBase>('/community/chart/donate', { body: { cid: payload.cid, gold: payload.gold } })
+
 export const fetchWiki = (params: { lang?: number; touid?: number; sid?: number; cid?: number; pid?: number; raw?: number }) =>
   getJson<RespWiki>('/community/wiki', { params })
+
+export const saveWiki = (payload: { wiki: string; lang?: number; touid?: number; sid?: number; cid?: number; pid?: number }) =>
+  postForm<RespSaveWiki>('/community/wiki', {
+    body: {
+      wiki: payload.wiki,
+      lang: payload.lang,
+      touid: payload.touid,
+      sid: payload.sid,
+      cid: payload.cid,
+      pid: payload.pid,
+    },
+  })
+
+export const fetchWikiTemplate = (params: { name: string } & Record<string, string | number | undefined>) =>
+  getJson<RespWikiTemplate>('/web/wiki/template', { params, auth: false })
 
 export const login = (payload: { name: string; psw: string; ver?: number; h?: string; bver?: number }) =>
   postForm<RespLogin>('/account/login/wt', {

@@ -3,6 +3,7 @@
   --primary-strong: #3f8de4;
   --primary-soft: rgba(74, 156, 245, 0.12);
   --danger: #f06f70;
+  --content-width: 1100px;
 
   font-family: 'Inter', 'SF Pro Display', 'Segoe UI', system-ui, -apple-system, sans-serif;
   line-height: 1.6;
@@ -26,4 +27,10 @@ body {
 
 a {
   color: inherit;
+}
+
+.content-container {
+  width: 100%;
+  max-width: var(--content-width);
+  margin: 0 auto;
 }

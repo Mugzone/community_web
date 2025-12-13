@@ -1,11 +1,9 @@
 import { useEffect, useMemo, useState, type ChangeEvent } from 'react'
-import AuthModal from '../components/AuthModal'
-import Footer from '../components/Footer'
-import Topbar from '../components/Topbar'
+import PageLayout from '../components/PageLayout'
+import { useAuthModal } from '../components/useAuthModal'
 import { useI18n } from '../i18n'
-import { fetchSongCoverUpload, fetchSongInfo, getSession, saveSongInfo, setSession, type RespSongInfo } from '../network/api'
+import { fetchSongCoverUpload, fetchSongInfo, getSession, saveSongInfo, type RespSongInfo } from '../network/api'
 import { coverUrl } from '../utils/formatters'
-import './home.css'
 import './song.css'
 
 const parseSongId = () => {
@@ -40,6 +38,7 @@ const parseLengthInput = (value: string) => {
 
 function SongEditPage() {
   const { t } = useI18n()
+  const auth = useAuthModal()
   const songId = useMemo(() => parseSongId(), [])
   const [info, setInfo] = useState<RespSongInfo>()
   const [infoError, setInfoError] = useState('')
@@ -59,9 +58,6 @@ function SongEditPage() {
   const [coverUploading, setCoverUploading] = useState(false)
   const [coverError, setCoverError] = useState('')
   const [coverSuccess, setCoverSuccess] = useState('')
-  const [authOpen, setAuthOpen] = useState(false)
-  const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin')
-  const [userName, setUserName] = useState<string>()
 
   useEffect(() => {
     if (!songId || Number.isNaN(songId)) {
@@ -114,8 +110,7 @@ function SongEditPage() {
   const requireAuth = () => {
     const session = getSession()
     if (!session || session.uid === 1) {
-      setAuthMode('signin')
-      setAuthOpen(true)
+      auth.openAuth('signin')
       return false
     }
     return true
@@ -265,22 +260,7 @@ function SongEditPage() {
   }
 
   return (
-    <div className="page song-page">
-      <Topbar
-        onSignIn={() => {
-          setAuthMode('signin')
-          setAuthOpen(true)
-        }}
-        onSignUp={() => {
-          setAuthMode('signup')
-          setAuthOpen(true)
-        }}
-        onSignOut={() => {
-          setSession(undefined)
-          setUserName(undefined)
-        }}
-        userName={userName}
-      />
+    <PageLayout className="song-page" topbarProps={auth.topbarProps}>
 
       <main className="content-container">
         <section className="section song-edit-section">
@@ -385,23 +365,8 @@ function SongEditPage() {
         </section>
       </main>
 
-      <Footer
-        links={[
-          { label: 'Discord', href: 'https://discord.gg/unk9hgF' },
-          { label: 'Facebook', href: 'https://www.facebook.com/MalodyHome' },
-          { label: 'Sina', href: 'http://weibo.com/u/5351167572' },
-        ]}
-        showLanguageSelector
-      />
-
-      {authOpen && (
-        <AuthModal
-          mode={authMode}
-          onClose={() => setAuthOpen(false)}
-          onSuccess={({ username }) => setUserName(username)}
-        />
-      )}
-    </div>
+      {auth.modal}
+    </PageLayout>
   )
 }
 

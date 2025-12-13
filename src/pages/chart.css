@@ -1,5 +1,5 @@
 .chart-page .content-container {
-  max-width: 1100px;
+  max-width: var(--content-width);
 }
 
 .chart-hero {
@@ -17,7 +17,7 @@
   background-size: cover;
   background-position: center;
   box-shadow: 0 16px 40px rgba(15, 23, 42, 0.18);
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--color-border);
 }
 
 .chart-summary h1 {
@@ -26,12 +26,12 @@
 
 .chart-artist {
   margin: 0;
-  color: #475569;
+  color: var(--color-muted);
 }
 
 .chart-version {
   margin: 0.1rem 0 0.35rem;
-  color: #64748b;
+  color: var(--color-muted-2);
 }
 
 .chart-meta-row {
@@ -43,7 +43,7 @@
 
 .chart-loading {
   margin: 0.3rem 0 0;
-  color: #475569;
+  color: var(--color-muted);
 }
 
 .chart-error {
@@ -61,11 +61,11 @@
 
 .chart-score-main,
 .chart-score-meta {
-  background: white;
-  border: 1px solid #e2e8f0;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
   border-radius: 12px;
   padding: 1rem;
-  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.06);
+  box-shadow: var(--shadow-sm);
 }
 
 .chart-score-main h2 {
@@ -75,7 +75,7 @@
 
 .chart-score-sub {
   margin: 0 0 0.6rem;
-  color: #475569;
+  color: var(--color-muted);
 }
 
 .chart-score-actions {
@@ -96,7 +96,7 @@
 
 .chart-score-label {
   margin: 0;
-  color: #475569;
+  color: var(--color-muted);
   font-weight: 700;
 }
 
@@ -108,7 +108,7 @@
 
 .chart-score-id {
   margin: 0;
-  color: #64748b;
+  color: var(--color-muted-2);
 }
 
 .chart-tabs {
@@ -119,12 +119,22 @@
 }
 
 .chart-tabs button {
-  border: 1px solid #e2e8f0;
-  background: white;
+  border: 1px solid var(--color-border);
+  background: rgba(15, 23, 42, 0.35);
   padding: 0.5rem 0.9rem;
   border-radius: 10px;
   cursor: pointer;
   font-weight: 700;
+  color: var(--color-text);
+}
+
+:root[data-theme='light'] .chart-tabs button {
+  background: var(--color-surface);
+}
+
+.chart-tabs button:hover {
+  border-color: rgba(93, 181, 255, 0.22);
+  box-shadow: 0 0 0 2px var(--glow-primary);
 }
 
 .chart-tabs button.active {
@@ -134,11 +144,11 @@
 }
 
 .chart-panel {
-  background: white;
-  border: 1px solid #e2e8f0;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
   border-radius: 12px;
   padding: 1rem;
-  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.06);
+  box-shadow: var(--shadow-sm);
 }
 
 .chart-rank-controls {
@@ -156,9 +166,21 @@
 }
 
 .chart-rank-controls select {
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--color-border-strong);
   border-radius: 8px;
   padding: 0.4rem 0.5rem;
+  background: rgba(15, 23, 42, 0.28);
+  color: var(--color-text);
+}
+
+:root[data-theme='light'] .chart-rank-controls select {
+  background: var(--color-surface);
+}
+
+.chart-rank-controls select:focus {
+  outline: 2px solid rgba(93, 181, 255, 0.16);
+  box-shadow: 0 0 0 2px var(--glow-primary);
+  border-color: rgba(93, 181, 255, 0.28);
 }
 
 .chart-rank-checkbox {
@@ -183,7 +205,7 @@
 
 .chart-rank-head {
   font-weight: 800;
-  color: #475569;
+  color: var(--color-muted);
 }
 
 .chart-rank-row {
@@ -193,7 +215,11 @@
 }
 
 .chart-rank-row:hover {
-  background: #f8fafc;
+  background: rgba(15, 23, 42, 0.25);
+}
+
+:root[data-theme='light'] .chart-rank-row:hover {
+  background: var(--color-surface-2);
 }
 
 .chart-rank-pos {
@@ -215,20 +241,20 @@
 
 .chart-rank-empty {
   padding: 0.9rem;
-  color: #475569;
+  color: var(--color-muted);
   text-align: center;
 }
 
 .chart-rank-skeleton {
-  background: #f8fafc;
-  border: 1px dashed #e2e8f0;
+  background: rgba(15, 23, 42, 0.25);
+  border: 1px dashed var(--color-border);
   border-radius: 12px;
   padding: 0.75rem;
 }
 
 .chart-rank-skeleton .line {
   height: 12px;
-  background: #e2e8f0;
+  background: rgba(226, 232, 240, 0.14);
   border-radius: 6px;
   margin-bottom: 0.5rem;
 }
@@ -239,7 +265,7 @@
 
 .chart-empty {
   text-align: center;
-  color: #475569;
+  color: var(--color-muted);
 }
 
 .donate-panel {
@@ -256,9 +282,21 @@
 
 .donate-form input {
   width: 120px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--color-border-strong);
   border-radius: 10px;
   padding: 0.55rem 0.7rem;
+  background: rgba(15, 23, 42, 0.28);
+  color: var(--color-text);
+}
+
+:root[data-theme='light'] .donate-form input {
+  background: var(--color-surface);
+}
+
+.donate-form input:focus {
+  outline: 2px solid rgba(93, 181, 255, 0.16);
+  box-shadow: 0 0 0 2px var(--glow-primary);
+  border-color: rgba(93, 181, 255, 0.28);
 }
 
 .donate-list {
@@ -271,10 +309,14 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
+  background: rgba(15, 23, 42, 0.25);
+  border: 1px solid var(--color-border);
   border-radius: 10px;
   padding: 0.6rem 0.75rem;
+}
+
+:root[data-theme='light'] .donate-item {
+  background: var(--color-surface-2);
 }
 
 .donate-user {
@@ -284,11 +326,11 @@
 
 .donate-meta {
   margin: 0.1rem 0 0;
-  color: #64748b;
+  color: var(--color-muted-2);
 }
 
 .chart-score-actions .pill.ghost {
-  background: #e2e8f0;
+  background: rgba(226, 232, 240, 0.14);
 }
 
 .chart-score-actions .pill.ghost.active {
@@ -302,7 +344,7 @@
 
 .chart-panel .wiki-skeleton-line {
   height: 12px;
-  background: #e2e8f0;
+  background: rgba(226, 232, 240, 0.14);
   border-radius: 6px;
   margin-bottom: 0.5rem;
 }

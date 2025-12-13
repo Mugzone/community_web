@@ -11,9 +11,9 @@
   max-width: var(--content-width);
   padding: 1.5rem;
   background: linear-gradient(135deg, rgba(74, 156, 245, 0.12), rgba(240, 111, 112, 0.12));
-  border: 1px solid rgba(148, 163, 184, 0.3);
+  border: 1px solid var(--color-border);
   border-radius: 18px;
-  box-shadow: 0 18px 50px rgba(15, 23, 42, 0.12);
+  box-shadow: var(--shadow-md);
 }
 
 .wiki-hero h1 {
@@ -23,7 +23,7 @@
 
 .wiki-subtitle {
   margin: 0;
-  color: #1f2937;
+  color: var(--color-text);
   max-width: 720px;
 }
 
@@ -47,10 +47,14 @@
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  background: rgba(255, 255, 255, 0.9);
-  border: 1px solid #e2e8f0;
+  background: rgba(15, 23, 42, 0.55);
+  border: 1px solid var(--color-border);
   border-radius: 14px;
   padding: 1rem;
+}
+
+:root[data-theme='light'] .wiki-controls {
+  background: rgba(255, 255, 255, 0.9);
 }
 
 .wiki-lang-label {
@@ -58,20 +62,31 @@
   flex-direction: column;
   gap: 0.35rem;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--color-text);
 }
 
 .wiki-lang-label select {
   border-radius: 12px;
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--color-border-strong);
   padding: 0.65rem 0.75rem;
   font-weight: 600;
-  background: #fff;
+  background: rgba(15, 23, 42, 0.28);
+  color: var(--color-text);
+}
+
+:root[data-theme='light'] .wiki-lang-label select {
+  background: var(--color-surface);
+}
+
+.wiki-lang-label select:focus {
+  outline: 2px solid rgba(93, 181, 255, 0.16);
+  box-shadow: 0 0 0 2px var(--glow-primary);
+  border-color: rgba(93, 181, 255, 0.28);
 }
 
 .wiki-lang-hint {
   margin: 0;
-  color: #475569;
+  color: var(--color-muted);
   font-size: 0.9rem;
 }
 
@@ -83,21 +98,25 @@
 }
 
 .wiki-content {
-  background: #fff;
-  border: 1px solid #e2e8f0;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
   border-radius: 18px;
   padding: 1.5rem;
   max-width: var(--content-width);
   margin: 0 auto 2rem;
-  box-shadow: 0 12px 40px rgba(15, 23, 42, 0.08);
+  box-shadow: var(--shadow-sm);
 }
 
 .wiki-empty {
   padding: 1rem;
   border-radius: 12px;
-  background: #f8fafc;
-  border: 1px dashed #cbd5e1;
-  color: #475569;
+  background: rgba(15, 23, 42, 0.25);
+  border: 1px dashed var(--color-border-strong);
+  color: var(--color-muted);
+}
+
+:root[data-theme='light'] .wiki-empty {
+  background: var(--color-surface-2);
 }
 
 .wiki-skeleton {
@@ -107,7 +126,7 @@
 
 .wiki-skeleton-line {
   height: 14px;
-  background: linear-gradient(90deg, #e2e8f0, #f1f5f9, #e2e8f0);
+  background: linear-gradient(90deg, rgba(226, 232, 240, 0.1), rgba(226, 232, 240, 0.2), rgba(226, 232, 240, 0.1));
   background-size: 200% 100%;
   animation: wikiPulse 1.2s ease-in-out infinite;
   border-radius: 999px;
@@ -128,7 +147,7 @@
 }
 
 .wiki-body {
-  color: #0f172a;
+  color: var(--color-text);
   line-height: 1.8;
   word-break: break-word;
 }
@@ -170,9 +189,14 @@
 
 .wiki-body th,
 .wiki-body td {
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--color-border);
   padding: 0.5rem 0.65rem;
-  background: #f8fafc;
+  background: rgba(15, 23, 42, 0.25);
+}
+
+:root[data-theme='light'] .wiki-body th,
+:root[data-theme='light'] .wiki-body td {
+  background: var(--color-surface-2);
 }
 
 .wiki-body th.c,
@@ -212,7 +236,7 @@
 }
 
 .wiki-body .hidden {
-  border: 1px dashed #cbd5e1;
+  border: 1px dashed var(--color-border-strong);
   border-radius: 12px;
   margin: 1rem 0;
   overflow: hidden;
@@ -221,10 +245,14 @@
 .wiki-body .hidden .hide-top {
   display: block;
   padding: 0.65rem 0.75rem;
-  background: #e2e8f0;
+  background: rgba(15, 23, 42, 0.3);
   font-weight: 700;
   cursor: pointer;
   user-select: none;
+}
+
+:root[data-theme='light'] .wiki-body .hidden .hide-top {
+  background: var(--color-surface-2);
 }
 
 .wiki-body .hidden .hide-body {
@@ -237,11 +265,15 @@
 }
 
 .wiki-template-placeholder {
-  border: 1px dashed #cbd5e1;
+  border: 1px dashed var(--color-border-strong);
   padding: 0.65rem 0.75rem;
   border-radius: 12px;
-  background: #f8fafc;
+  background: rgba(15, 23, 42, 0.25);
   margin: 0.75rem 0;
+}
+
+:root[data-theme='light'] .wiki-template-placeholder {
+  background: var(--color-surface-2);
 }
 
 .wiki-template-name {
@@ -252,7 +284,7 @@
 .wiki-template-placeholder ul {
   margin: 0.35rem 0;
   padding-left: 1.1rem;
-  color: #475569;
+  color: var(--color-muted);
 }
 
 .wiki-template-placeholder li span {
@@ -261,7 +293,7 @@
 
 .wiki-template-todo {
   margin: 0.2rem 0 0;
-  color: #475569;
+  color: var(--color-muted);
 }
 
 .wiki-template-loaded {
@@ -271,10 +303,10 @@
 }
 
 .wiki-template-card {
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--color-border);
   border-radius: 12px;
   padding: 0.75rem;
-  background: #fff;
+  background: var(--color-surface);
   display: grid;
   gap: 0.35rem;
 }
@@ -290,7 +322,7 @@
   border-radius: 10px;
   background-size: cover;
   background-position: center;
-  background-color: #e2e8f0;
+  background-color: rgba(226, 232, 240, 0.14);
 }
 
 .wiki-template-body {
@@ -301,19 +333,19 @@
 .wiki-template-title {
   margin: 0;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--color-text);
 }
 
 .wiki-template-meta {
   margin: 0;
-  color: #475569;
+  color: var(--color-muted);
   font-size: 0.95rem;
 }
 
 .wiki-template-list {
   margin: 0;
   padding-left: 1rem;
-  color: #0f172a;
+  color: var(--color-text);
   display: grid;
   gap: 0.25rem;
 }
@@ -341,7 +373,7 @@
 
 .wiki-template-value {
   font-weight: 700;
-  color: #0f172a;
+  color: var(--color-text);
 }
 
 .wiki-template-warning {
@@ -360,7 +392,7 @@
   flex-direction: column;
   gap: 0.5rem;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--color-text);
 }
 
 .wiki-editor-label textarea {
@@ -368,29 +400,38 @@
   width: 100%;
   padding: 0.85rem;
   border-radius: 12px;
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--color-border-strong);
   font-family: 'SFMono-Regular', Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
   resize: vertical;
-  background: #f8fafc;
+  background: rgba(15, 23, 42, 0.28);
+  color: var(--color-text);
+}
+
+:root[data-theme='light'] .wiki-editor-label textarea {
+  background: var(--color-surface-2);
 }
 
 .wiki-editor-label textarea:focus {
   outline: 2px solid var(--primary-soft);
   border-color: var(--primary);
-  background: #fff;
+  box-shadow: 0 0 0 2px var(--glow-primary);
 }
 
 .wiki-editor-preview {
-  border: 1px dashed #cbd5e1;
+  border: 1px dashed var(--color-border-strong);
   border-radius: 14px;
   padding: 0.9rem;
-  background: #f8fafc;
+  background: rgba(15, 23, 42, 0.25);
+}
+
+:root[data-theme='light'] .wiki-editor-preview {
+  background: var(--color-surface-2);
 }
 
 .wiki-preview-label {
   margin: 0 0 0.35rem;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--color-text);
 }
 
 .wiki-editor-feedback {
@@ -411,7 +452,7 @@
 
 .wiki-error {
   background: rgba(240, 111, 112, 0.16);
-  color: #b91c1c;
+  color: var(--danger);
 }
 
 .wiki-success {

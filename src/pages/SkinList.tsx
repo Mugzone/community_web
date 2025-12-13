@@ -1,12 +1,10 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react'
-import AuthModal from '../components/AuthModal'
-import Footer from '../components/Footer'
-import Topbar from '../components/Topbar'
-import { fetchSkinList, setSession } from '../network/api'
+import PageLayout from '../components/PageLayout'
+import { useAuthModal } from '../components/useAuthModal'
+import { fetchSkinList } from '../network/api'
 import type { RespSkinListItem } from '../network/api'
 import { coverUrl, modeLabelsFromMask } from '../utils/formatters'
 import { useI18n } from '../i18n'
-import './home.css'
 import './chart-list.css'
 import './skin-list.css'
 
@@ -34,6 +32,7 @@ const parseInitialFilters = (): FilterState => {
 
 function SkinListPage() {
   const { t } = useI18n()
+  const auth = useAuthModal()
   const initialFilters = useMemo(() => parseInitialFilters(), [])
   const [filters, setFilters] = useState<FilterState>(initialFilters)
   const [skins, setSkins] = useState<SkinCardItem[]>([])
@@ -41,9 +40,6 @@ function SkinListPage() {
   const [error, setError] = useState('')
   const [hasMore, setHasMore] = useState(false)
   const [next, setNext] = useState<number | undefined>()
-  const [authOpen, setAuthOpen] = useState(false)
-  const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin')
-  const [userName, setUserName] = useState<string>()
 
   const modeOptions = useMemo(
     () => [
@@ -139,22 +135,7 @@ function SkinListPage() {
   }, [])
 
   return (
-    <div className="page">
-      <Topbar
-        onSignIn={() => {
-          setAuthMode('signin')
-          setAuthOpen(true)
-        }}
-        onSignUp={() => {
-          setAuthMode('signup')
-          setAuthOpen(true)
-        }}
-        onSignOut={() => {
-          setSession(undefined)
-          setUserName(undefined)
-        }}
-        userName={userName}
-      />
+    <PageLayout topbarProps={auth.topbarProps}>
 
       <section className="skin-hero">
         <div>
@@ -247,23 +228,8 @@ function SkinListPage() {
         </div>
       </section>
 
-      <Footer
-        links={[
-          { label: 'Discord', href: 'https://discord.gg/unk9hgF' },
-          { label: 'Facebook', href: 'https://www.facebook.com/MalodyHome' },
-          { label: 'Sina', href: 'http://weibo.com/u/5351167572' },
-        ]}
-        showLanguageSelector
-      />
-
-      {authOpen && (
-        <AuthModal
-          mode={authMode}
-          onClose={() => setAuthOpen(false)}
-          onSuccess={({ username }) => setUserName(username)}
-        />
-      )}
-    </div>
+      {auth.modal}
+    </PageLayout>
   )
 }
 

@@ -1,45 +1,38 @@
 import { useEffect, useMemo, useState } from 'react'
-import AuthModal from '../components/AuthModal'
-import Banner from '../components/Banner'
-import Footer from '../components/Footer'
+// import Banner from '../components/Banner'
 import MapCard from '../components/MapCard'
 import NewsList from '../components/NewsList'
 import StatGrid from '../components/StatGrid'
-import Topbar from '../components/Topbar'
-import { fetchBasicInfo, fetchStoreList, fetchStorePromote, setSession } from '../network/api'
+import PageLayout from '../components/PageLayout'
+import { useAuthModal } from '../components/useAuthModal'
+import { fetchBasicInfo, fetchStoreList, fetchStorePromote } from '../network/api'
 import type { RespBasicInfoNews, RespStoreListItem } from '../network/api'
-import type { BannerItem, MapItem, NewsItem, StatItem } from '../types/content'
+import type {  MapItem, NewsItem, StatItem } from '../types/content'
 import { useI18n } from '../i18n'
 import { coverUrl, modeLabel } from '../utils/formatters'
 import './home.css'
 
-const bannerItems: BannerItem[] = [
-  {
-    title: 'Malody V — Play across every platform',
-    description: 'Charts, community, events and rankings in one place.',
-    link: 'https://www.mugzone.net/',
-    image:
-      'https://images.unsplash.com/photo-1511379938547-c1f69419868d?auto=format&fit=crop&w=1200&q=80',
-  },
-  {
-    title: 'Create, share, and curate charts',
-    description: 'Upload your best work, get feedback, and feature on weekly show.',
-    link: '/page/2147',
-    image:
-      'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=1200&q=80',
-  },
-]
+// const bannerItems: BannerItem[] = [
+//   {
+//     title: 'Malody V — Play across every platform',
+//     description: 'Charts, community, events and rankings in one place.',
+//     link: 'https://www.mugzone.net/',
+//     image:
+//       'https://images.unsplash.com/photo-1511379938547-c1f69419868d?auto=format&fit=crop&w=1200&q=80',
+//   },
+//   {
+//     title: 'Create, share, and curate charts',
+//     description: 'Upload your best work, get feedback, and feature on weekly show.',
+//     link: '/page/2147',
+//     image:
+//       'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=1200&q=80',
+//   },
+// ]
 
 const statMeta = [
   { value: '12,480+', labelKey: 'home.stats.pages.label', descKey: 'home.stats.pages.desc' },
   { value: '9,300+', labelKey: 'home.stats.songs.label', descKey: 'home.stats.songs.desc' },
   { value: '210k+', labelKey: 'home.stats.players.label', descKey: 'home.stats.players.desc' },
-]
-
-const externalLinks = [
-  { label: 'Discord', href: 'https://discord.gg/unk9hgF' },
-  { label: 'Facebook', href: 'https://www.facebook.com/MalodyHome' },
-  { label: 'Sina', href: 'http://weibo.com/u/5351167572' },
 ]
 
 const mapStoreToCard = (item: RespStoreListItem): MapItem => ({
@@ -53,12 +46,10 @@ const mapStoreToCard = (item: RespStoreListItem): MapItem => ({
 
 function HomePage() {
   const { t } = useI18n()
+  const auth = useAuthModal()
   const [newsItems, setNewsItems] = useState<NewsItem[]>([])
   const [arrivalItems, setArrivalItems] = useState<MapItem[]>([])
   const [weeklyItems, setWeeklyItems] = useState<MapItem[]>([])
-  const [authOpen, setAuthOpen] = useState(false)
-  const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin')
-  const [userName, setUserName] = useState<string>()
   const wikiEntry = useMemo(
     () => ({
       title: t('wiki.testEntry.title'),
@@ -123,22 +114,7 @@ function HomePage() {
   }, [wikiEntry])
 
   return (
-    <div className="page">
-      <Topbar
-        onSignIn={() => {
-          setAuthMode('signin')
-          setAuthOpen(true)
-        }}
-        onSignUp={() => {
-          setAuthMode('signup')
-          setAuthOpen(true)
-        }}
-        onSignOut={() => {
-          setSession(undefined)
-          setUserName(undefined)
-        }}
-        userName={userName}
-      />
+    <PageLayout topbarProps={auth.topbarProps}>
       <header className="hero">
         <div className="hero-text">
           <p className="eyebrow">Malody Web</p>
@@ -165,7 +141,7 @@ function HomePage() {
         </div>
       </header>
 
-      <Banner items={bannerItems} />
+      {/*<Banner items={bannerItems} />*/}
       <StatGrid items={stats} />
 
       <section className="section">
@@ -211,15 +187,8 @@ function HomePage() {
         )}
       </section>
 
-      <Footer links={externalLinks} showLanguageSelector />
-      {authOpen && (
-        <AuthModal
-          mode={authMode}
-          onClose={() => setAuthOpen(false)}
-          onSuccess={({ username }) => setUserName(username)}
-        />
-      )}
-    </div>
+      {auth.modal}
+    </PageLayout>
   )
 }
 

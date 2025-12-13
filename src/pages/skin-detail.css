@@ -1,5 +1,5 @@
 .skin-detail-page .content-container {
-  max-width: 1100px;
+  max-width: var(--content-width);
 }
 
 .skin-detail-hero {
@@ -17,7 +17,7 @@
   background-size: cover;
   background-position: center;
   box-shadow: 0 16px 40px rgba(15, 23, 42, 0.18);
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--color-border);
 }
 
 .skin-summary h1 {
@@ -26,7 +26,7 @@
 
 .skin-creator {
   margin: 0;
-  color: #475569;
+  color: var(--color-muted);
 }
 
 .skin-meta-row {
@@ -38,7 +38,7 @@
 
 .skin-loading {
   margin: 0.4rem 0 0;
-  color: #475569;
+  color: var(--color-muted);
 }
 
 .skin-error {
@@ -53,11 +53,11 @@
   gap: 1rem;
   flex-wrap: wrap;
   align-items: center;
-  background: white;
-  border: 1px solid #e2e8f0;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
   border-radius: 12px;
   padding: 1rem 1.2rem;
-  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.06);
+  box-shadow: var(--shadow-sm);
   margin-bottom: 1.5rem;
 }
 
@@ -68,7 +68,7 @@
 
 .skin-price-hint {
   margin: 0;
-  color: #475569;
+  color: var(--color-muted);
 }
 
 .skin-purchase-actions {
@@ -88,9 +88,14 @@
   position: relative;
   overflow: hidden;
   border-radius: 12px;
-  border: 1px solid #e2e8f0;
-  background: white;
-  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.06);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.skin-preview-item:hover {
+  border-color: rgba(93, 181, 255, 0.22);
+  box-shadow: var(--shadow-md), 0 0 0 2px var(--glow-primary);
 }
 
 .skin-preview-item img {
@@ -101,25 +106,25 @@
 }
 
 .skin-empty {
-  background: white;
-  border: 1px solid #e2e8f0;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
   border-radius: 12px;
   padding: 1rem;
-  color: #475569;
-  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.06);
+  color: var(--color-muted);
+  box-shadow: var(--shadow-sm);
 }
 
 .skin-wiki-skeleton {
-  background: white;
-  border: 1px solid #e2e8f0;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
   border-radius: 12px;
   padding: 1rem;
-  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.06);
+  box-shadow: var(--shadow-sm);
 }
 
 .skin-wiki-skeleton .line {
   height: 12px;
-  background: #e2e8f0;
+  background: rgba(226, 232, 240, 0.14);
   border-radius: 6px;
   margin-bottom: 0.6rem;
 }
@@ -129,15 +134,15 @@
 }
 
 .skin-comment-panel {
-  background: white;
-  border: 1px solid #e2e8f0;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
   border-radius: 12px;
   padding: 1rem;
-  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.06);
+  box-shadow: var(--shadow-sm);
 }
 
 .chart-count {
-  color: #475569;
+  color: var(--color-muted);
   font-weight: 600;
 }
 

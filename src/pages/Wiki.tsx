@@ -1,13 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import AuthModal from '../components/AuthModal'
-import Footer from '../components/Footer'
-import Topbar from '../components/Topbar'
+import PageLayout from '../components/PageLayout'
+import { useAuthModal } from '../components/useAuthModal'
 import type { Locale } from '../i18n'
 import { useI18n } from '../i18n'
-import { fetchWiki, fetchWikiTemplate, getSession, saveWiki, setSession, type RespWiki } from '../network/api'
+import { fetchWiki, fetchWikiTemplate, getSession, saveWiki, type RespWiki } from '../network/api'
 import { renderWiki, type WikiTemplate } from '../utils/wiki'
 import { applyTemplateHtml, renderTemplateHtml } from '../utils/wikiTemplates'
-import './home.css'
 import './wiki.css'
 
 type WikiContext = 'page' | 'song' | 'chart' | 'user'
@@ -75,11 +73,15 @@ function WikiPage() {
   const [saveError, setSaveError] = useState('')
   const [saveSuccess, setSaveSuccess] = useState('')
   const [pendingSave, setPendingSave] = useState(false)
+  const auth = useAuthModal({
+    onSuccess: () => {
+      if (!pendingSave) return
+      setPendingSave(false)
+      handleSave()
+    },
+  })
   const [templateLoading, setTemplateLoading] = useState(false)
   const [templateError, setTemplateError] = useState('')
-  const [authOpen, setAuthOpen] = useState(false)
-  const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin')
-  const [userName, setUserName] = useState<string>()
   const contentRef = useRef<HTMLDivElement>(null)
 
   const context: WikiContext = params.cid ? 'chart' : params.sid ? 'song' : params.touid ? 'user' : 'page'
@@ -232,8 +234,7 @@ function WikiPage() {
     const session = getSession()
     if (!session || session.uid === 1) {
       setPendingSave(true)
-      setAuthMode('signin')
-      setAuthOpen(true)
+      auth.openAuth('signin')
       setSaveError(t('wiki.error.auth'))
       return
     }
@@ -250,8 +251,7 @@ function WikiPage() {
       if (resp.code !== 0) {
         if (resp.code === -5) {
           setPendingSave(true)
-          setAuthMode('signin')
-          setAuthOpen(true)
+          auth.openAuth('signin')
           setSaveError(t('wiki.error.auth'))
           return
         }
@@ -271,31 +271,8 @@ function WikiPage() {
     }
   }
 
-  const handleAuthSuccess = ({ username }: { username?: string }) => {
-    if (username) setUserName(username)
-    if (pendingSave) {
-      setPendingSave(false)
-      handleSave()
-    }
-  }
-
   return (
-    <div className="page wiki-page">
-      <Topbar
-        onSignIn={() => {
-          setAuthMode('signin')
-          setAuthOpen(true)
-        }}
-        onSignUp={() => {
-          setAuthMode('signup')
-          setAuthOpen(true)
-        }}
-        onSignOut={() => {
-          setSession(undefined)
-          setUserName(undefined)
-        }}
-        userName={userName}
-      />
+    <PageLayout className="wiki-page" topbarProps={auth.topbarProps}>
 
       <header className="wiki-hero content-container">
         <div>
@@ -384,23 +361,8 @@ function WikiPage() {
         )}
       </section>
 
-      <Footer
-        links={[
-          { label: 'Discord', href: 'https://discord.gg/unk9hgF' },
-          { label: 'Facebook', href: 'https://www.facebook.com/MalodyHome' },
-          { label: 'Sina', href: 'http://weibo.com/u/5351167572' },
-        ]}
-        showLanguageSelector
-      />
-
-      {authOpen && (
-        <AuthModal
-          mode={authMode}
-          onClose={() => setAuthOpen(false)}
-          onSuccess={(payload) => handleAuthSuccess(payload)}
-        />
-      )}
-    </div>
+      {auth.modal}
+    </PageLayout>
   )
 }
 

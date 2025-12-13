@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import AuthModal from '../components/AuthModal'
 import CommentThread from '../components/CommentThread'
-import Footer from '../components/Footer'
-import Topbar from '../components/Topbar'
+import PageLayout from '../components/PageLayout'
+import { useAuthModal } from '../components/useAuthModal'
 import { useI18n } from '../i18n'
 import {
   addComment,
@@ -16,7 +15,6 @@ import {
   fetchWikiTemplate,
   getSession,
   likeChart,
-  setSession,
   type RespChartDonate,
   type RespChartInfo,
   type RespRanking,
@@ -24,7 +22,6 @@ import {
 import { avatarUrl, coverUrl, modeLabel } from '../utils/formatters'
 import { applyTemplateHtml, renderTemplateHtml } from '../utils/wikiTemplates'
 import { renderWiki, type WikiTemplate } from '../utils/wiki'
-import './home.css'
 import './chart.css'
 import '../components/comment.css'
 import './wiki.css'
@@ -62,10 +59,8 @@ type RankFilters = {
 
 function ChartPage() {
   const { t } = useI18n()
+  const auth = useAuthModal()
   const chartId = useMemo(() => parseChartId(), [])
-  const [authOpen, setAuthOpen] = useState(false)
-  const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin')
-  const [userName, setUserName] = useState<string>()
 
   const [info, setInfo] = useState<RespChartInfo>()
   const [infoError, setInfoError] = useState('')
@@ -291,8 +286,7 @@ function ChartPage() {
     if (!chartId || Number.isNaN(chartId)) return
     const session = getSession()
     if (!session || session.uid === 1) {
-      setAuthMode('signin')
-      setAuthOpen(true)
+      auth.openAuth('signin')
       return
     }
     if (likeLoading) return
@@ -338,8 +332,7 @@ function ChartPage() {
     if (!chartId || Number.isNaN(chartId)) return
     const session = getSession()
     if (!session || session.uid === 1) {
-      setAuthMode('signin')
-      setAuthOpen(true)
+      auth.openAuth('signin')
       return
     }
     const gold = Number(donateAmount)
@@ -406,22 +399,7 @@ function ChartPage() {
   }
 
   return (
-    <div className="page chart-page">
-      <Topbar
-        onSignIn={() => {
-          setAuthMode('signin')
-          setAuthOpen(true)
-        }}
-        onSignUp={() => {
-          setAuthMode('signup')
-          setAuthOpen(true)
-        }}
-        onSignOut={() => {
-          setSession(undefined)
-          setUserName(undefined)
-        }}
-        userName={userName}
-      />
+    <PageLayout className="chart-page" topbarProps={auth.topbarProps}>
 
       <header className="chart-hero content-container">
         <div className="chart-cover" style={{ backgroundImage: `url(${coverUrl(info?.cover)})` }} />
@@ -560,10 +538,7 @@ function ChartPage() {
                 fetchComments={commentFetcher}
                 submitComment={commentSubmitter}
                 deleteComment={commentDeleter}
-                onRequireAuth={() => {
-                  setAuthMode('signin')
-                  setAuthOpen(true)
-                }}
+                onRequireAuth={() => auth.openAuth('signin')}
               />
             </div>
           )}
@@ -633,23 +608,8 @@ function ChartPage() {
         </section>
       </div>
 
-      <Footer
-        links={[
-          { label: 'Discord', href: 'https://discord.gg/unk9hgF' },
-          { label: 'Facebook', href: 'https://www.facebook.com/MalodyHome' },
-          { label: 'Sina', href: 'http://weibo.com/u/5351167572' },
-        ]}
-        showLanguageSelector
-      />
-
-      {authOpen && (
-        <AuthModal
-          mode={authMode}
-          onClose={() => setAuthOpen(false)}
-          onSuccess={({ username }) => setUserName(username)}
-        />
-      )}
-    </div>
+      {auth.modal}
+    </PageLayout>
   )
 }
 

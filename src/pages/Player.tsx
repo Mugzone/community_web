@@ -1,21 +1,18 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import AuthModal from '../components/AuthModal'
-import Footer from '../components/Footer'
-import Topbar from '../components/Topbar'
+import PageLayout from '../components/PageLayout'
+import { useAuthModal } from '../components/useAuthModal'
 import { useI18n } from '../i18n'
 import {
   fetchPlayerActivity,
   fetchPlayerAllRank,
   fetchPlayerCharts,
   fetchPlayerInfo,
-  setSession,
   type RespPlayerActivityItem,
   type RespPlayerAllRankItem,
   type RespPlayerChartItem,
   type RespPlayerInfoData,
 } from '../network/api'
 import { avatarUrl, coverUrl, modeLabel } from '../utils/formatters'
-import './home.css'
 import './player.css'
 
 const parsePlayerId = () => {
@@ -43,9 +40,7 @@ const formatDate = (ts?: number) => {
 function PlayerPage() {
   const { t } = useI18n()
   const playerId = useMemo(() => parsePlayerId(), [])
-  const [authOpen, setAuthOpen] = useState(false)
-  const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin')
-  const [userName, setUserName] = useState<string>()
+  const auth = useAuthModal()
 
   const [info, setInfo] = useState<RespPlayerInfoData>()
   const [infoError, setInfoError] = useState('')
@@ -62,10 +57,10 @@ function PlayerPage() {
   const [ranks, setRanks] = useState<RespPlayerAllRankItem[]>([])
   const [rankError, setRankError] = useState('')
   const [rankLoading, setRankLoading] = useState(false)
-  const infoLoadedRef = useRef<number>()
-  const activityLoadedRef = useRef<number>()
-  const chartsLoadedRef = useRef<number>()
-  const rankLoadedRef = useRef<number>()
+  const infoLoadedRef = useRef<number | undefined>(undefined)
+  const activityLoadedRef = useRef<number | undefined>(undefined)
+  const chartsLoadedRef = useRef<number | undefined>(undefined)
+  const rankLoadedRef = useRef<number | undefined>(undefined)
   const [activeTab, setActiveTab] = useState<'activity' | 'charts' | 'rank' | 'wiki'>('activity')
 
   useEffect(() => {
@@ -87,7 +82,6 @@ function PlayerPage() {
           return
         }
         setInfo({ ...data, uid: data.uid ?? playerId })
-        setUserName((prev) => prev ?? data.username ?? data.name)
       } catch (err) {
         console.error(err)
         setInfoError(t('player.error.info'))
@@ -197,22 +191,7 @@ function PlayerPage() {
   ].filter(Boolean) as string[]
 
   return (
-    <div className="page player-page">
-      <Topbar
-        onSignIn={() => {
-          setAuthMode('signin')
-          setAuthOpen(true)
-        }}
-        onSignUp={() => {
-          setAuthMode('signup')
-          setAuthOpen(true)
-        }}
-        onSignOut={() => {
-          setSession(undefined)
-          setUserName(undefined)
-        }}
-        userName={userName}
-      />
+    <PageLayout className="player-page" topbarProps={auth.topbarProps}>
 
       <header className="player-hero content-container">
         <div className="player-avatar" style={{ backgroundImage: `url(${avatarUrl(info?.avatar)})` }} />
@@ -279,7 +258,7 @@ function PlayerPage() {
                     {item.type && <span className="pill ghost">{item.type}</span>}
                   </div>
                   <div className="activity-content">
-                    <p className="activity-title">{item.msg || item.title || item.text || t('player.activity.unknown')}</p>
+                    <p className="activity-title">{item.title || item.text || t('player.activity.unknown')}</p>
                     {item.desc && <p className="activity-desc">{item.desc}</p>}
                   </div>
                   {item.link && (
@@ -387,23 +366,8 @@ function PlayerPage() {
         )}
       </div>
 
-      <Footer
-        links={[
-          { label: 'Discord', href: 'https://discord.gg/unk9hgF' },
-          { label: 'Facebook', href: 'https://www.facebook.com/MalodyHome' },
-          { label: 'Sina', href: 'http://weibo.com/u/5351167572' },
-        ]}
-        showLanguageSelector
-      />
-
-      {authOpen && (
-        <AuthModal
-          mode={authMode}
-          onClose={() => setAuthOpen(false)}
-          onSuccess={({ username }) => setUserName(username)}
-        />
-      )}
-    </div>
+      {auth.modal}
+    </PageLayout>
   )
 }
 

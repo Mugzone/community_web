@@ -1,8 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
-import AuthModal from '../components/AuthModal'
 import CommentThread from '../components/CommentThread'
-import Footer from '../components/Footer'
-import Topbar from '../components/Topbar'
+import PageLayout from '../components/PageLayout'
+import { useAuthModal } from '../components/useAuthModal'
 import { useI18n, type Locale } from '../i18n'
 import {
   addComment,
@@ -13,14 +12,12 @@ import {
   fetchWiki,
   fetchWikiTemplate,
   getSession,
-  setSession,
   type RespSkinBuyData,
   type RespSkinListItem,
 } from '../network/api'
 import { coverUrl, modeLabelsFromMask } from '../utils/formatters'
 import { renderWiki, type WikiTemplate } from '../utils/wiki'
 import { applyTemplateHtml, renderTemplateHtml } from '../utils/wikiTemplates'
-import './home.css'
 import './skin-detail.css'
 import '../components/comment.css'
 import './wiki.css'
@@ -60,6 +57,7 @@ const formatUpdated = (value?: number) => {
 
 function SkinDetailPage() {
   const { t, lang } = useI18n()
+  const auth = useAuthModal()
   const skinId = useMemo(() => parseSkinId(), [])
   const wikiKey = skinId ? `skin_${skinId}` : undefined
   const commentCid = skinId ? skinId + SKIN_COMMENT_OFFSET : undefined
@@ -80,10 +78,6 @@ function SkinDetailPage() {
   const [wikiLoading, setWikiLoading] = useState(false)
   const [templateLoading, setTemplateLoading] = useState(false)
   const [templateError, setTemplateError] = useState('')
-
-  const [authOpen, setAuthOpen] = useState(false)
-  const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin')
-  const [userName, setUserName] = useState<string>()
 
   const renderOptions = useMemo(
     () => ({
@@ -234,8 +228,7 @@ function SkinDetailPage() {
     const session = getSession()
     if (!session || session.uid === 1) {
       setPurchaseError(t('skinDetail.error.auth'))
-      setAuthMode('signin')
-      setAuthOpen(true)
+      auth.openAuth('signin')
       return
     }
     setPurchaseLoading(true)
@@ -285,22 +278,7 @@ function SkinDetailPage() {
   const downloadReady = purchaseData?.url
 
   return (
-    <div className="page skin-detail-page">
-      <Topbar
-        onSignIn={() => {
-          setAuthMode('signin')
-          setAuthOpen(true)
-        }}
-        onSignUp={() => {
-          setAuthMode('signup')
-          setAuthOpen(true)
-        }}
-        onSignOut={() => {
-          setSession(undefined)
-          setUserName(undefined)
-        }}
-        userName={userName}
-      />
+    <PageLayout className="skin-detail-page" topbarProps={auth.topbarProps}>
 
       <header className="skin-detail-hero content-container">
         <div className="skin-cover" style={{ backgroundImage: `url(${skin?.coverUrl || coverUrl()})` }} />
@@ -418,32 +396,14 @@ function SkinDetailPage() {
               fetchComments={commentFetcher}
               submitComment={commentSubmitter}
               deleteComment={commentDeleter}
-              onRequireAuth={() => {
-                setAuthMode('signin')
-                setAuthOpen(true)
-              }}
+              onRequireAuth={() => auth.openAuth('signin')}
             />
           </div>
         </section>
       </main>
 
-      <Footer
-        links={[
-          { label: 'Discord', href: 'https://discord.gg/unk9hgF' },
-          { label: 'Facebook', href: 'https://www.facebook.com/MalodyHome' },
-          { label: 'Sina', href: 'http://weibo.com/u/5351167572' },
-        ]}
-        showLanguageSelector
-      />
-
-      {authOpen && (
-        <AuthModal
-          mode={authMode}
-          onClose={() => setAuthOpen(false)}
-          onSuccess={({ username }) => setUserName(username)}
-        />
-      )}
-    </div>
+      {auth.modal}
+    </PageLayout>
   )
 }
 

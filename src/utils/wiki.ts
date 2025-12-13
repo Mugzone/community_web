@@ -1,11 +1,13 @@
-const enum BlockMode {
-  None = 0,
-  List = 1,
-  Table = 2,
-  Org = 3,
-  Block = 4,
-  Template = 5,
-}
+const BlockMode = {
+  None: 0,
+  List: 1,
+  Table: 2,
+  Org: 3,
+  Block: 4,
+  Template: 5,
+} as const
+
+type BlockMode = (typeof BlockMode)[keyof typeof BlockMode]
 
 export type WikiTemplate = {
   name: string
@@ -293,7 +295,7 @@ export const renderWiki = (content: string, options: WikiRenderOptions): WikiRen
   const lines = content.split(/\r?\n/)
   const output: string[] = []
   const templates: WikiTemplate[] = []
-  let mode = BlockMode.None
+  let mode: BlockMode = BlockMode.None
   let inHidden = false
   let inTemplate = false
   let templateLines: string[] = []
@@ -421,16 +423,7 @@ export const renderWiki = (content: string, options: WikiRenderOptions): WikiRen
       }
 
       if (mode === BlockMode.None && line === '"""') {
-        mode = BlockMode.None
-        return
-      }
-
-      if (mode === BlockMode.Org) {
-        if (line === '"""') {
-          mode = BlockMode.None
-          return
-        }
-        output.push(`<p>${escapeHtml(line)}</p>`)
+        mode = BlockMode.Org
         return
       }
 

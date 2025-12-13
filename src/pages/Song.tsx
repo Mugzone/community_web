@@ -1,21 +1,18 @@
 import { useEffect, useMemo, useState } from 'react'
-import AuthModal from '../components/AuthModal'
-import Footer from '../components/Footer'
-import Topbar from '../components/Topbar'
+import PageLayout from '../components/PageLayout'
+import { useAuthModal } from '../components/useAuthModal'
 import { useI18n } from '../i18n'
 import {
   fetchSongCharts,
   fetchSongInfo,
   fetchWiki,
   fetchWikiTemplate,
-  setSession,
   type RespSongChartsItem,
   type RespSongInfo,
 } from '../network/api'
 import { coverUrl, modeLabel } from '../utils/formatters'
 import { renderWiki, type WikiTemplate } from '../utils/wiki'
 import { applyTemplateHtml, renderTemplateHtml } from '../utils/wikiTemplates'
-import './home.css'
 import './song.css'
 import './wiki.css'
 
@@ -36,6 +33,7 @@ const formatSeconds = (value?: number) => {
 
 function SongPage() {
   const { t } = useI18n()
+  const auth = useAuthModal()
   const songId = useMemo(() => parseSongId(), [])
   const [info, setInfo] = useState<RespSongInfo>()
   const [charts, setCharts] = useState<RespSongChartsItem[]>([])
@@ -50,9 +48,6 @@ function SongPage() {
   const [baseWiki, setBaseWiki] = useState('')
   const [wikiTemplates, setWikiTemplates] = useState<WikiTemplate[]>([])
   const [templateError, setTemplateError] = useState('')
-  const [authOpen, setAuthOpen] = useState(false)
-  const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin')
-  const [userName, setUserName] = useState<string>()
 
   const renderOptions = useMemo(
     () => ({
@@ -211,22 +206,7 @@ function SongPage() {
   }
 
   return (
-    <div className="page song-page">
-      <Topbar
-        onSignIn={() => {
-          setAuthMode('signin')
-          setAuthOpen(true)
-        }}
-        onSignUp={() => {
-          setAuthMode('signup')
-          setAuthOpen(true)
-        }}
-        onSignOut={() => {
-          setSession(undefined)
-          setUserName(undefined)
-        }}
-        userName={userName}
-      />
+    <PageLayout className="song-page" topbarProps={auth.topbarProps}>
 
       <header className="song-hero content-container">
         <div className="song-cover" style={{ backgroundImage: `url(${coverUrl(info?.cover)})` }} />
@@ -333,23 +313,8 @@ function SongPage() {
         </section>
       </main>
 
-      <Footer
-        links={[
-          { label: 'Discord', href: 'https://discord.gg/unk9hgF' },
-          { label: 'Facebook', href: 'https://www.facebook.com/MalodyHome' },
-          { label: 'Sina', href: 'http://weibo.com/u/5351167572' },
-        ]}
-        showLanguageSelector
-      />
-
-      {authOpen && (
-        <AuthModal
-          mode={authMode}
-          onClose={() => setAuthOpen(false)}
-          onSuccess={({ username }) => setUserName(username)}
-        />
-      )}
-    </div>
+      {auth.modal}
+    </PageLayout>
   )
 }
 

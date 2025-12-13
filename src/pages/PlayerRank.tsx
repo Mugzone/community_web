@@ -1,12 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
-import AuthModal from '../components/AuthModal'
-import Footer from '../components/Footer'
-import Topbar from '../components/Topbar'
-import { fetchGlobalRank, setSession } from '../network/api'
+import PageLayout from '../components/PageLayout'
+import { useAuthModal } from '../components/useAuthModal'
+import { fetchGlobalRank } from '../network/api'
 import type { RespGlobalRankItem } from '../network/api'
 import { avatarUrl } from '../utils/formatters'
 import { useI18n } from '../i18n'
-import './home.css'
 import './player-rank.css'
 
 type RankType = 'exp' | 'mm'
@@ -25,6 +23,7 @@ const modeMeta = [
 
 function PlayerRankPage() {
   const { t } = useI18n()
+  const auth = useAuthModal()
   const [rankType, setRankType] = useState<RankType>('exp')
   const [mode, setMode] = useState(0)
   const [rows, setRows] = useState<RespGlobalRankItem[]>([])
@@ -32,9 +31,6 @@ function PlayerRankPage() {
   const [error, setError] = useState('')
   const [hasMore, setHasMore] = useState(false)
   const [next, setNext] = useState<number | undefined>()
-  const [authOpen, setAuthOpen] = useState(false)
-  const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin')
-  const [userName, setUserName] = useState<string>()
   const modeOptions = useMemo(
     () =>
       modeMeta.map((item) => ({
@@ -80,22 +76,7 @@ function PlayerRankPage() {
   }, [rankType, mode])
 
   return (
-    <div className="page">
-      <Topbar
-        onSignIn={() => {
-          setAuthMode('signin')
-          setAuthOpen(true)
-        }}
-        onSignUp={() => {
-          setAuthMode('signup')
-          setAuthOpen(true)
-        }}
-        onSignOut={() => {
-          setSession(undefined)
-          setUserName(undefined)
-        }}
-        userName={userName}
-      />
+    <PageLayout topbarProps={auth.topbarProps}>
 
       <section className="rank-hero">
         <div>
@@ -188,23 +169,8 @@ function PlayerRankPage() {
           )}
         </div>
       </div>
-
-      <Footer
-        links={[
-          { label: 'Discord', href: 'https://discord.gg/unk9hgF' },
-          { label: 'Facebook', href: 'https://www.facebook.com/MalodyHome' },
-          { label: 'Sina', href: 'http://weibo.com/u/5351167572' },
-        ]}
-      />
-
-      {authOpen && (
-        <AuthModal
-          mode={authMode}
-          onClose={() => setAuthOpen(false)}
-          onSuccess={({ username }) => setUserName(username)}
-        />
-      )}
-    </div>
+      {auth.modal}
+    </PageLayout>
   )
 }
 

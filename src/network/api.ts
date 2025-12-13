@@ -1,4 +1,4 @@
-const API_BASE = (import.meta.env.VITE_API_BASE ?? '/api').replace(/\/$/, '')
+const API_BASE = (import.meta.env.VITE_API_BASE ?? 'https://api.mugzone.net/api').replace(/\/$/, '')
 const resolveApiOrigin = () => {
   if (typeof window === 'undefined') return undefined
   try {

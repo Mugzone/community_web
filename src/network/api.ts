@@ -33,11 +33,13 @@ export type AuthSession = {
   uid: number
   key: string
   storeKey?: string
+  username?: string
 }
 
 const STORAGE_KEY = 'auth_key'
 const STORAGE_UID = 'auth_uid'
 const STORAGE_STORE_KEY = 'auth_store_key'
+const STORAGE_USERNAME = 'auth_username'
 
 let cachedSession: AuthSession | undefined
 let sessionPromise: Promise<AuthSession> | undefined
@@ -63,10 +65,11 @@ const loadStoredSession = (): AuthSession | undefined => {
   const key = localStorage.getItem(STORAGE_KEY)
   const uid = localStorage.getItem(STORAGE_UID)
   const storeKey = localStorage.getItem(STORAGE_STORE_KEY) ?? undefined
+  const username = localStorage.getItem(STORAGE_USERNAME) ?? undefined
   if (!key || !uid) return undefined
   const parsedUid = Number(uid)
   if (!Number.isFinite(parsedUid)) return undefined
-  cachedSession = { uid: parsedUid, key, storeKey: storeKey || undefined }
+  cachedSession = { uid: parsedUid, key, storeKey: storeKey || undefined, username: username || undefined }
   return cachedSession
 }
 
@@ -76,6 +79,7 @@ export const setSession = (session?: AuthSession) => {
     localStorage.removeItem(STORAGE_KEY)
     localStorage.removeItem(STORAGE_UID)
     localStorage.removeItem(STORAGE_STORE_KEY)
+    localStorage.removeItem(STORAGE_USERNAME)
     return
   }
   localStorage.setItem(STORAGE_KEY, session.key)
@@ -84,6 +88,11 @@ export const setSession = (session?: AuthSession) => {
     localStorage.setItem(STORAGE_STORE_KEY, session.storeKey)
   } else {
     localStorage.removeItem(STORAGE_STORE_KEY)
+  }
+  if (session.username) {
+    localStorage.setItem(STORAGE_USERNAME, session.username)
+  } else {
+    localStorage.removeItem(STORAGE_USERNAME)
   }
 }
 
@@ -234,7 +243,7 @@ export type RespPlayerActivityItem = {
   text?: string
   type?: string
   value?: string
-  title?: string
+  msg?: string
   desc?: string
   link?: string
 }
@@ -641,7 +650,6 @@ export const fetchWiki = (params: {
   sid?: number
   cid?: number
   pid?: number
-  key?: string
   raw?: number
 }) =>
   getJson<RespWiki>('/community/wiki', { params })
@@ -653,9 +661,10 @@ export const saveWiki = (payload: {
   sid?: number
   cid?: number
   pid?: number
-  key?: string
+  uid: number
 }) =>
   postForm<RespSaveWiki>('/community/wiki', {
+    params: { uid: payload.uid },
     body: {
       wiki: payload.wiki,
       lang: payload.lang,
@@ -663,12 +672,11 @@ export const saveWiki = (payload: {
       sid: payload.sid,
       cid: payload.cid,
       pid: payload.pid,
-      key: payload.key,
     },
   })
 
 export const fetchWikiTemplate = (params: { name: string } & Record<string, string | number | undefined>) =>
-  getJson<RespWikiTemplate>('/web/wiki/template', { params, auth: false })
+  getJson<RespWikiTemplate>('/web/wiki/template', { params })
 
 export const login = (payload: { name: string; psw: string; ver?: number; h?: string; bver?: number }) =>
   postForm<RespLogin>('/account/login/wt', {

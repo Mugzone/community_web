@@ -5,11 +5,11 @@ import NewsList from '../components/NewsList'
 import StatGrid from '../components/StatGrid'
 import PageLayout from '../components/PageLayout'
 import { useAuthModal } from '../components/useAuthModal'
-import { fetchBasicInfo, fetchStoreList, fetchStorePromote } from '../network/api'
+import { fetchBasicInfo, fetchStoreList } from '../network/api'
 import type { RespBasicInfoNews, RespStoreListItem } from '../network/api'
 import type {  MapItem, NewsItem, StatItem } from '../types/content'
 import { useI18n } from '../i18n'
-import { coverUrl, modeLabel } from '../utils/formatters'
+import { coverUrl, modeLabel, modeLabelsFromMask } from '../utils/formatters'
 import './home.css'
 
 // const bannerItems: BannerItem[] = [
@@ -38,7 +38,11 @@ const statMeta = [
 const mapStoreToCard = (item: RespStoreListItem): MapItem => ({
   title: item.title,
   artist: item.artist,
-  mode: modeLabel(item.mode),
+  mode: (() => {
+    const labels = modeLabelsFromMask(item.mode)
+    const limited = labels.slice(0, 4)
+    return labels.length > limited.length ? `${limited.join(' / ')} ...` : limited.join(' / ') || modeLabel(item.mode)
+  })(),
   cover: coverUrl(item.cover),
   link: `/song/${item.sid}`,
   tags: item.tags,
@@ -49,7 +53,7 @@ function HomePage() {
   const auth = useAuthModal()
   const [newsItems, setNewsItems] = useState<NewsItem[]>([])
   const [arrivalItems, setArrivalItems] = useState<MapItem[]>([])
-  const [weeklyItems, setWeeklyItems] = useState<MapItem[]>([])
+  // const [setWeeklyItems] = useState<MapItem[]>([])
   const wikiEntry = useMemo(
     () => ({
       title: t('wiki.testEntry.title'),
@@ -102,15 +106,15 @@ function HomePage() {
         setArrivalItems([])
       })
 
-    fetchStorePromote({ from: 0, free: 0 })
-      .then((res) => {
-        if (res.code !== 0 || !res.data) return
-        const mapped = res.data.slice(0, 8).map(mapStoreToCard)
-        if (mapped.length) setWeeklyItems(mapped)
-      })
-      .catch(() => {
-        setWeeklyItems([])
-      })
+    // fetchStorePromote({ from: 0, free: 0 })
+    //   .then((res) => {
+    //     if (res.code !== 0 || !res.data) return
+    //     const mapped = res.data.slice(0, 8).map(mapStoreToCard)
+    //     if (mapped.length) setWeeklyItems(mapped)
+    //   })
+    //   .catch(() => {
+    //     setWeeklyItems([])
+    //   })
   }, [wikiEntry])
 
   return (
@@ -169,23 +173,23 @@ function HomePage() {
         )}
       </section>
 
-      <section className="section">
-        <div className="section-header">
-          <h2>{t('home.section.weeklyShow')}</h2>
-          <a className="link" href="/all_chart?type=3">
-            {t('home.section.more')}
-          </a>
-        </div>
-        {weeklyItems.length ? (
-          <div className="map-grid">
-            {weeklyItems.map((item) => (
-              <MapCard item={item} key={item.title} />
-            ))}
-          </div>
-        ) : (
-          <div className="home-empty-card">{t('home.empty.weekly')}</div>
-        )}
-      </section>
+      {/*<section className="section">*/}
+      {/*  <div className="section-header">*/}
+      {/*    <h2>{t('home.section.weeklyShow')}</h2>*/}
+      {/*    <a className="link" href="/all_chart?type=3">*/}
+      {/*      {t('home.section.more')}*/}
+      {/*    </a>*/}
+      {/*  </div>*/}
+      {/*  {weeklyItems.length ? (*/}
+      {/*    <div className="map-grid">*/}
+      {/*      {weeklyItems.map((item) => (*/}
+      {/*        <MapCard item={item} key={item.title} />*/}
+      {/*      ))}*/}
+      {/*    </div>*/}
+      {/*  ) : (*/}
+      {/*    <div className="home-empty-card">{t('home.empty.weekly')}</div>*/}
+      {/*  )}*/}
+      {/*</section>*/}
 
       {auth.modal}
     </PageLayout>

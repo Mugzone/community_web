@@ -256,6 +256,13 @@
   gap: 0.5rem;
 }
 
+.news-meta {
+  display: flex;
+  gap: 0.35rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
 .news a {
   color: var(--color-text);
   font-weight: 600;

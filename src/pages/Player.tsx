@@ -7,13 +7,18 @@ import {
   fetchPlayerAllRank,
   fetchPlayerCharts,
   fetchPlayerInfo,
+  fetchWiki,
+  fetchWikiTemplate,
   type RespPlayerActivityItem,
   type RespPlayerAllRankItem,
   type RespPlayerChartItem,
   type RespPlayerInfoData,
 } from '../network/api'
 import { avatarUrl, coverUrl, modeLabel } from '../utils/formatters'
+import { renderWiki, type WikiTemplate } from '../utils/wiki'
+import { applyTemplateHtml, renderTemplateHtml } from '../utils/wikiTemplates'
 import './player.css'
+import './wiki.css'
 
 const parsePlayerId = () => {
   const match = window.location.pathname.match(/(?:\/player\/|\/accounts\/user\/)(\d+)/)
@@ -38,7 +43,7 @@ const formatDate = (ts?: number) => {
 }
 
 function PlayerPage() {
-  const { t } = useI18n()
+  const { t, lang } = useI18n()
   const playerId = useMemo(() => parsePlayerId(), [])
   const auth = useAuthModal()
 
@@ -57,6 +62,13 @@ function PlayerPage() {
   const [ranks, setRanks] = useState<RespPlayerAllRankItem[]>([])
   const [rankError, setRankError] = useState('')
   const [rankLoading, setRankLoading] = useState(false)
+  const [wikiHtml, setWikiHtml] = useState('')
+  const [wikiBase, setWikiBase] = useState('')
+  const [wikiTemplates, setWikiTemplates] = useState<WikiTemplate[]>([])
+  const [wikiLoading, setWikiLoading] = useState(false)
+  const [wikiError, setWikiError] = useState('')
+  const [wikiTemplateLoading, setWikiTemplateLoading] = useState(false)
+  const [wikiTemplateError, setWikiTemplateError] = useState('')
   const infoLoadedRef = useRef<number | undefined>(undefined)
   const activityLoadedRef = useRef<number | undefined>(undefined)
   const chartsLoadedRef = useRef<number | undefined>(undefined)
@@ -180,6 +192,108 @@ function PlayerPage() {
     loadRanks()
   }, [playerId, t])
 
+  const renderOptions = useMemo(
+    () => ({
+      hiddenLabel: t('wiki.hiddenLabel'),
+      templateLabel: t('wiki.templateLabel'),
+      templateLoading: t('wiki.template.loading'),
+    }),
+    [t],
+  )
+
+  useEffect(() => {
+    if (!playerId) {
+      setWikiBase('')
+      setWikiTemplates([])
+      setWikiHtml('')
+      setWikiError('')
+      return
+    }
+    let cancelled = false
+    const langValue = lang === 'zh-CN' ? 1 : lang === 'ja' ? 2 : 0
+    setWikiLoading(true)
+    setWikiError('')
+    fetchWiki({ touid: playerId, lang: langValue, raw: 1 })
+      .then((resp) => {
+        if (cancelled) return
+        if (resp.code !== 0 || !resp.wiki) {
+          setWikiBase('')
+          setWikiTemplates([])
+          setWikiHtml('')
+          return
+        }
+        if (resp.raw === false) {
+          setWikiBase(resp.wiki)
+          setWikiTemplates([])
+        } else {
+          const parsed = renderWiki(resp.wiki, renderOptions)
+          setWikiBase(parsed.html)
+          setWikiTemplates(parsed.templates)
+        }
+      })
+      .catch((err) => {
+        console.error(err)
+        if (cancelled) return
+        setWikiError(t('player.wiki.error'))
+        setWikiBase('')
+        setWikiTemplates([])
+        setWikiHtml('')
+      })
+      .finally(() => {
+        if (!cancelled) setWikiLoading(false)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [lang, playerId, renderOptions, t])
+
+  useEffect(() => {
+    if (!wikiBase) {
+      setWikiHtml('')
+      setWikiTemplateError('')
+      setWikiTemplateLoading(false)
+      return
+    }
+    if (!wikiTemplates.length) {
+      setWikiHtml(wikiBase)
+      setWikiTemplateLoading(false)
+      return
+    }
+    let cancelled = false
+    const loadTemplates = async () => {
+      setWikiTemplateLoading(true)
+      setWikiTemplateError('')
+      try {
+        const blocks = await Promise.all(
+          wikiTemplates.map(async (tmpl) => {
+            try {
+              const resp = await fetchWikiTemplate({ name: tmpl.name, ...tmpl.params })
+              if (resp.code !== 0) return renderTemplateHtml(t, tmpl, resp)
+              return renderTemplateHtml(t, tmpl, resp)
+            } catch (err) {
+              console.error(err)
+              return `<div class="wiki-template-placeholder wiki-template-warning">${t('wiki.template.error')}</div>`
+            }
+          }),
+        )
+        if (cancelled) return
+        const merged = applyTemplateHtml(wikiBase, blocks)
+        setWikiHtml(merged)
+      } catch (err) {
+        console.error(err)
+        if (cancelled) return
+        setWikiTemplateError(t('wiki.template.error'))
+        setWikiHtml(wikiBase)
+      } finally {
+        if (!cancelled) setWikiTemplateLoading(false)
+      }
+    }
+    loadTemplates()
+    return () => {
+      cancelled = true
+    }
+  }, [t, wikiBase, wikiTemplates])
+
   const displayName = info?.name || info?.username || t('player.placeholder.name')
   const wikiLink = playerId ? `/wiki?touid=${playerId}` : '/wiki'
 
@@ -252,14 +366,14 @@ function PlayerPage() {
             )}
             <div className="player-activity-list">
               {activities.map((item, idx) => (
-                <div className="activity-item" key={`${item.time ?? idx}-${item.title ?? item.text ?? idx}`}>
+                <div className="activity-item" key={`${item.time ?? idx}-${item.msg ?? item.text ?? idx}`}>
                   <div className="activity-meta">
                     <span className="pill ghost">{formatTime(item.time)}</span>
                     {item.type && <span className="pill ghost">{item.type}</span>}
                   </div>
                   <div className="activity-content">
-                    <p className="activity-title">{item.title || item.text || t('player.activity.unknown')}</p>
-                    {item.desc && <p className="activity-desc">{item.desc}</p>}
+                    <p className="activity-title">{item.msg || item.text || t('player.activity.unknown')}</p>
+                    {item.desc && <p className="activity-desc">{item.msg}</p>}
                   </div>
                   {item.link && (
                     <a className="activity-link" href={item.link}>
@@ -359,9 +473,26 @@ function PlayerPage() {
                 {t('player.wikiLink')}
               </a>
             </div>
-            <div className="player-wiki-placeholder">
-              <p className="player-wiki-text">{t('player.wiki.desc')}</p>
-            </div>
+            {wikiError && <div className="player-error">{wikiError}</div>}
+            {(wikiLoading || wikiTemplateLoading) && !wikiError && (
+              <div className="player-skeleton">
+                <div className="line wide" />
+                <div className="line" />
+                <div className="line" />
+              </div>
+            )}
+            {!wikiLoading && !wikiError && (
+              <>
+                {wikiTemplateError && <div className="player-error">{wikiTemplateError}</div>}
+                {wikiHtml ? (
+                  <div className="wiki-body" dangerouslySetInnerHTML={{ __html: wikiHtml }} />
+                ) : (
+                  <div className="player-wiki-placeholder">
+                    <p className="player-wiki-text">{t('player.wiki.empty')}</p>
+                  </div>
+                )}
+              </>
+            )}
           </section>
         )}
       </div>

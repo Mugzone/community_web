@@ -76,8 +76,13 @@ function AuthModal({ mode, onClose, onSuccess }: AuthModalProps) {
       }
 
       if (resp.uid && (resp.token || resp.tokenStore)) {
-        setSession({ uid: resp.uid, key: resp.token ?? resp.tokenStore ?? '', storeKey: resp.tokenStore })
         const fallbackName = name.trim()
+        setSession({
+          uid: resp.uid,
+          key: resp.token ?? resp.tokenStore ?? '',
+          storeKey: resp.tokenStore,
+          username: resp.username ?? fallbackName,
+        })
         onSuccess?.({ username: resp.username ?? fallbackName, uid: resp.uid })
       }
       onClose()

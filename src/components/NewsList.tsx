@@ -8,12 +8,12 @@ type NewsListProps = {
 function NewsList({ items }: NewsListProps) {
   const { t } = useI18n()
 
-  const renderTag = (tag?: string) => {
-    if (!tag) return null
-    const key = `tag.${tag.toLowerCase()}`
-    const translated = t(key)
-    const label = translated === key ? tag : translated
-    return <span className="pill ghost">{label}</span>
+  const formatTime = (ts?: number) => {
+    if (!ts) return ''
+    const ms = ts < 1_000_000_000_000 ? ts * 1000 : ts
+    const date = new Date(ms)
+    if (Number.isNaN(date.getTime())) return ''
+    return date.toLocaleDateString()
   }
 
   if (!items.length) {
@@ -29,7 +29,11 @@ function NewsList({ items }: NewsListProps) {
       <ul>
         {items.map((item) => (
           <li key={item.title}>
-            {renderTag(item.tag)}
+            {(item.time || item.tag) && (
+              <div className="news-meta">
+                {item.time && <span className="pill ghost">{formatTime(item.time)}</span>}
+              </div>
+            )}
             <a href={item.link}>{item.title}</a>
           </li>
         ))}

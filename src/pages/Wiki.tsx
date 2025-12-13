@@ -15,7 +15,6 @@ type WikiParams = {
   sid?: number
   cid?: number
   touid?: number
-  key?: string
 }
 
 const localeToLang: Record<Locale, number> = {
@@ -41,14 +40,12 @@ const parseLocationParams = () => {
       sid: readNumber('sid'),
       cid: readNumber('cid'),
       touid: readNumber('touid'),
-      key: search.get('key') ?? undefined,
     },
     lang: readNumber('lang'),
   }
 }
 
 const buildFallbackTitle = (context: WikiContext, params: WikiParams, t: ReturnType<typeof useI18n>['t']) => {
-  if (params.key) return params.key
   if (context === 'chart' && params.cid) return t('wiki.title.chart', { id: params.cid })
   if (context === 'song' && params.sid) return t('wiki.title.song', { id: params.sid })
   if (context === 'user' && params.touid) return t('wiki.title.user', { id: params.touid })
@@ -85,7 +82,7 @@ function WikiPage() {
   const contentRef = useRef<HTMLDivElement>(null)
 
   const context: WikiContext = params.cid ? 'chart' : params.sid ? 'song' : params.touid ? 'user' : 'page'
-  const hasTarget = Boolean(params.key || params.pid || params.sid || params.cid || params.touid)
+  const hasTarget = Boolean(params.pid || params.sid || params.cid || params.touid)
   const renderOptions = useMemo(
     () => ({
       hiddenLabel: t('wiki.hiddenLabel'),
@@ -247,7 +244,7 @@ function WikiPage() {
     setPendingSave(false)
     setSaving(true)
     try {
-      const resp = await saveWiki({ ...params, lang: langValue, wiki: draft })
+      const resp = await saveWiki({ ...params, lang: langValue, wiki: draft, uid: session.uid })
       if (resp.code !== 0) {
         if (resp.code === -5) {
           setPendingSave(true)

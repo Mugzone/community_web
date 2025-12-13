@@ -23,7 +23,7 @@ function Topbar({ onSignIn, onSignUp, onSignOut, userName, userId }: TopbarProps
   const session = getSession()
   const validSession = session && session.uid !== 1 ? session : undefined
   const uid = userId ?? validSession?.uid
-  const displayName = userName ?? (uid ? `UID ${uid}` : undefined)
+  const displayName = userName ?? validSession?.username ?? (uid ? `UID ${uid}` : undefined)
 
   return (
     <div className="topbar">

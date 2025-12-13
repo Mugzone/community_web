@@ -19,7 +19,7 @@ import {
   type RespChartInfo,
   type RespRanking,
 } from '../network/api'
-import { avatarUrl, coverUrl, modeLabel } from '../utils/formatters'
+import {avatarUidUrl, coverUrl, modeLabel} from '../utils/formatters'
 import { applyTemplateHtml, renderTemplateHtml } from '../utils/wikiTemplates'
 import { renderWiki, type WikiTemplate } from '../utils/wiki'
 import './chart.css'
@@ -53,8 +53,7 @@ const formatSeconds = (value?: number) => {
 type RankFilters = {
   pro: boolean
   sort: 'score' | 'combo' | 'acc'
-  noMod: boolean
-  noSpeed: boolean
+  mod: 'all' | 'noMod' | 'noSpeed' | 'noModNoSpeed'
 }
 
 function ChartPage() {
@@ -76,8 +75,7 @@ function ChartPage() {
   const [rankFilters, setRankFilters] = useState<RankFilters>({
     pro: false,
     sort: 'score',
-    noMod: false,
-    noSpeed: false,
+    mod: 'all',
   })
 
   const [donateList, setDonateList] = useState<RespChartDonate[]>([])
@@ -128,8 +126,8 @@ function ChartPage() {
     let order = 0
     if (filters.sort === 'combo') order |= 1
     if (filters.sort === 'acc') order |= 2
-    if (filters.noMod) order |= 4
-    if (filters.noSpeed) order |= 8
+    if (filters.mod === 'noMod' || filters.mod === 'noModNoSpeed') order |= 4
+    if (filters.mod === 'noSpeed' || filters.mod === 'noModNoSpeed') order |= 8
     return order
   }
 
@@ -385,7 +383,7 @@ function ChartPage() {
           <div className="chart-rank-row" key={`${item.uid}-${item.time}-${item.score}`}>
             <span className="chart-rank-pos">{item.ranking ?? '-'}</span>
             <a className="chart-rank-player" href={`/player/${item.uid}`}>
-              <img className="chart-rank-avatar" src={avatarUrl(item.avatar)} alt={item.username || t('chart.ranking.unknown')} />
+              <img className="chart-rank-avatar" src={avatarUidUrl(item.uid)} alt={item.username || t('chart.ranking.unknown')} />
               <span>{item.username || t('chart.ranking.unknown')}</span>
             </a>
             <span>{item.score}</span>
@@ -503,29 +501,21 @@ function ChartPage() {
                     <option value="acc">{t('chart.ranking.sort.acc')}</option>
                   </select>
                 </label>
-                <label className="chart-rank-checkbox">
-                  <input
-                    type="checkbox"
-                    checked={rankFilters.noMod}
+                <label>
+                  <span>{t('chart.ranking.modFilter')}</span>
+                  <select
+                    value={rankFilters.mod}
                     onChange={(e) => {
-                      const next = { ...rankFilters, noMod: e.target.checked }
+                      const next = { ...rankFilters, mod: e.target.value as RankFilters['mod'] }
                       setRankFilters(next)
                       loadRanking(next)
                     }}
-                  />
-                  <span>{t('chart.ranking.noMod')}</span>
-                </label>
-                <label className="chart-rank-checkbox">
-                  <input
-                    type="checkbox"
-                    checked={rankFilters.noSpeed}
-                    onChange={(e) => {
-                      const next = { ...rankFilters, noSpeed: e.target.checked }
-                      setRankFilters(next)
-                      loadRanking(next)
-                    }}
-                  />
-                  <span>{t('chart.ranking.noSpeed')}</span>
+                  >
+                    <option value="all">{t('chart.ranking.mod.all')}</option>
+                    <option value="noMod">{t('chart.ranking.noMod')}</option>
+                    <option value="noSpeed">{t('chart.ranking.noSpeed')}</option>
+                    <option value="noModNoSpeed">{t('chart.ranking.noModNoSpeed')}</option>
+                  </select>
                 </label>
               </div>
               {renderRankingTable()}

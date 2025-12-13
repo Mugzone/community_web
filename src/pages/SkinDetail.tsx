@@ -59,7 +59,6 @@ function SkinDetailPage() {
   const { t, lang } = useI18n()
   const auth = useAuthModal()
   const skinId = useMemo(() => parseSkinId(), [])
-  const wikiKey = skinId ? `skin_${skinId}` : undefined
   const commentCid = skinId ? skinId + SKIN_COMMENT_OFFSET : undefined
   const langValue = localeToLang[lang] ?? 0
 
@@ -132,7 +131,7 @@ function SkinDetailPage() {
   }, [skinId, t])
 
   useEffect(() => {
-    if (!wikiKey) {
+    if (!skinId) {
       setWikiBase('')
       setWikiTemplates([])
       setWikiHtml('')
@@ -142,7 +141,7 @@ function SkinDetailPage() {
     let cancelled = false
     setWikiLoading(true)
     setWikiError('')
-    fetchWiki({ key: wikiKey, lang: langValue, raw: 1 })
+    fetchWiki({ sid: skinId, lang: langValue, raw: 1 })
       .then((resp) => {
         if (cancelled) return
         if (resp.code !== 0 || !resp.wiki) {
@@ -174,7 +173,7 @@ function SkinDetailPage() {
     return () => {
       cancelled = true
     }
-  }, [langValue, renderOptions, t, wikiKey])
+  }, [langValue, renderOptions, skinId, t])
 
   useEffect(() => {
     if (!wikiBase) {
@@ -358,8 +357,8 @@ function SkinDetailPage() {
               <p className="eyebrow">{t('skinDetail.wiki.eyebrow')}</p>
               <h2>{t('skinDetail.wiki.title')}</h2>
             </div>
-            {wikiKey && (
-              <a className="link" href={`/wiki/?key=${wikiKey}`}>
+            {skinId && (
+              <a className="link" href={`/wiki/?sid=${skinId}`}>
                 {t('skinDetail.wiki.edit')}
               </a>
             )}

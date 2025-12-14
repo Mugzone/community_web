@@ -1,92 +1,98 @@
-import HomePage from './pages/Home'
-import PlayerRankPage from './pages/PlayerRank'
-import ChartListPage from './pages/ChartList'
-import EventListPage from './pages/EventList'
-import SkinListPage from './pages/SkinList'
-import SkinDetailPage from './pages/SkinDetail'
-import WikiPage from './pages/Wiki'
-import SongPage from './pages/Song'
-import SongEditPage from './pages/SongEdit'
-import ChartPage from './pages/Chart'
-import ChartEditPage from './pages/ChartEdit'
-import PlayerPage from './pages/Player'
+import HomePage from "./pages/Home";
+import PlayerRankPage from "./pages/PlayerRank";
+import ChartListPage from "./pages/ChartList";
+import EventListPage from "./pages/EventList";
+import SkinListPage from "./pages/SkinList";
+import SkinDetailPage from "./pages/SkinDetail";
+import WikiPage from "./pages/Wiki";
+import SongPage from "./pages/Song";
+import SongEditPage from "./pages/SongEdit";
+import ChartPage from "./pages/Chart";
+import ChartEditPage from "./pages/ChartEdit";
+import PlayerPage from "./pages/Player";
 
 const isPlayerRankPath = (path: string) => {
-  return path.startsWith('/page/all/player') || path === '/all_player' || path === '/page/all/player/'
-}
+  return (
+    path.startsWith("/page/all/player") ||
+    path === "/all_player" ||
+    path === "/page/all/player/"
+  );
+};
 
 const isChartListPath = (path: string) => {
-  return path.startsWith('/page/all/chart') || path.startsWith('/all_chart')
-}
+  return path.startsWith("/page/all/chart") || path.startsWith("/all_chart");
+};
 
 const isEventPath = (path: string) => {
-  return path.startsWith('/score/event')
-}
+  return path.startsWith("/score/event");
+};
 
-const isSkinDetailPath = (path: string) => path.startsWith('/store/skin/detail') || path.startsWith('/skin/')
+const isSkinDetailPath = (path: string) =>
+  path.startsWith("/store/skin/detail") || path.startsWith("/skin/");
 
-const isSkinListPath = (path: string) => path.startsWith('/store/skin') && !path.startsWith('/store/skin/detail')
+const isSkinListPath = (path: string) =>
+  path.startsWith("/store/skin") && !path.startsWith("/store/skin/detail");
 
 const isWikiPath = (path: string) => {
-  return path.startsWith('/wiki/')
-}
+  return path.startsWith("/wiki/");
+};
 
 const isSongPath = (path: string) => {
-  return path.startsWith('/song/')
-}
+  return path.startsWith("/song/");
+};
 
 const isSongEditPath = (path: string) => {
-  return path.startsWith('/song/') && path.includes('/edit')
-}
+  return path.startsWith("/song/") && path.includes("/edit");
+};
 
 const isChartEditPath = (path: string) => {
-  return path.startsWith('/chart/') && path.includes('/edit')
-}
+  return path.startsWith("/chart/") && path.includes("/edit");
+};
 
 const isChartPath = (path: string) => {
-  return path.startsWith('/chart/')
-}
+  return path.startsWith("/chart/");
+};
 
 const isPlayerPath = (path: string) => {
-  return path.startsWith('/player/') || path.startsWith('/accounts/user/')
-}
+  return path.startsWith("/player/") || path.startsWith("/accounts/user/");
+};
 
 function App() {
-  const path = window.location.pathname
+  const path = window.location.pathname;
   if (isPlayerPath(path)) {
-    return <PlayerPage />
+    return <PlayerPage />;
   }
   if (isSongEditPath(path)) {
-    return <SongEditPage />
+    return <SongEditPage />;
   }
   if (isChartEditPath(path)) {
-    return <ChartEditPage />
+    return <ChartEditPage />;
   }
   if (isChartPath(path)) {
-    return <ChartPage />
+    return <ChartPage />;
   }
   if (isSongPath(path)) {
-    return <SongPage />
+    return <SongPage />;
   }
   if (isWikiPath(path)) {
-    return <WikiPage />
+    return <WikiPage />;
   }
   if (isSkinDetailPath(path)) {
-    return <SkinDetailPage />
+    return <SkinDetailPage />;
   }
   if (isSkinListPath(path)) {
-    return <SkinListPage />
+    return <SkinListPage />;
   }
   if (isEventPath(path)) {
-    return <EventListPage />
+    return <EventListPage />;
   }
   if (isChartListPath(path)) {
-    return <ChartListPage />
+    return <ChartListPage />;
   }
   if (isPlayerRankPath(path)) {
-    return <PlayerRankPage />
+    return <PlayerRankPage />;
   }
-  return <HomePage />
+  return <HomePage />;
 }
 
-export default App
+export default App;

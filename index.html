@@ -1,22 +1,26 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-<!--    <link rel="icon" type="image/svg+xml" href="/vite.svg" />-->
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Malody Community</title>
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet"
+    />
     <script>
-      ;(() => {
-        const storageKey = 'malody-theme'
-        const pref = localStorage.getItem(storageKey) || 'dark'
+      (() => {
+        const storageKey = "malody-theme";
+        const pref = localStorage.getItem(storageKey) || "dark";
         const systemDark =
-          window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
-        const resolved = pref === 'system' ? (systemDark ? 'dark' : 'light') : pref
-        document.documentElement.dataset.theme = resolved
-        document.documentElement.dataset.themePref = pref
-        document.documentElement.style.colorScheme = resolved
-      })()
+          window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: dark)").matches;
+        const resolved =
+          pref === "system" ? (systemDark ? "dark" : "light") : pref;
+        document.documentElement.dataset.theme = resolved;
+        document.documentElement.dataset.themePref = pref;
+        document.documentElement.style.colorScheme = resolved;
+      })();
     </script>
   </head>
   <body>

@@ -1,292 +1,338 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
-import PageLayout from '../components/PageLayout'
-import { useAuthModal } from '../components/useAuthModal'
-import type { Locale } from '../i18n'
-import { useI18n } from '../i18n'
-import { fetchWiki, fetchWikiTemplate, getSession, saveWiki, type RespWiki } from '../network/api'
-import { renderWiki, type WikiTemplate } from '../utils/wiki'
-import { applyTemplateHtml, renderTemplateHtml } from '../utils/wikiTemplates'
-import './wiki.css'
+import { useEffect, useMemo, useRef, useState } from "react";
+import PageLayout from "../components/PageLayout";
+import { useAuthModal } from "../components/UseAuthModal";
+import type { Locale } from "../i18n";
+import { useI18n } from "../i18n";
+import {
+  fetchWiki,
+  fetchWikiTemplate,
+  getSession,
+  saveWiki,
+  type RespWiki,
+} from "../network/api";
+import { renderWiki, type WikiTemplate } from "../utils/wiki";
+import { applyTemplateHtml, renderTemplateHtml } from "../utils/wikiTemplates";
+import "../styles/wiki.css";
 
-type WikiContext = 'page' | 'song' | 'chart' | 'user'
+type WikiContext = "page" | "song" | "chart" | "user";
 
 type WikiParams = {
-  pid?: number
-  sid?: number
-  cid?: number
-  touid?: number
-}
+  pid?: number;
+  sid?: number;
+  cid?: number;
+  touid?: number;
+};
 
 const localeToLang: Record<Locale, number> = {
-  'en-US': 0,
-  'zh-CN': 1,
+  "en-US": 0,
+  "zh-CN": 1,
   ja: 2,
-}
+};
 
 const parseLocationParams = () => {
-  const search = new URLSearchParams(window.location.search)
+  const search = new URLSearchParams(window.location.search);
   const readNumber = (key: string) => {
-    const value = search.get(key)
-    if (value === null || value === undefined || value === '') return undefined
-    const parsed = Number(value)
-    return Number.isFinite(parsed) ? parsed : undefined
-  }
+    const value = search.get(key);
+    if (value === null || value === undefined || value === "") return undefined;
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : undefined;
+  };
 
-  const pidFromPath = window.location.pathname.match(/\/wiki\/(\d+)/)?.[1]
+  const pidFromPath = window.location.pathname.match(/\/wiki\/(\d+)/)?.[1];
 
   return {
     params: {
-      pid: pidFromPath ? Number(pidFromPath) : readNumber('pid'),
-      sid: readNumber('sid'),
-      cid: readNumber('cid'),
-      touid: readNumber('touid'),
+      pid: pidFromPath ? Number(pidFromPath) : readNumber("pid"),
+      sid: readNumber("sid"),
+      cid: readNumber("cid"),
+      touid: readNumber("touid"),
     },
-    lang: readNumber('lang'),
-  }
-}
+    lang: readNumber("lang"),
+  };
+};
 
-const buildFallbackTitle = (context: WikiContext, params: WikiParams, t: ReturnType<typeof useI18n>['t']) => {
-  if (context === 'chart' && params.cid) return t('wiki.title.chart', { id: params.cid })
-  if (context === 'song' && params.sid) return t('wiki.title.song', { id: params.sid })
-  if (context === 'user' && params.touid) return t('wiki.title.user', { id: params.touid })
-  if (params.pid) return t('wiki.title.page', { id: params.pid })
-  return t('wiki.title.fallback')
-}
+const buildFallbackTitle = (
+  context: WikiContext,
+  params: WikiParams,
+  t: ReturnType<typeof useI18n>["t"]
+) => {
+  if (context === "chart" && params.cid)
+    return t("wiki.title.chart", { id: params.cid });
+  if (context === "song" && params.sid)
+    return t("wiki.title.song", { id: params.sid });
+  if (context === "user" && params.touid)
+    return t("wiki.title.user", { id: params.touid });
+  if (params.pid) return t("wiki.title.page", { id: params.pid });
+  return t("wiki.title.fallback");
+};
 
 function WikiPage() {
-  const { t, lang } = useI18n()
-  const { params, lang: urlLang } = useMemo(() => parseLocationParams(), [])
-  const [langValue, setLangValue] = useState<number>(urlLang ?? localeToLang[lang] ?? 0)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
-  const [wikiHtml, setWikiHtml] = useState('')
-  const [baseHtml, setBaseHtml] = useState('')
-  const [templates, setTemplates] = useState<WikiTemplate[]>([])
-  const [title, setTitle] = useState('')
-  const [locked, setLocked] = useState(false)
-  const [draft, setDraft] = useState('')
-  const [editMode, setEditMode] = useState(false)
-  const [saving, setSaving] = useState(false)
-  const [saveError, setSaveError] = useState('')
-  const [saveSuccess, setSaveSuccess] = useState('')
-  const [pendingSave, setPendingSave] = useState(false)
+  const { t, lang } = useI18n();
+  const { params, lang: urlLang } = useMemo(() => parseLocationParams(), []);
+  const [langValue, setLangValue] = useState<number>(
+    urlLang ?? localeToLang[lang] ?? 0
+  );
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [wikiHtml, setWikiHtml] = useState("");
+  const [baseHtml, setBaseHtml] = useState("");
+  const [templates, setTemplates] = useState<WikiTemplate[]>([]);
+  const [title, setTitle] = useState("");
+  const [locked, setLocked] = useState(false);
+  const [draft, setDraft] = useState("");
+  const [editMode, setEditMode] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState("");
+  const [saveSuccess, setSaveSuccess] = useState("");
+  const [pendingSave, setPendingSave] = useState(false);
   const auth = useAuthModal({
     onSuccess: () => {
-      if (!pendingSave) return
-      setPendingSave(false)
-      handleSave()
+      if (!pendingSave) return;
+      setPendingSave(false);
+      handleSave();
     },
-  })
-  const [templateLoading, setTemplateLoading] = useState(false)
-  const [templateError, setTemplateError] = useState('')
-  const contentRef = useRef<HTMLDivElement>(null)
+  });
+  const [templateLoading, setTemplateLoading] = useState(false);
+  const [templateError, setTemplateError] = useState("");
+  const contentRef = useRef<HTMLDivElement>(null);
 
-  const context: WikiContext = params.cid ? 'chart' : params.sid ? 'song' : params.touid ? 'user' : 'page'
-  const hasTarget = Boolean(params.pid || params.sid || params.cid || params.touid)
+  const context: WikiContext = params.cid
+    ? "chart"
+    : params.sid
+    ? "song"
+    : params.touid
+    ? "user"
+    : "page";
+  const hasTarget = Boolean(
+    params.pid || params.sid || params.cid || params.touid
+  );
   const renderOptions = useMemo(
     () => ({
-      hiddenLabel: t('wiki.hiddenLabel'),
-      templateLabel: t('wiki.templateLabel'),
-      templateLoading: t('wiki.template.loading'),
+      hiddenLabel: t("wiki.hiddenLabel"),
+      templateLabel: t("wiki.templateLabel"),
+      templateLoading: t("wiki.template.loading"),
     }),
-    [t],
-  )
+    [t]
+  );
 
   const languageOptions = useMemo(
     () => [
-      { label: t('wiki.lang.en'), value: 0 },
-      { label: t('wiki.lang.zh'), value: 1 },
-      { label: t('wiki.lang.ja'), value: 2 },
-      { label: t('wiki.lang.ko'), value: 3 },
-      { label: t('wiki.lang.tc'), value: 4 },
+      { label: t("wiki.lang.en"), value: 0 },
+      { label: t("wiki.lang.zh"), value: 1 },
+      { label: t("wiki.lang.ja"), value: 2 },
+      { label: t("wiki.lang.ko"), value: 3 },
+      { label: t("wiki.lang.tc"), value: 4 },
     ],
-    [t],
-  )
+    [t]
+  );
 
   useEffect(() => {
-    const container = contentRef.current
-    if (!container) return
-    const toggles = Array.from(container.querySelectorAll('.hidden .hide-top'))
+    const container = contentRef.current;
+    if (!container) return;
+    const toggles = Array.from(container.querySelectorAll(".hidden .hide-top"));
     const handlers = toggles.map((el) => {
       const handle = () => {
-        el.parentElement?.classList.toggle('open')
-      }
-      el.addEventListener('click', handle)
-      return () => el.removeEventListener('click', handle)
-    })
+        el.parentElement?.classList.toggle("open");
+      };
+      el.addEventListener("click", handle);
+      return () => el.removeEventListener("click", handle);
+    });
     return () => {
-      handlers.forEach((fn) => fn())
-    }
-  }, [wikiHtml])
+      handlers.forEach((fn) => fn());
+    };
+  }, [wikiHtml]);
 
   useEffect(() => {
     if (!hasTarget) {
-      setError(t('wiki.error.missingId'))
-      setWikiHtml('')
-      setTemplates([])
-      setTitle('')
-      return
+      setError(t("wiki.error.missingId"));
+      setWikiHtml("");
+      setTemplates([]);
+      setTitle("");
+      return;
     }
 
-    let cancelled = false
+    let cancelled = false;
     const fetchData = async () => {
-      setLoading(true)
-      setError('')
+      setLoading(true);
+      setError("");
       try {
-        const resp: RespWiki = await fetchWiki({ ...params, lang: langValue, raw: 1 })
-        if (cancelled) return
-        setLocked(Boolean(resp.locked))
-        const fallback = buildFallbackTitle(context, params, t)
-        setTitle(resp.title ?? fallback)
+        const resp: RespWiki = await fetchWiki({
+          ...params,
+          lang: langValue,
+          raw: 1,
+        });
+        if (cancelled) return;
+        setLocked(Boolean(resp.locked));
+        const fallback = buildFallbackTitle(context, params, t);
+        setTitle(resp.title ?? fallback);
         if (resp.code !== 0 || !resp.wiki) {
-          setError(t('wiki.error.notFound'))
-          setWikiHtml('')
-          setTemplates([])
-          setBaseHtml('')
-          setDraft('')
-          return
+          setError(t("wiki.error.notFound"));
+          setWikiHtml("");
+          setTemplates([]);
+          setBaseHtml("");
+          setDraft("");
+          return;
         }
         if (resp.raw === false) {
-          setBaseHtml(resp.wiki)
-          setTemplates([])
-          setDraft(resp.wiki)
+          setBaseHtml(resp.wiki);
+          setTemplates([]);
+          setDraft(resp.wiki);
         } else {
-          const parsed = renderWiki(resp.wiki, renderOptions)
-          setBaseHtml(parsed.html)
-          setTemplates(parsed.templates)
-          setDraft(resp.wiki)
+          const parsed = renderWiki(resp.wiki, renderOptions);
+          setBaseHtml(parsed.html);
+          setTemplates(parsed.templates);
+          setDraft(resp.wiki);
         }
       } catch (err) {
-        console.error(err)
-        if (cancelled) return
-        setError(t('wiki.error.load'))
-        setWikiHtml('')
-        setTemplates([])
-        setBaseHtml('')
-        setDraft('')
+        console.error(err);
+        if (cancelled) return;
+        setError(t("wiki.error.load"));
+        setWikiHtml("");
+        setTemplates([]);
+        setBaseHtml("");
+        setDraft("");
       } finally {
-        if (!cancelled) setLoading(false)
+        if (!cancelled) setLoading(false);
       }
-    }
+    };
 
-    fetchData()
+    fetchData();
     return () => {
-      cancelled = true
-    }
-  }, [context, hasTarget, langValue, params, renderOptions, t])
+      cancelled = true;
+    };
+  }, [context, hasTarget, langValue, params, renderOptions, t]);
 
-  const contextLabel = t(`wiki.context.${context}`)
+  const contextLabel = t(`wiki.context.${context}`);
   const templateInfo =
-    templates.length > 0 ? t('wiki.templates.found', { count: templates.length }) : t('wiki.templates.none')
-  const livePreview = useMemo(() => renderWiki(draft, renderOptions), [draft, renderOptions])
+    templates.length > 0
+      ? t("wiki.templates.found", { count: templates.length })
+      : t("wiki.templates.none");
+  const livePreview = useMemo(
+    () => renderWiki(draft, renderOptions),
+    [draft, renderOptions]
+  );
 
   const loadTemplates = async (html: string, tmplList: WikiTemplate[]) => {
     if (!tmplList.length) {
-      setWikiHtml(html)
-      return
+      setWikiHtml(html);
+      return;
     }
-    setTemplateLoading(true)
-    setTemplateError('')
+    setTemplateLoading(true);
+    setTemplateError("");
     try {
       const blocks = await Promise.all(
         tmplList.map(async (tmpl) => {
           try {
-            const resp = await fetchWikiTemplate({ name: tmpl.name, ...tmpl.params })
-            if (resp.code !== 0) return renderTemplateHtml(t, tmpl, resp)
-            return renderTemplateHtml(t, tmpl, resp)
+            const resp = await fetchWikiTemplate({
+              name: tmpl.name,
+              ...tmpl.params,
+            });
+            if (resp.code !== 0) return renderTemplateHtml(t, tmpl, resp);
+            return renderTemplateHtml(t, tmpl, resp);
           } catch (err) {
-            console.error(err)
-            return `<div class="wiki-template-placeholder wiki-template-warning">${t('wiki.template.error')}</div>`
+            console.error(err);
+            return `<div class="wiki-template-placeholder wiki-template-warning">${t(
+              "wiki.template.error"
+            )}</div>`;
           }
-        }),
-      )
-      const merged = applyTemplateHtml(html, blocks)
-      setWikiHtml(merged)
+        })
+      );
+      const merged = applyTemplateHtml(html, blocks);
+      setWikiHtml(merged);
     } catch (err) {
-      console.error(err)
-      setTemplateError(t('wiki.template.error'))
-      setWikiHtml(html)
+      console.error(err);
+      setTemplateError(t("wiki.template.error"));
+      setWikiHtml(html);
     } finally {
-      setTemplateLoading(false)
+      setTemplateLoading(false);
     }
-  }
+  };
 
   useEffect(() => {
     if (!baseHtml) {
-      setWikiHtml('')
-      setTemplateLoading(false)
-      setTemplateError('')
-      return
+      setWikiHtml("");
+      setTemplateLoading(false);
+      setTemplateError("");
+      return;
     }
     if (editMode) {
-      setWikiHtml(baseHtml)
-      return
+      setWikiHtml(baseHtml);
+      return;
     }
-    loadTemplates(baseHtml, templates)
+    loadTemplates(baseHtml, templates);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [baseHtml, templates, editMode])
+  }, [baseHtml, templates, editMode]);
 
   const handleSave = async () => {
-    if (saving) return
-    const session = getSession()
+    if (saving) return;
+    const session = getSession();
     if (!session || session.uid === 1) {
-      setPendingSave(true)
-      auth.openAuth('signin')
-      setSaveError(t('wiki.error.auth'))
-      return
+      setPendingSave(true);
+      auth.openAuth("signin");
+      setSaveError(t("wiki.error.auth"));
+      return;
     }
     if (!hasTarget) {
-      setSaveError(t('wiki.error.missingId'))
-      return
+      setSaveError(t("wiki.error.missingId"));
+      return;
     }
-    setSaveError('')
-    setSaveSuccess('')
-    setPendingSave(false)
-    setSaving(true)
+    setSaveError("");
+    setSaveSuccess("");
+    setPendingSave(false);
+    setSaving(true);
     try {
-      const resp = await saveWiki({ ...params, lang: langValue, wiki: draft, uid: session.uid })
+      const resp = await saveWiki({
+        ...params,
+        lang: langValue,
+        wiki: draft,
+        uid: session.uid,
+      });
       if (resp.code !== 0) {
         if (resp.code === -5) {
-          setPendingSave(true)
-          auth.openAuth('signin')
-          setSaveError(t('wiki.error.auth'))
-          return
+          setPendingSave(true);
+          auth.openAuth("signin");
+          setSaveError(t("wiki.error.auth"));
+          return;
         }
-        setSaveError(t('wiki.error.save'))
-        return
+        setSaveError(t("wiki.error.save"));
+        return;
       }
-      const parsed = renderWiki(draft, renderOptions)
-      setBaseHtml(parsed.html)
-      setTemplates(parsed.templates)
-      setSaveSuccess(t('wiki.save.success'))
-      setEditMode(false)
+      const parsed = renderWiki(draft, renderOptions);
+      setBaseHtml(parsed.html);
+      setTemplates(parsed.templates);
+      setSaveSuccess(t("wiki.save.success"));
+      setEditMode(false);
     } catch (err) {
-      console.error(err)
-      setSaveError(t('wiki.error.save'))
+      console.error(err);
+      setSaveError(t("wiki.error.save"));
     } finally {
-      setSaving(false)
+      setSaving(false);
     }
-  }
+  };
 
   return (
     <PageLayout className="wiki-page" topbarProps={auth.topbarProps}>
-
       <header className="wiki-hero content-container">
         <div>
-          <p className="eyebrow">{t('wiki.eyebrow')}</p>
-          <h1>{title || t('wiki.title.fallback')}</h1>
-          <p className="wiki-subtitle">{t('wiki.subtitle')}</p>
+          <p className="eyebrow">{t("wiki.eyebrow")}</p>
+          <h1>{title || t("wiki.title.fallback")}</h1>
+          <p className="wiki-subtitle">{t("wiki.subtitle")}</p>
           <div className="wiki-meta-row">
             <span className="pill ghost">{contextLabel}</span>
-            {locked && <span className="pill danger">{t('wiki.locked')}</span>}
+            {locked && <span className="pill danger">{t("wiki.locked")}</span>}
             <span className="pill ghost">{templateInfo}</span>
-            {templateLoading && <span className="pill ghost">{t('wiki.template.loading')}</span>}
+            {templateLoading && (
+              <span className="pill ghost">{t("wiki.template.loading")}</span>
+            )}
           </div>
         </div>
         <div className="wiki-controls">
           <label className="wiki-lang-label">
-            <span>{t('wiki.langLabel')}</span>
-            <select value={langValue} onChange={(e) => setLangValue(Number(e.target.value))}>
+            <span>{t("wiki.langLabel")}</span>
+            <select
+              value={langValue}
+              onChange={(e) => setLangValue(Number(e.target.value))}
+            >
               {languageOptions.map((option) => (
                 <option value={option.value} key={option.value}>
                   {option.label}
@@ -294,20 +340,34 @@ function WikiPage() {
               ))}
             </select>
           </label>
-          <p className="wiki-lang-hint">{t('wiki.langHint')}</p>
+          <p className="wiki-lang-hint">{t("wiki.langHint")}</p>
           <div className="wiki-actions">
             {editMode ? (
               <>
-                <button className="btn ghost small" type="button" onClick={() => setEditMode(false)} disabled={saving}>
-                  {t('wiki.edit.cancel')}
+                <button
+                  className="btn ghost small"
+                  type="button"
+                  onClick={() => setEditMode(false)}
+                  disabled={saving}
+                >
+                  {t("wiki.edit.cancel")}
                 </button>
-                <button className="btn primary small" type="button" onClick={handleSave} disabled={saving}>
-                  {saving ? t('wiki.save.saving') : t('wiki.save')}
+                <button
+                  className="btn primary small"
+                  type="button"
+                  onClick={handleSave}
+                  disabled={saving}
+                >
+                  {saving ? t("wiki.save.saving") : t("wiki.save")}
                 </button>
               </>
             ) : (
-              <button className="btn primary small" type="button" onClick={() => setEditMode(true)}>
-                {t('wiki.edit')}
+              <button
+                className="btn primary small"
+                type="button"
+                onClick={() => setEditMode(true)}
+              >
+                {t("wiki.edit")}
               </button>
             )}
           </div>
@@ -326,21 +386,24 @@ function WikiPage() {
         {!loading && !error && editMode && (
           <div className="wiki-editor">
             <label className="wiki-editor-label">
-              {t('wiki.editing')}
+              {t("wiki.editing")}
               <textarea
                 value={draft}
                 onChange={(e) => setDraft(e.target.value)}
-                placeholder={t('wiki.draft.placeholder')}
+                placeholder={t("wiki.draft.placeholder")}
               />
             </label>
             <div className="wiki-editor-feedback">
               {saveError && <p className="wiki-error">{saveError}</p>}
               {saveSuccess && <p className="wiki-success">{saveSuccess}</p>}
-              {locked && <p className="wiki-warning">{t('wiki.locked')}</p>}
+              {locked && <p className="wiki-warning">{t("wiki.locked")}</p>}
             </div>
             <div className="wiki-editor-preview">
-              <p className="wiki-preview-label">{t('wiki.preview')}</p>
-              <div className="wiki-body" dangerouslySetInnerHTML={{ __html: livePreview.html }} />
+              <p className="wiki-preview-label">{t("wiki.preview")}</p>
+              <div
+                className="wiki-body"
+                dangerouslySetInnerHTML={{ __html: livePreview.html }}
+              />
             </div>
           </div>
         )}
@@ -350,9 +413,13 @@ function WikiPage() {
             {saveError && <div className="wiki-error">{saveError}</div>}
             {saveSuccess && <div className="wiki-success">{saveSuccess}</div>}
             {wikiHtml ? (
-              <div className="wiki-body" ref={contentRef} dangerouslySetInnerHTML={{ __html: wikiHtml }} />
+              <div
+                className="wiki-body"
+                ref={contentRef}
+                dangerouslySetInnerHTML={{ __html: wikiHtml }}
+              />
             ) : (
-              <div className="wiki-empty">{t('wiki.error.empty')}</div>
+              <div className="wiki-empty">{t("wiki.error.empty")}</div>
             )}
           </>
         )}
@@ -360,7 +427,7 @@ function WikiPage() {
 
       {auth.modal}
     </PageLayout>
-  )
+  );
 }
 
-export default WikiPage
+export default WikiPage;

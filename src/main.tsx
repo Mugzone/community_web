@@ -1,16 +1,16 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import './index.css'
-import App from './App'
-import { I18nProvider } from './i18n'
-import { ThemeProvider } from './components/ThemeProvider'
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
+import "./index.css";
+import App from "./app";
+import { I18nProvider } from "./i18n";
+import { ThemeProvider } from "./components/ThemeProvider";
 
-createRoot(document.getElementById('root')!).render(
+createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <ThemeProvider>
       <I18nProvider>
         <App />
       </I18nProvider>
     </ThemeProvider>
-  </StrictMode>,
-)
+  </StrictMode>
+);

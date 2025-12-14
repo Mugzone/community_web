@@ -1,165 +1,193 @@
-import { useEffect, useMemo, useState } from 'react'
-import PageLayout from '../components/PageLayout'
-import { useAuthModal } from '../components/useAuthModal'
-import { fetchStoreEvents } from '../network/api'
-import type { RespStoreEventItem } from '../network/api'
-import { coverUrl } from '../utils/formatters'
-import { useI18n } from '../i18n'
-import './event-list.css'
+import { useEffect, useMemo, useState } from "react";
+import PageLayout from "../components/PageLayout";
+import { useAuthModal } from "../components/UseAuthModal";
+import { fetchStoreEvents } from "../network/api";
+import type { RespStoreEventItem } from "../network/api";
+import { coverUrl } from "../utils/formatters";
+import { useI18n } from "../i18n";
+import "../styles/event-list.css";
 
 type EventCardItem = RespStoreEventItem & {
-  cover: string
-  status: 'upcoming' | 'ongoing' | 'ended' | 'unknown'
-}
+  cover: string;
+  status: "upcoming" | "ongoing" | "ended" | "unknown";
+};
 
 const parseEventDate = (value?: string | number) => {
-  if (value === undefined || value === null) return undefined
-  if (typeof value === 'number') return new Date(value * 1000)
-  const normalized = value.replace(/\./g, '-')
-  const parsed = new Date(normalized)
-  if (!Number.isNaN(parsed.getTime())) return parsed
-  const parts = normalized.split('-').map((v) => Number(v))
+  if (value === undefined || value === null) return undefined;
+  if (typeof value === "number") return new Date(value * 1000);
+  const normalized = value.replace(/\./g, "-");
+  const parsed = new Date(normalized);
+  if (!Number.isNaN(parsed.getTime())) return parsed;
+  const parts = normalized.split("-").map((v) => Number(v));
   if (parts.length === 3 && parts.every((num) => Number.isFinite(num))) {
-    return new Date(parts[0], parts[1] - 1, parts[2])
+    return new Date(parts[0], parts[1] - 1, parts[2]);
   }
-  return undefined
-}
+  return undefined;
+};
 
-const buildStatus = (start?: string | number, end?: string | number): EventCardItem['status'] => {
-  const startDate = parseEventDate(start)
-  const endDate = parseEventDate(end)
-  if (!startDate || !endDate) return 'unknown'
-  const now = new Date()
-  if (now < startDate) return 'upcoming'
-  if (now >= startDate && now <= endDate) return 'ongoing'
-  return 'ended'
-}
+const buildStatus = (
+  start?: string | number,
+  end?: string | number
+): EventCardItem["status"] => {
+  const startDate = parseEventDate(start);
+  const endDate = parseEventDate(end);
+  if (!startDate || !endDate) return "unknown";
+  const now = new Date();
+  if (now < startDate) return "upcoming";
+  if (now >= startDate && now <= endDate) return "ongoing";
+  return "ended";
+};
 
 function EventListPage() {
-  const { t } = useI18n()
-  const auth = useAuthModal()
-  const [events, setEvents] = useState<EventCardItem[]>([])
-  const [activeOnly, setActiveOnly] = useState(true)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
-  const [hasMore, setHasMore] = useState(false)
-  const [next, setNext] = useState<number | undefined>()
+  const { t } = useI18n();
+  const auth = useAuthModal();
+  const [events, setEvents] = useState<EventCardItem[]>([]);
+  const [activeOnly, setActiveOnly] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [hasMore, setHasMore] = useState(false);
+  const [next, setNext] = useState<number | undefined>();
 
   const statusLabel = useMemo(
     () => ({
-      upcoming: t('events.status.upcoming'),
-      ongoing: t('events.status.ongoing'),
-      ended: t('events.status.ended'),
-      unknown: t('events.status.unknown'),
+      upcoming: t("events.status.upcoming"),
+      ongoing: t("events.status.ongoing"),
+      ended: t("events.status.ended"),
+      unknown: t("events.status.unknown"),
     }),
-    [t],
-  )
+    [t]
+  );
 
   const mapToCard = (items: RespStoreEventItem[]) =>
     items.map((item) => ({
       ...item,
       cover: coverUrl(item.cover),
       status: buildStatus(item.start, item.end),
-    }))
+    }));
 
   const formatDate = (ts?: string | number) => {
-    const date = parseEventDate(ts)
-    if (!date) return t('events.time.unknown')
-    return date.toLocaleDateString()
-  }
+    const date = parseEventDate(ts);
+    if (!date) return t("events.time.unknown");
+    return date.toLocaleDateString();
+  };
 
   const loadEvents = async (reset = false) => {
-    if (loading) return
-    setLoading(true)
-    setError('')
+    if (loading) return;
+    setLoading(true);
+    setError("");
     try {
-      const from = reset ? 0 : next ?? 0
-      const resp = await fetchStoreEvents({ active: activeOnly ? 1 : 0, from })
+      const from = reset ? 0 : next ?? 0;
+      const resp = await fetchStoreEvents({ active: activeOnly ? 1 : 0, from });
       if (resp.code !== 0 || !resp.data) {
-        setError(t('events.error.fetch'))
-        if (reset) setEvents([])
-        setHasMore(false)
-        setNext(undefined)
-        return
+        setError(t("events.error.fetch"));
+        if (reset) setEvents([]);
+        setHasMore(false);
+        setNext(undefined);
+        return;
       }
-      const mapped = mapToCard(resp.data)
-      setEvents((prev) => (reset ? mapped : [...prev, ...mapped]))
-      setHasMore(Boolean(resp.hasMore))
-      setNext(resp.next)
+      const mapped = mapToCard(resp.data);
+      setEvents((prev) => (reset ? mapped : [...prev, ...mapped]));
+      setHasMore(Boolean(resp.hasMore));
+      setNext(resp.next);
     } catch (err) {
-      console.error(err)
-      setError(t('events.error.network'))
-      if (reset) setEvents([])
-      setHasMore(false)
-      setNext(undefined)
+      console.error(err);
+      setError(t("events.error.network"));
+      if (reset) setEvents([]);
+      setHasMore(false);
+      setNext(undefined);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   useEffect(() => {
-    loadEvents(true)
+    loadEvents(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeOnly])
+  }, [activeOnly]);
 
   return (
     <PageLayout topbarProps={auth.topbarProps}>
-
       <section className="event-hero">
         <div>
-          <p className="eyebrow">{t('events.eyebrow')}</p>
-          <h1>{t('events.title')}</h1>
-          <p>{t('events.desc')}</p>
+          <p className="eyebrow">{t("events.eyebrow")}</p>
+          <h1>{t("events.title")}</h1>
+          <p>{t("events.desc")}</p>
           <div className="event-filters">
             <label className="chart-checkbox">
-              <input type="checkbox" checked={activeOnly} onChange={(e) => setActiveOnly(e.target.checked)} />
-              <span>{t('events.filter.activeOnly')}</span>
+              <input
+                type="checkbox"
+                checked={activeOnly}
+                onChange={(e) => setActiveOnly(e.target.checked)}
+              />
+              <span>{t("events.filter.activeOnly")}</span>
             </label>
           </div>
         </div>
         <div className="event-hero-card">
-          <p className="eyebrow">{t('events.highlight.title')}</p>
-          <p className="event-highlight">{t('events.highlight.desc')}</p>
+          <p className="eyebrow">{t("events.highlight.title")}</p>
+          <p className="event-highlight">{t("events.highlight.desc")}</p>
         </div>
       </section>
 
       <section className="section">
         <div className="section-header">
-          <h2>{t('events.listTitle')}</h2>
+          <h2>{t("events.listTitle")}</h2>
           <span className="chart-count">
-            {error ? error : t('events.results.count', { count: events.length })}
+            {error
+              ? error
+              : t("events.results.count", { count: events.length })}
           </span>
         </div>
 
         {events.length ? (
           <div className="event-grid">
             {events.map((item) => {
-              const link = item.wiki ? `/wiki/${item.wiki}` : `/score/event?eid=${item.eid}`
+              const link = item.wiki
+                ? `/wiki/${item.wiki}`
+                : `/score/event?eid=${item.eid}`;
               return (
                 <a className="event-card" href={link} key={item.eid}>
-                  <div className="event-cover" style={{ backgroundImage: `url(${item.cover})` }}>
-                    <span className={`pill event-pill ${item.status}`}>{statusLabel[item.status]}</span>
+                  <div
+                    className="event-cover"
+                    style={{ backgroundImage: `url(${item.cover})` }}
+                  >
+                    <span className={`pill event-pill ${item.status}`}>
+                      {statusLabel[item.status]}
+                    </span>
                   </div>
                   <div className="event-body">
                     <div>
-                      <p className="event-title">{item.name ?? t('events.name.untitled')}</p>
+                      <p className="event-title">
+                        {item.name ?? t("events.name.untitled")}
+                      </p>
                       <p className="event-meta">
                         {formatDate(item.start)} — {formatDate(item.end)}
                       </p>
                     </div>
                   </div>
                 </a>
-              )
+              );
             })}
           </div>
         ) : (
-          <div className="chart-empty">{error ? error : loading ? t('events.loading') : t('events.results.empty')}</div>
+          <div className="chart-empty">
+            {error
+              ? error
+              : loading
+              ? t("events.loading")
+              : t("events.results.empty")}
+          </div>
         )}
 
         <div className="chart-actions">
           {hasMore && (
-            <button className="load-more" type="button" onClick={() => loadEvents()} disabled={loading}>
-              {loading ? t('events.loading') : t('events.loadMore')}
+            <button
+              className="load-more"
+              type="button"
+              onClick={() => loadEvents()}
+              disabled={loading}
+            >
+              {loading ? t("events.loading") : t("events.loadMore")}
             </button>
           )}
         </div>
@@ -167,7 +195,7 @@ function EventListPage() {
 
       {auth.modal}
     </PageLayout>
-  )
+  );
 }
 
-export default EventListPage
+export default EventListPage;

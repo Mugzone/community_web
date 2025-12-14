@@ -22,7 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
-AGENTS.md
 .env
-main2.html
 .serena
+
+AGENTS.md

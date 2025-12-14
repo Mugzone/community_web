@@ -1,73 +1,107 @@
-# React + TypeScript + Vite
+# Malody Community Next
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+The next-generation version of the Malody community.
 
-Currently, two official plugins are available:
+## Development
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+### Code Style
 
-## React Compiler
+**1.1 Naming Notations**
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+|             Nomenclature              | Classification                                                        |
+| :-----------------------------------: | :-------------------------------------------------------------------- |
+|              Pascal Case              | Classes, Interfaces, Types, Enums, Decorators, Type Parameters        |
+|              Camel Case               | Variables, Parameters, Functions, Methods, Properties, Module Aliases |
+| All uppercase underscore nomenclature | Global Constants, Enum Values                                         |
+|         Private member naming         | Not allowed                                                           |
 
-## Expanding the ESLint configuration
+**1.2 Abbreviations**
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+The abbreviation should be treated as one word. For example, use `loadHttpUrl` instead of `loadHTTPURL`. The exception is identifiers for which the platform has special requirements, such as `XMLHttpRequest`.
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+**1.3 Type Parameters**
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+Type parameters of the form `Array<T>` can use either a single uppercase letter (for example, `T`) or PascalCase (for example, `UpperCamelCase`).
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+**1.4 `_` Prefixes and Suffixes**
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Identifiers are not allowed to use the underscore `_` as a prefix or suffix. This also means that it is forbidden to use a single underscore `_` as an identifier (for example, to indicate an unused argument).
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+**1.5 Importing Modules**
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+Import module namespaces using Camel Case and filenames using Snake Case.
+
+**1.6 Constant**
+
+The Constant indicates that the value is immutable. (This also includes static read-only properties in classes)
+
+**1.7 Naming Style**
+
+Types in TypeScript convey a wealth of information, so the name should not be repeated with the information carried in the type. See Google's [Testing Blog](https://testing.googleblog.com/2017/10/code-health-identifiernamingpostforworl.html).
+
+**1.8 Comments and Documentation**
+
+There are two types of comments in TypesScript: JSDoc `/** ... **/` and regular comments `// ...` or `/* ... */`.
+
+- For documentation, that is, comments that users should read, use `/** JSDoc **/`.
+- For implementation comments, that is, comments that concern only the implementation details of the code itself, use the `// ...`.
+
+JSDoc comments are recognized by tools (such as editors or documentation generators), whereas regular comments are only human readable.
+
+**DO NOT** declare types in `@param` or `@return` comments, and do not add `@implements`, `@enum`, `@private`, etc. where keywords such as `implements`, `enum`, or `private` are used.
+
+**DO NOT** use `@override` annotations in TypeScript code.
+
+<hr />
+
+### Consistency
+
+**2.1 Goals**
+
+1. Avoid code patterns that are known to cause problems.
+2. Code should be used consistently.
+3. Code should be long-term maintainable.
+4. Code reviewers should focus on improving code quality, not enforcing rules.
+
+<hr />
+
+### Code Commit
+
+**3.1 Before Submission**
+
+Fork the repository into your own repository and create a new branch locally to develop new features.
+
+Build and test your code locally until it is error-free before submission.
+
+**3.2 Pull Request**
+
+Your PR should include the following information:
+
+1. Title.
+2. Check all self-test items.
+3. A concise description of feature changes.
+
+**3.3 After Submission**
+
+Keep commits clean, look up comments from reviewers and make changes to the code.
+
+**3.4 PR Template**
+
+> ## Pre-Checklist
+>
+> Note: Please complete _all_ items in the following checklist.
+>
+> - [ ] Development followed code style guidelines.
+> - [ ] The code has been tested locally with no obvious errors.
+>
+> ## Description
+>
+> \<!-- Describe what this PR does and what problems it tries to solve. -->
+>
+> Some description here.
+>
+> ## Related Issues
+>
+> \<!-- Will this PR close any open issues? -->
+>
+> N/A

@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
-import PageLayout from '../components/PageLayout'
-import { useAuthModal } from '../components/useAuthModal'
-import { useI18n } from '../i18n'
+import { useEffect, useMemo, useRef, useState } from "react";
+import PageLayout from "../components/PageLayout";
+import { useAuthModal } from "../components/UseAuthModal";
+import { useI18n } from "../i18n";
 import {
   fetchPlayerActivity,
   fetchPlayerAllRank,
@@ -13,304 +13,324 @@ import {
   type RespPlayerAllRankItem,
   type RespPlayerChartItem,
   type RespPlayerInfoData,
-} from '../network/api'
-import { avatarUrl, coverUrl, modeLabel } from '../utils/formatters'
-import { renderWiki, type WikiTemplate } from '../utils/wiki'
-import { applyTemplateHtml, renderTemplateHtml } from '../utils/wikiTemplates'
-import './player.css'
-import './wiki.css'
+} from "../network/api";
+import { avatarUrl, coverUrl, modeLabel } from "../utils/formatters";
+import { renderWiki, type WikiTemplate } from "../utils/wiki";
+import { applyTemplateHtml, renderTemplateHtml } from "../utils/wikiTemplates";
+import "../styles/player.css";
+import "../styles/wiki.css";
 
 const parsePlayerId = () => {
-  const match = window.location.pathname.match(/(?:\/player\/|\/accounts\/user\/)(\d+)/)
-  if (match?.[1]) return Number(match[1])
-  const search = new URLSearchParams(window.location.search)
-  const uid = search.get('uid')
-  return uid ? Number(uid) : undefined
-}
+  const match = window.location.pathname.match(
+    /(?:\/player\/|\/accounts\/user\/)(\d+)/
+  );
+  if (match?.[1]) return Number(match[1]);
+  const search = new URLSearchParams(window.location.search);
+  const uid = search.get("uid");
+  return uid ? Number(uid) : undefined;
+};
 
 const formatTime = (ts?: number) => {
-  if (!ts) return ''
-  const date = new Date(ts * 1000)
-  if (Number.isNaN(date.getTime())) return ''
-  return date.toLocaleString()
-}
+  if (!ts) return "";
+  const date = new Date(ts * 1000);
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toLocaleString();
+};
 
 const formatDate = (ts?: number) => {
-  if (!ts) return ''
-  const date = new Date(ts * 1000)
-  if (Number.isNaN(date.getTime())) return ''
-  return date.toLocaleDateString()
-}
+  if (!ts) return "";
+  const date = new Date(ts * 1000);
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toLocaleDateString();
+};
 
 function PlayerPage() {
-  const { t, lang } = useI18n()
-  const playerId = useMemo(() => parsePlayerId(), [])
-  const auth = useAuthModal()
+  const { t, lang } = useI18n();
+  const playerId = useMemo(() => parsePlayerId(), []);
+  const auth = useAuthModal();
 
-  const [info, setInfo] = useState<RespPlayerInfoData>()
-  const [infoError, setInfoError] = useState('')
-  const [infoLoading, setInfoLoading] = useState(false)
+  const [info, setInfo] = useState<RespPlayerInfoData>();
+  const [infoError, setInfoError] = useState("");
+  const [infoLoading, setInfoLoading] = useState(false);
 
-  const [activities, setActivities] = useState<RespPlayerActivityItem[]>([])
-  const [activityError, setActivityError] = useState('')
-  const [activityLoading, setActivityLoading] = useState(false)
+  const [activities, setActivities] = useState<RespPlayerActivityItem[]>([]);
+  const [activityError, setActivityError] = useState("");
+  const [activityLoading, setActivityLoading] = useState(false);
 
-  const [charts, setCharts] = useState<RespPlayerChartItem[]>([])
-  const [chartError, setChartError] = useState('')
-  const [chartLoading, setChartLoading] = useState(false)
+  const [charts, setCharts] = useState<RespPlayerChartItem[]>([]);
+  const [chartError, setChartError] = useState("");
+  const [chartLoading, setChartLoading] = useState(false);
 
-  const [ranks, setRanks] = useState<RespPlayerAllRankItem[]>([])
-  const [rankError, setRankError] = useState('')
-  const [rankLoading, setRankLoading] = useState(false)
-  const [wikiHtml, setWikiHtml] = useState('')
-  const [wikiBase, setWikiBase] = useState('')
-  const [wikiTemplates, setWikiTemplates] = useState<WikiTemplate[]>([])
-  const [wikiLoading, setWikiLoading] = useState(false)
-  const [wikiError, setWikiError] = useState('')
-  const [wikiTemplateLoading, setWikiTemplateLoading] = useState(false)
-  const [wikiTemplateError, setWikiTemplateError] = useState('')
-  const infoLoadedRef = useRef<number | undefined>(undefined)
-  const activityLoadedRef = useRef<number | undefined>(undefined)
-  const chartsLoadedRef = useRef<number | undefined>(undefined)
-  const rankLoadedRef = useRef<number | undefined>(undefined)
-  const [activeTab, setActiveTab] = useState<'activity' | 'charts' | 'rank' | 'wiki'>('activity')
+  const [ranks, setRanks] = useState<RespPlayerAllRankItem[]>([]);
+  const [rankError, setRankError] = useState("");
+  const [rankLoading, setRankLoading] = useState(false);
+  const [wikiHtml, setWikiHtml] = useState("");
+  const [wikiBase, setWikiBase] = useState("");
+  const [wikiTemplates, setWikiTemplates] = useState<WikiTemplate[]>([]);
+  const [wikiLoading, setWikiLoading] = useState(false);
+  const [wikiError, setWikiError] = useState("");
+  const [wikiTemplateLoading, setWikiTemplateLoading] = useState(false);
+  const [wikiTemplateError, setWikiTemplateError] = useState("");
+  const infoLoadedRef = useRef<number | undefined>(undefined);
+  const activityLoadedRef = useRef<number | undefined>(undefined);
+  const chartsLoadedRef = useRef<number | undefined>(undefined);
+  const rankLoadedRef = useRef<number | undefined>(undefined);
+  const [activeTab, setActiveTab] = useState<
+    "activity" | "charts" | "rank" | "wiki"
+  >("activity");
 
   useEffect(() => {
     if (!playerId || Number.isNaN(playerId)) {
-      setInfoError(t('player.error.missingId'))
-      return
+      setInfoError(t("player.error.missingId"));
+      return;
     }
-    if (infoLoadedRef.current === playerId) return
-    infoLoadedRef.current = playerId
+    if (infoLoadedRef.current === playerId) return;
+    infoLoadedRef.current = playerId;
     const loadInfo = async () => {
-      setInfoLoading(true)
-      setInfoError('')
+      setInfoLoading(true);
+      setInfoError("");
       try {
-        const resp = await fetchPlayerInfo({ uid: playerId })
-        const data = resp.data ?? (resp as unknown as RespPlayerInfoData)
+        const resp = await fetchPlayerInfo({ uid: playerId });
+        const data = resp.data ?? (resp as unknown as RespPlayerInfoData);
         if (resp.code !== 0 || !data) {
-          setInfoError(t('player.error.info'))
-          setInfo(undefined)
-          return
+          setInfoError(t("player.error.info"));
+          setInfo(undefined);
+          return;
         }
-        setInfo({ ...data, uid: data.uid ?? playerId })
+        setInfo({ ...data, uid: data.uid ?? playerId });
       } catch (err) {
-        console.error(err)
-        setInfoError(t('player.error.info'))
-        setInfo(undefined)
+        console.error(err);
+        setInfoError(t("player.error.info"));
+        setInfo(undefined);
       } finally {
-        setInfoLoading(false)
+        setInfoLoading(false);
       }
-    }
-    loadInfo()
-  }, [playerId, t])
+    };
+    loadInfo();
+  }, [playerId, t]);
 
   useEffect(() => {
     if (!playerId || Number.isNaN(playerId)) {
-      setActivityError(t('player.error.missingId'))
-      return
+      setActivityError(t("player.error.missingId"));
+      return;
     }
-    if (activityLoadedRef.current === playerId) return
-    activityLoadedRef.current = playerId
+    if (activityLoadedRef.current === playerId) return;
+    activityLoadedRef.current = playerId;
     const loadActivity = async () => {
-      setActivityLoading(true)
-      setActivityError('')
+      setActivityLoading(true);
+      setActivityError("");
       try {
-        const resp = await fetchPlayerActivity({ uid: playerId })
+        const resp = await fetchPlayerActivity({ uid: playerId });
         if (resp.code !== 0) {
-          setActivityError(t('player.error.activity'))
-          setActivities([])
-          return
+          setActivityError(t("player.error.activity"));
+          setActivities([]);
+          return;
         }
-        setActivities(resp.data ?? [])
+        setActivities(resp.data ?? []);
       } catch (err) {
-        console.error(err)
-        setActivityError(t('player.error.activity'))
-        setActivities([])
+        console.error(err);
+        setActivityError(t("player.error.activity"));
+        setActivities([]);
       } finally {
-        setActivityLoading(false)
+        setActivityLoading(false);
       }
-    }
-    loadActivity()
-  }, [playerId, t])
+    };
+    loadActivity();
+  }, [playerId, t]);
 
   useEffect(() => {
     if (!playerId || Number.isNaN(playerId)) {
-      setChartError(t('player.error.missingId'))
-      return
+      setChartError(t("player.error.missingId"));
+      return;
     }
-    if (chartsLoadedRef.current === playerId) return
-    chartsLoadedRef.current = playerId
+    if (chartsLoadedRef.current === playerId) return;
+    chartsLoadedRef.current = playerId;
     const loadCharts = async () => {
-      setChartLoading(true)
-      setChartError('')
+      setChartLoading(true);
+      setChartError("");
       try {
-        const resp = await fetchPlayerCharts({ uid: playerId })
+        const resp = await fetchPlayerCharts({ uid: playerId });
         if (resp.code !== 0) {
-          setChartError(t('player.error.charts'))
-          setCharts([])
-          return
+          setChartError(t("player.error.charts"));
+          setCharts([]);
+          return;
         }
-        setCharts(resp.data ?? [])
+        setCharts(resp.data ?? []);
       } catch (err) {
-        console.error(err)
-        setChartError(t('player.error.charts'))
-        setCharts([])
+        console.error(err);
+        setChartError(t("player.error.charts"));
+        setCharts([]);
       } finally {
-        setChartLoading(false)
+        setChartLoading(false);
       }
-    }
-    loadCharts()
-  }, [playerId, t])
+    };
+    loadCharts();
+  }, [playerId, t]);
 
   useEffect(() => {
     if (!playerId || Number.isNaN(playerId)) {
-      setRankError(t('player.error.missingId'))
-      return
+      setRankError(t("player.error.missingId"));
+      return;
     }
-    if (rankLoadedRef.current === playerId) return
-    rankLoadedRef.current = playerId
+    if (rankLoadedRef.current === playerId) return;
+    rankLoadedRef.current = playerId;
     const loadRanks = async () => {
-      setRankLoading(true)
-      setRankError('')
+      setRankLoading(true);
+      setRankError("");
       try {
-        const resp = await fetchPlayerAllRank({ uid: playerId })
+        const resp = await fetchPlayerAllRank({ uid: playerId });
         if (resp.code !== 0) {
-          setRankError(t('player.error.rank'))
-          setRanks([])
-          return
+          setRankError(t("player.error.rank"));
+          setRanks([]);
+          return;
         }
-        setRanks(resp.data ?? [])
+        setRanks(resp.data ?? []);
       } catch (err) {
-        console.error(err)
-        setRankError(t('player.error.rank'))
-        setRanks([])
+        console.error(err);
+        setRankError(t("player.error.rank"));
+        setRanks([]);
       } finally {
-        setRankLoading(false)
+        setRankLoading(false);
       }
-    }
-    loadRanks()
-  }, [playerId, t])
+    };
+    loadRanks();
+  }, [playerId, t]);
 
   const renderOptions = useMemo(
     () => ({
-      hiddenLabel: t('wiki.hiddenLabel'),
-      templateLabel: t('wiki.templateLabel'),
-      templateLoading: t('wiki.template.loading'),
+      hiddenLabel: t("wiki.hiddenLabel"),
+      templateLabel: t("wiki.templateLabel"),
+      templateLoading: t("wiki.template.loading"),
     }),
-    [t],
-  )
+    [t]
+  );
 
   useEffect(() => {
     if (!playerId) {
-      setWikiBase('')
-      setWikiTemplates([])
-      setWikiHtml('')
-      setWikiError('')
-      return
+      setWikiBase("");
+      setWikiTemplates([]);
+      setWikiHtml("");
+      setWikiError("");
+      return;
     }
-    let cancelled = false
-    const langValue = lang === 'zh-CN' ? 1 : lang === 'ja' ? 2 : 0
-    setWikiLoading(true)
-    setWikiError('')
+    let cancelled = false;
+    const langValue = lang === "zh-CN" ? 1 : lang === "ja" ? 2 : 0;
+    setWikiLoading(true);
+    setWikiError("");
     fetchWiki({ touid: playerId, lang: langValue, raw: 1 })
       .then((resp) => {
-        if (cancelled) return
+        if (cancelled) return;
         if (resp.code !== 0 || !resp.wiki) {
-          setWikiBase('')
-          setWikiTemplates([])
-          setWikiHtml('')
-          return
+          setWikiBase("");
+          setWikiTemplates([]);
+          setWikiHtml("");
+          return;
         }
         if (resp.raw === false) {
-          setWikiBase(resp.wiki)
-          setWikiTemplates([])
+          setWikiBase(resp.wiki);
+          setWikiTemplates([]);
         } else {
-          const parsed = renderWiki(resp.wiki, renderOptions)
-          setWikiBase(parsed.html)
-          setWikiTemplates(parsed.templates)
+          const parsed = renderWiki(resp.wiki, renderOptions);
+          setWikiBase(parsed.html);
+          setWikiTemplates(parsed.templates);
         }
       })
       .catch((err) => {
-        console.error(err)
-        if (cancelled) return
-        setWikiError(t('player.wiki.error'))
-        setWikiBase('')
-        setWikiTemplates([])
-        setWikiHtml('')
+        console.error(err);
+        if (cancelled) return;
+        setWikiError(t("player.wiki.error"));
+        setWikiBase("");
+        setWikiTemplates([]);
+        setWikiHtml("");
       })
       .finally(() => {
-        if (!cancelled) setWikiLoading(false)
-      })
+        if (!cancelled) setWikiLoading(false);
+      });
     return () => {
-      cancelled = true
-    }
-  }, [lang, playerId, renderOptions, t])
+      cancelled = true;
+    };
+  }, [lang, playerId, renderOptions, t]);
 
   useEffect(() => {
     if (!wikiBase) {
-      setWikiHtml('')
-      setWikiTemplateError('')
-      setWikiTemplateLoading(false)
-      return
+      setWikiHtml("");
+      setWikiTemplateError("");
+      setWikiTemplateLoading(false);
+      return;
     }
     if (!wikiTemplates.length) {
-      setWikiHtml(wikiBase)
-      setWikiTemplateLoading(false)
-      return
+      setWikiHtml(wikiBase);
+      setWikiTemplateLoading(false);
+      return;
     }
-    let cancelled = false
+    let cancelled = false;
     const loadTemplates = async () => {
-      setWikiTemplateLoading(true)
-      setWikiTemplateError('')
+      setWikiTemplateLoading(true);
+      setWikiTemplateError("");
       try {
         const blocks = await Promise.all(
           wikiTemplates.map(async (tmpl) => {
             try {
-              const resp = await fetchWikiTemplate({ name: tmpl.name, ...tmpl.params })
-              if (resp.code !== 0) return renderTemplateHtml(t, tmpl, resp)
-              return renderTemplateHtml(t, tmpl, resp)
+              const resp = await fetchWikiTemplate({
+                name: tmpl.name,
+                ...tmpl.params,
+              });
+              if (resp.code !== 0) return renderTemplateHtml(t, tmpl, resp);
+              return renderTemplateHtml(t, tmpl, resp);
             } catch (err) {
-              console.error(err)
-              return `<div class="wiki-template-placeholder wiki-template-warning">${t('wiki.template.error')}</div>`
+              console.error(err);
+              return `<div class="wiki-template-placeholder wiki-template-warning">${t(
+                "wiki.template.error"
+              )}</div>`;
             }
-          }),
-        )
-        if (cancelled) return
-        const merged = applyTemplateHtml(wikiBase, blocks)
-        setWikiHtml(merged)
+          })
+        );
+        if (cancelled) return;
+        const merged = applyTemplateHtml(wikiBase, blocks);
+        setWikiHtml(merged);
       } catch (err) {
-        console.error(err)
-        if (cancelled) return
-        setWikiTemplateError(t('wiki.template.error'))
-        setWikiHtml(wikiBase)
+        console.error(err);
+        if (cancelled) return;
+        setWikiTemplateError(t("wiki.template.error"));
+        setWikiHtml(wikiBase);
       } finally {
-        if (!cancelled) setWikiTemplateLoading(false)
+        if (!cancelled) setWikiTemplateLoading(false);
       }
-    }
-    loadTemplates()
+    };
+    loadTemplates();
     return () => {
-      cancelled = true
-    }
-  }, [t, wikiBase, wikiTemplates])
+      cancelled = true;
+    };
+  }, [t, wikiBase, wikiTemplates]);
 
-  const displayName = info?.name || info?.username || t('player.placeholder.name')
-  const wikiLink = playerId ? `/wiki?touid=${playerId}` : '/wiki'
+  const displayName =
+    info?.name || info?.username || t("player.placeholder.name");
+  const wikiLink = playerId ? `/wiki?touid=${playerId}` : "/wiki";
 
   const metaBadges = [
-    info?.regtime ? t('player.joined', { time: formatDate(info.regtime) }) : undefined,
-    info?.playcount !== undefined ? t('player.meta.playcount', { value: info.playcount }) : undefined,
-    info?.gold !== undefined ? t('player.meta.gold', { value: info.gold }) : undefined,
-    info?.exp !== undefined ? t('player.meta.exp', { value: info.exp }) : undefined,
-  ].filter(Boolean) as string[]
+    info?.regtime
+      ? t("player.joined", { time: formatDate(info.regtime) })
+      : undefined,
+    info?.playcount !== undefined
+      ? t("player.meta.playcount", { value: info.playcount })
+      : undefined,
+    info?.gold !== undefined
+      ? t("player.meta.gold", { value: info.gold })
+      : undefined,
+    info?.exp !== undefined
+      ? t("player.meta.exp", { value: info.exp })
+      : undefined,
+  ].filter(Boolean) as string[];
 
   return (
     <PageLayout className="player-page" topbarProps={auth.topbarProps}>
-
       <header className="player-hero content-container">
-        <div className="player-avatar" style={{ backgroundImage: `url(${avatarUrl(info?.avatar)})` }} />
+        <div
+          className="player-avatar"
+          style={{ backgroundImage: `url(${avatarUrl(info?.avatar)})` }}
+        />
         <div className="player-identity">
-          <p className="eyebrow">{t('player.eyebrow')}</p>
+          <p className="eyebrow">{t("player.eyebrow")}</p>
           <h1>{displayName}</h1>
           {playerId && <p className="player-uid">UID {playerId}</p>}
           {info?.sign && <p className="player-sign">{info.sign}</p>}
@@ -321,39 +341,59 @@ function PlayerPage() {
               </span>
             ))}
             <a className="pill ghost" href={wikiLink}>
-              {t('player.wikiLink')}
+              {t("player.wikiLink")}
             </a>
           </div>
           {infoError && <p className="player-error">{infoError}</p>}
-          {infoLoading && <p className="player-loading">{t('player.loading')}</p>}
+          {infoLoading && (
+            <p className="player-loading">{t("player.loading")}</p>
+          )}
         </div>
       </header>
 
       <div className="content-container player-body">
         <div className="player-tabs">
-          <button className={activeTab === 'activity' ? 'active' : ''} type="button" onClick={() => setActiveTab('activity')}>
-            {t('player.tab.activity')}
+          <button
+            className={activeTab === "activity" ? "active" : ""}
+            type="button"
+            onClick={() => setActiveTab("activity")}
+          >
+            {t("player.tab.activity")}
           </button>
-          <button className={activeTab === 'charts' ? 'active' : ''} type="button" onClick={() => setActiveTab('charts')}>
-            {t('player.tab.charts')}
+          <button
+            className={activeTab === "charts" ? "active" : ""}
+            type="button"
+            onClick={() => setActiveTab("charts")}
+          >
+            {t("player.tab.charts")}
           </button>
-          <button className={activeTab === 'rank' ? 'active' : ''} type="button" onClick={() => setActiveTab('rank')}>
-            {t('player.tab.rank')}
+          <button
+            className={activeTab === "rank" ? "active" : ""}
+            type="button"
+            onClick={() => setActiveTab("rank")}
+          >
+            {t("player.tab.rank")}
           </button>
-          <button className={activeTab === 'wiki' ? 'active' : ''} type="button" onClick={() => setActiveTab('wiki')}>
-            {t('player.tab.wiki')}
+          <button
+            className={activeTab === "wiki" ? "active" : ""}
+            type="button"
+            onClick={() => setActiveTab("wiki")}
+          >
+            {t("player.tab.wiki")}
           </button>
         </div>
 
-        {activeTab === 'activity' && (
+        {activeTab === "activity" && (
           <section className="player-section">
             <div className="player-section-head">
               <div>
-                <p className="eyebrow">{t('player.section.activity')}</p>
-                <h2>{t('player.section.activityTitle')}</h2>
+                <p className="eyebrow">{t("player.section.activity")}</p>
+                <h2>{t("player.section.activityTitle")}</h2>
               </div>
             </div>
-            {activityError && <div className="player-error">{activityError}</div>}
+            {activityError && (
+              <div className="player-error">{activityError}</div>
+            )}
             {activityLoading && (
               <div className="player-skeleton">
                 <div className="line wide" />
@@ -362,22 +402,29 @@ function PlayerPage() {
               </div>
             )}
             {!activityLoading && activities.length === 0 && !activityError && (
-              <div className="player-empty">{t('player.activity.empty')}</div>
+              <div className="player-empty">{t("player.activity.empty")}</div>
             )}
             <div className="player-activity-list">
               {activities.map((item, idx) => (
-                <div className="activity-item" key={`${item.time ?? idx}-${item.msg ?? item.text ?? idx}`}>
+                <div
+                  className="activity-item"
+                  key={`${item.time ?? idx}-${item.msg ?? item.text ?? idx}`}
+                >
                   <div className="activity-meta">
                     <span className="pill ghost">{formatTime(item.time)}</span>
-                    {item.type && <span className="pill ghost">{item.type}</span>}
+                    {item.type && (
+                      <span className="pill ghost">{item.type}</span>
+                    )}
                   </div>
                   <div className="activity-content">
-                    <p className="activity-title">{item.msg || item.text || t('player.activity.unknown')}</p>
+                    <p className="activity-title">
+                      {item.msg || item.text || t("player.activity.unknown")}
+                    </p>
                     {item.desc && <p className="activity-desc">{item.msg}</p>}
                   </div>
                   {item.link && (
                     <a className="activity-link" href={item.link}>
-                      {t('player.activity.link')}
+                      {t("player.activity.link")}
                     </a>
                   )}
                 </div>
@@ -386,12 +433,12 @@ function PlayerPage() {
           </section>
         )}
 
-        {activeTab === 'charts' && (
+        {activeTab === "charts" && (
           <section className="player-section">
             <div className="player-section-head">
               <div>
-                <p className="eyebrow">{t('player.section.charts')}</p>
-                <h2>{t('player.section.chartsTitle')}</h2>
+                <p className="eyebrow">{t("player.section.charts")}</p>
+                <h2>{t("player.section.chartsTitle")}</h2>
               </div>
             </div>
             {chartError && <div className="player-error">{chartError}</div>}
@@ -403,18 +450,30 @@ function PlayerPage() {
               </div>
             )}
             {!chartLoading && charts.length === 0 && !chartError && (
-              <div className="player-empty">{t('player.charts.empty')}</div>
+              <div className="player-empty">{t("player.charts.empty")}</div>
             )}
             <div className="player-chart-grid">
               {charts.map((item) => (
-                <a className="player-chart-card" key={item.cid} href={`/chart/${item.cid}`}>
-                  <div className="player-chart-cover" style={{ backgroundImage: `url(${coverUrl(item.cover)})` }} />
+                <a
+                  className="player-chart-card"
+                  key={item.cid}
+                  href={`/chart/${item.cid}`}
+                >
+                  <div
+                    className="player-chart-cover"
+                    style={{ backgroundImage: `url(${coverUrl(item.cover)})` }}
+                  />
                   <div className="player-chart-body">
-                    <p className="player-chart-title">{item.title || t('player.charts.untitled')}</p>
-                    <p className="player-chart-meta">
-                      {item.artist || t('player.charts.unknown')} · {modeLabel(item.mode)}
+                    <p className="player-chart-title">
+                      {item.title || t("player.charts.untitled")}
                     </p>
-                    {item.version && <span className="pill ghost">{item.version}</span>}
+                    <p className="player-chart-meta">
+                      {item.artist || t("player.charts.unknown")} ·{" "}
+                      {modeLabel(item.mode)}
+                    </p>
+                    {item.version && (
+                      <span className="pill ghost">{item.version}</span>
+                    )}
                   </div>
                 </a>
               ))}
@@ -422,12 +481,12 @@ function PlayerPage() {
           </section>
         )}
 
-        {activeTab === 'rank' && (
+        {activeTab === "rank" && (
           <section className="player-section">
             <div className="player-section-head">
               <div>
-                <p className="eyebrow">{t('player.section.rank')}</p>
-                <h2>{t('player.section.rankTitle')}</h2>
+                <p className="eyebrow">{t("player.section.rank")}</p>
+                <h2>{t("player.section.rankTitle")}</h2>
               </div>
             </div>
             {rankError && <div className="player-error">{rankError}</div>}
@@ -439,22 +498,41 @@ function PlayerPage() {
               </div>
             )}
             {!rankLoading && ranks.length === 0 && !rankError && (
-              <div className="player-empty">{t('player.rank.empty')}</div>
+              <div className="player-empty">{t("player.rank.empty")}</div>
             )}
             <div className="player-rank-grid">
               {ranks.map((item, idx) => (
-                <div className="player-rank-card" key={`${item.mode ?? idx}-${item.rank ?? idx}`}>
+                <div
+                  className="player-rank-card"
+                  key={`${item.mode ?? idx}-${item.rank ?? idx}`}
+                >
                   <div className="player-rank-head">
                     <span className="pill ghost">{modeLabel(item.mode)}</span>
-                    <span className="player-rank-score">{item.value ?? '—'}</span>
+                    <span className="player-rank-score">
+                      {item.value ?? "—"}
+                    </span>
                   </div>
                   <p className="player-rank-pos">
-                    {t('player.rank.position', { value: item.rank ?? t('player.rank.unknown') })}
+                    {t("player.rank.position", {
+                      value: item.rank ?? t("player.rank.unknown"),
+                    })}
                   </p>
                   <div className="player-rank-meta">
-                    {item.level !== undefined && <span>{t('player.stat.level')}: {item.level}</span>}
-                    {item.acc !== undefined && <span>{t('player.stat.acc')}: {item.acc.toFixed(2)}%</span>}
-                    {item.combo !== undefined && <span>{t('player.stat.combo')}: {item.combo}</span>}
+                    {item.level !== undefined && (
+                      <span>
+                        {t("player.stat.level")}: {item.level}
+                      </span>
+                    )}
+                    {item.acc !== undefined && (
+                      <span>
+                        {t("player.stat.acc")}: {item.acc.toFixed(2)}%
+                      </span>
+                    )}
+                    {item.combo !== undefined && (
+                      <span>
+                        {t("player.stat.combo")}: {item.combo}
+                      </span>
+                    )}
                   </div>
                 </div>
               ))}
@@ -462,15 +540,15 @@ function PlayerPage() {
           </section>
         )}
 
-        {activeTab === 'wiki' && (
+        {activeTab === "wiki" && (
           <section className="player-section">
             <div className="player-section-head">
               <div>
-                <p className="eyebrow">{t('player.section.wiki')}</p>
-                <h2>{t('player.section.wikiTitle')}</h2>
+                <p className="eyebrow">{t("player.section.wiki")}</p>
+                <h2>{t("player.section.wikiTitle")}</h2>
               </div>
               <a className="btn ghost small" href={wikiLink}>
-                {t('player.wikiLink')}
+                {t("player.wikiLink")}
               </a>
             </div>
             {wikiError && <div className="player-error">{wikiError}</div>}
@@ -483,12 +561,17 @@ function PlayerPage() {
             )}
             {!wikiLoading && !wikiError && (
               <>
-                {wikiTemplateError && <div className="player-error">{wikiTemplateError}</div>}
+                {wikiTemplateError && (
+                  <div className="player-error">{wikiTemplateError}</div>
+                )}
                 {wikiHtml ? (
-                  <div className="wiki-body" dangerouslySetInnerHTML={{ __html: wikiHtml }} />
+                  <div
+                    className="wiki-body"
+                    dangerouslySetInnerHTML={{ __html: wikiHtml }}
+                  />
                 ) : (
                   <div className="player-wiki-placeholder">
-                    <p className="player-wiki-text">{t('player.wiki.empty')}</p>
+                    <p className="player-wiki-text">{t("player.wiki.empty")}</p>
                   </div>
                 )}
               </>
@@ -499,7 +582,7 @@ function PlayerPage() {
 
       {auth.modal}
     </PageLayout>
-  )
+  );
 }
 
-export default PlayerPage
+export default PlayerPage;

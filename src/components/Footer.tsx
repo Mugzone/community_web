@@ -67,23 +67,25 @@ function Footer({ links, showLanguageSelector = false, showThemeSelector = false
 
   return (
     <footer className="footer">
-      <div className="footer-row">
-        <div className="footer-links">
-          <span>{t('footer.links')}</span>
-          {links.map((item) => (
-            <a key={item.label} href={item.href} target="_blank" rel="noreferrer">
-              {item.label}
-            </a>
-          ))}
-        </div>
-        {(showLanguageSelector || showThemeSelector) && (
-          <div className="footer-settings">
-            {renderLanguageSelector()}
-            {renderThemeSelector()}
+      <div className="footer-container">
+        <div className="footer-row">
+          <div className="footer-links">
+            <span>{t('footer.links')}</span>
+            {links.map((item) => (
+              <a key={item.label} href={item.href} target="_blank" rel="noreferrer">
+                {item.label}
+              </a>
+            ))}
           </div>
-        )}
+          {(showLanguageSelector || showThemeSelector) && (
+            <div className="footer-settings">
+              {renderLanguageSelector()}
+              {renderThemeSelector()}
+            </div>
+          )}
+        </div>
+        <p className="footer-copy">{t('footer.copy')}</p>
       </div>
-      <p className="footer-copy">{t('footer.copy')}</p>
     </footer>
   )
 }

@@ -34,7 +34,9 @@ function NewsList({ items }: NewsListProps) {
                 {item.time && <span className="pill ghost">{formatTime(item.time)}</span>}
               </div>
             )}
-            <a href={item.link}>{item.title}</a>
+            <a href={item.link}>
+              <span>{item.title}</span>
+            </a>
           </li>
         ))}
       </ul>

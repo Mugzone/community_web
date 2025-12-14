@@ -28,7 +28,9 @@ function PageLayout({
   return (
     <div className={`page${className ? ` ${className}` : ''}`}>
       <Topbar {...topbarProps} />
-      {children}
+      <div className="page-content">
+        {children}
+      </div>
       <Footer links={footerLinks} showLanguageSelector={showLanguageSelector} showThemeSelector={showThemeSelector} />
     </div>
   )

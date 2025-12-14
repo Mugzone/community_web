@@ -8,7 +8,7 @@ type AuthModalSuccess = {
   username?: string;
 };
 
-export const useAuthModal = (options?: {
+export const UseAuthModal = (options?: {
   onSuccess?: (payload: AuthModalSuccess) => void;
 }) => {
   const initialSession = getSession();

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, type ChangeEvent } from "react";
 import PageLayout from "../components/PageLayout";
-import { useAuthModal } from "../components/UseAuthModal";
+import { UseAuthModal } from "../components/UseAuthModal";
 import { useI18n } from "../i18n";
 import {
   fetchSongCoverUpload,
@@ -46,7 +46,7 @@ const parseLengthInput = (value: string) => {
 
 function SongEditPage() {
   const { t } = useI18n();
-  const auth = useAuthModal();
+  const auth = UseAuthModal();
   const songId = useMemo(() => parseSongId(), []);
   const [info, setInfo] = useState<RespSongInfo>();
   const [infoError, setInfoError] = useState("");

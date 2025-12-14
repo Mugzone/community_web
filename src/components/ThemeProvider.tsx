@@ -3,7 +3,7 @@ import {
   ThemeContext,
   type ResolvedTheme,
   type ThemePreference,
-} from "./ThemeContext";
+} from "./themeContext";
 
 const THEME_STORAGE_KEY = "malody-theme";
 

@@ -4,7 +4,7 @@ import MapCard from "../components/MapCard";
 import NewsList from "../components/NewsList";
 import StatGrid from "../components/StatGrid";
 import PageLayout from "../components/PageLayout";
-import { useAuthModal } from "../components/UseAuthModal";
+import { UseAuthModal } from "../components/UseAuthModal";
 import { fetchBasicInfo, fetchStoreList } from "../network/api";
 import type { RespBasicInfoNews, RespStoreListItem } from "../network/api";
 import type { MapItem, NewsItem, StatItem } from "../types/content";
@@ -47,7 +47,7 @@ const mapStoreToCard = (item: RespStoreListItem): MapItem => ({
 
 function HomePage() {
   const { t } = useI18n();
-  const auth = useAuthModal();
+  const auth = UseAuthModal();
   const [newsItems, setNewsItems] = useState<NewsItem[]>([]);
   const [arrivalItems, setArrivalItems] = useState<MapItem[]>([]);
   const wikiEntry = useMemo(

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import PageLayout from "../components/PageLayout";
-import { useAuthModal } from "../components/UseAuthModal";
+import { UseAuthModal } from "../components/UseAuthModal";
 import { useI18n } from "../i18n";
 import {
   fetchPlayerActivity,
@@ -47,7 +47,7 @@ const formatDate = (ts?: number) => {
 function PlayerPage() {
   const { t, lang } = useI18n();
   const playerId = useMemo(() => parsePlayerId(), []);
-  const auth = useAuthModal();
+  const auth = UseAuthModal();
 
   const [info, setInfo] = useState<RespPlayerInfoData>();
   const [infoError, setInfoError] = useState("");

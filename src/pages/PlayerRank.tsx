@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import PageLayout from "../components/PageLayout";
-import { useAuthModal } from "../components/UseAuthModal";
+import { UseAuthModal } from "../components/UseAuthModal";
 import { fetchGlobalRank } from "../network/api";
 import type { RespGlobalRankItem } from "../network/api";
 import { avatarUidUrl } from "../utils/formatters";
@@ -23,7 +23,7 @@ const modeMeta = [
 
 function PlayerRankPage() {
   const { t } = useI18n();
-  const auth = useAuthModal();
+  const auth = UseAuthModal();
   const [rankType, setRankType] = useState<RankType>("exp");
   const [mode, setMode] = useState(0);
   const [rows, setRows] = useState<RespGlobalRankItem[]>([]);

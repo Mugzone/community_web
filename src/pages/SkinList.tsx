@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import PageLayout from "../components/PageLayout";
-import { useAuthModal } from "../components/UseAuthModal";
+import { UseAuthModal } from "../components/UseAuthModal";
 import { fetchSkinList } from "../network/api";
 import type { RespSkinListItem } from "../network/api";
 import { coverUrl, modeLabelsFromMask } from "../utils/formatters";
@@ -32,7 +32,7 @@ const parseInitialFilters = (): FilterState => {
 
 function SkinListPage() {
   const { t } = useI18n();
-  const auth = useAuthModal();
+  const auth = UseAuthModal();
   const initialFilters = useMemo(() => parseInitialFilters(), []);
   const [filters, setFilters] = useState<FilterState>(initialFilters);
   const [skins, setSkins] = useState<SkinCardItem[]>([]);

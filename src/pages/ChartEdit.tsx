@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import PageLayout from "../components/PageLayout";
-import { useAuthModal } from "../components/useAuthModal";
+import { UseAuthModal } from "../components/UseAuthModal";
 import { useI18n } from "../i18n";
 import { fetchChartInfo, getSession, saveChartInfo, type RespChartInfo, type RespTagMeta } from "../network/api";
-import { hasGroup, isAssistant, isOrgMember, isPublisher } from "../utils/auth";
+import { isAssistant, isOrgMember, isPublisher } from "../utils/auth";
 import "../styles/song.css";
 import "../styles/chart.css";
 
@@ -43,7 +43,7 @@ type ChartFormState = {
 
 function ChartEditPage() {
   const { t } = useI18n();
-  const auth = useAuthModal();
+  const auth = UseAuthModal();
   const chartId = useMemo(() => parseChartId(), []);
   const [info, setInfo] = useState<RespChartInfo>();
   const [infoError, setInfoError] = useState("");

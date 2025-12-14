@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import PageLayout from "../components/PageLayout";
-import { useAuthModal } from "../components/UseAuthModal";
+import { UseAuthModal } from "../components/UseAuthModal";
 import { fetchStoreEvents } from "../network/api";
 import type { RespStoreEventItem } from "../network/api";
 import { coverUrl } from "../utils/formatters";
@@ -40,7 +40,7 @@ const buildStatus = (
 
 function EventListPage() {
   const { t } = useI18n();
-  const auth = useAuthModal();
+  const auth = UseAuthModal();
   const [events, setEvents] = useState<EventCardItem[]>([]);
   const [activeOnly, setActiveOnly] = useState(true);
   const [loading, setLoading] = useState(false);

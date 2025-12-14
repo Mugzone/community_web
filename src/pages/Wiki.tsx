@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import PageLayout from "../components/PageLayout";
-import { useAuthModal } from "../components/UseAuthModal";
+import { UseAuthModal } from "../components/UseAuthModal";
 import type { Locale } from "../i18n";
 import { useI18n } from "../i18n";
 import {
@@ -85,7 +85,7 @@ function WikiPage() {
   const [saveError, setSaveError] = useState("");
   const [saveSuccess, setSaveSuccess] = useState("");
   const [pendingSave, setPendingSave] = useState(false);
-  const auth = useAuthModal({
+  const auth = UseAuthModal({
     onSuccess: () => {
       if (!pendingSave) return;
       setPendingSave(false);
@@ -156,32 +156,24 @@ function WikiPage() {
       setLoading(true);
       setError("");
       try {
-<<<<<<< HEAD
         const resp: RespWiki = await fetchWiki({
           ...params,
           lang: langValue,
           raw: 1,
         });
         if (cancelled) return;
-        setLocked(Boolean(resp.locked));
         const fallback = buildFallbackTitle(context, params, t);
         setTitle(resp.title ?? fallback);
-=======
-        const resp: RespWiki = await fetchWiki({ ...params, lang: langValue, raw: 1 })
-        if (cancelled) return
-        const fallback = buildFallbackTitle(context, params, t)
-        setTitle(resp.title ?? fallback)
         if (resp.code === -1000) {
-          setError(t('common.loginRequired'))
-          setWikiHtml('')
-          setTemplates([])
-          setBaseHtml('')
-          setDraft('')
-          setLocked(false)
-          return
+          setError(t("common.loginRequired"));
+          setWikiHtml("");
+          setTemplates([]);
+          setBaseHtml("");
+          setDraft("");
+          setLocked(false);
+          return;
         }
-        setLocked(Boolean(resp.locked))
->>>>>>> 584d61a (lots features)
+        setLocked(Boolean(resp.locked));
         if (resp.code !== 0 || !resp.wiki) {
           setError(t("wiki.error.notFound"));
           setWikiHtml("");
@@ -219,7 +211,6 @@ function WikiPage() {
     };
   }, [context, hasTarget, langValue, params, renderOptions, t]);
 
-<<<<<<< HEAD
   const contextLabel = t(`wiki.context.${context}`);
   const templateInfo =
     templates.length > 0
@@ -229,10 +220,6 @@ function WikiPage() {
     () => renderWiki(draft, renderOptions),
     [draft, renderOptions]
   );
-=======
-  const contextLabel = t(`wiki.context.${context}`)
-  const livePreview = useMemo(() => renderWiki(draft, renderOptions), [draft, renderOptions])
->>>>>>> 584d61a (lots features)
 
   const loadTemplates = async (html: string, tmplList: WikiTemplate[]) => {
     if (!tmplList.length) {
@@ -336,7 +323,6 @@ function WikiPage() {
     <PageLayout className="wiki-page" topbarProps={auth.topbarProps}>
       <header className="wiki-hero content-container">
         <div>
-<<<<<<< HEAD
           <p className="eyebrow">{t("wiki.eyebrow")}</p>
           <h1>{title || t("wiki.title.fallback")}</h1>
           <p className="wiki-subtitle">{t("wiki.subtitle")}</p>
@@ -347,14 +333,6 @@ function WikiPage() {
             {templateLoading && (
               <span className="pill ghost">{t("wiki.template.loading")}</span>
             )}
-=======
-          <p className="eyebrow">{t('wiki.eyebrow')}</p>
-          <h1>{title || t('wiki.title.fallback')}</h1>
-          <div className="wiki-meta-row">
-            <span className="pill ghost">{contextLabel}</span>
-            {locked && <span className="pill danger">{t('wiki.locked')}</span>}
-            {templateLoading && <span className="pill ghost">{t('wiki.template.loading')}</span>}
->>>>>>> 584d61a (lots features)
           </div>
         </div>
         <div className="wiki-controls">

@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import Footer from "./Footer";
 import Topbar from "./Topbar";
-import { siteFooterLinks } from "./SiteLinks";
+import { siteFooterLinks } from "./siteLinks";
 
 type FooterLink = {
   label: string;

@@ -1,6 +1,6 @@
 import { useI18n } from "../i18n";
-import { type ThemePreference } from "./ThemeContext";
-import { useTheme } from "./UseTheme";
+import { type ThemePreference } from "./themeContext";
+import { useTheme } from "./useTheme";
 
 type FooterLink = {
   label: string;

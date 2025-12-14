@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import CommentThread from "../components/CommentThread";
 import PageLayout from "../components/PageLayout";
-import { useAuthModal } from "../components/useAuthModal";
+import { UseAuthModal } from "../components/UseAuthModal";
 import { useI18n } from "../i18n";
 import {
   addComment,
@@ -61,7 +61,7 @@ type RankFilters = {
 
 function ChartPage() {
   const { t } = useI18n();
-  const auth = useAuthModal();
+  const auth = UseAuthModal();
   const chartId = useMemo(() => parseChartId(), []);
 
   const [info, setInfo] = useState<RespChartInfo>();

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import PageLayout from "../components/PageLayout";
-import { useAuthModal } from "../components/UseAuthModal";
+import { UseAuthModal } from "../components/UseAuthModal";
 import { fetchStoreList } from "../network/api";
 import type { RespStoreListItem } from "../network/api";
 import { coverUrl, modeLabelsFromMask } from "../utils/formatters";
@@ -41,7 +41,7 @@ const parseInitialFilters = (): FilterState => {
 
 function ChartListPage() {
   const { t } = useI18n();
-  const auth = useAuthModal();
+  const auth = UseAuthModal();
   const initialFilters = useMemo(() => parseInitialFilters(), []);
   const [filters, setFilters] = useState<FilterState>(initialFilters);
   const [charts, setCharts] = useState<ChartCardItem[]>([]);

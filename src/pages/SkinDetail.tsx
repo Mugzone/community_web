@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import CommentThread from "../components/CommentThread";
 import PageLayout from "../components/PageLayout";
-import { useAuthModal } from "../components/UseAuthModal";
+import { UseAuthModal } from "../components/UseAuthModal";
 import { useI18n, type Locale } from "../i18n";
 import {
   addComment,
@@ -59,7 +59,7 @@ const formatUpdated = (value?: number) => {
 
 function SkinDetailPage() {
   const { t, lang } = useI18n();
-  const auth = useAuthModal();
+  const auth = UseAuthModal();
   const skinId = useMemo(() => parseSkinId(), []);
   const commentCid = skinId ? skinId + SKIN_COMMENT_OFFSET : undefined;
   const langValue = localeToLang[lang] ?? 0;
@@ -150,18 +150,14 @@ function SkinDetailPage() {
     setWikiError("");
     fetchWiki({ sid: skinId, lang: langValue, raw: 1 })
       .then((resp) => {
-<<<<<<< HEAD
         if (cancelled) return;
-=======
-        if (cancelled) return
         if (resp.code === -1000) {
-          setWikiError(t('common.loginRequired'))
-          setWikiHtml('')
-          setWikiTemplates([])
-          setWikiBase('')
-          return
+          setWikiError(t("common.loginRequired"));
+          setWikiHtml("");
+          setWikiTemplates([]);
+          setWikiBase("");
+          return;
         }
->>>>>>> 584d61a (lots features)
         if (resp.code !== 0 || !resp.wiki) {
           setWikiHtml("");
           setWikiTemplates([]);

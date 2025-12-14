@@ -2,7 +2,14 @@ import { useEffect, useMemo, useState, type ChangeEvent } from 'react'
 import PageLayout from '../components/PageLayout'
 import { useAuthModal } from '../components/useAuthModal'
 import { useI18n } from '../i18n'
-import { fetchSongCoverUpload, fetchSongInfo, getSession, saveSongInfo, type RespSongInfo } from '../network/api'
+import {
+  fetchSongCoverUpload,
+  fetchSongInfo,
+  getSession,
+  saveSongInfo,
+  type RespSongInfo,
+  type RespTagMeta,
+} from '../network/api'
 import { coverUrl } from '../utils/formatters'
 import './song.css'
 
@@ -54,6 +61,8 @@ function SongEditPage() {
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState('')
   const [saveSuccess, setSaveSuccess] = useState('')
+  const [tagOptions, setTagOptions] = useState<RespTagMeta[]>([])
+  const [selectedTags, setSelectedTags] = useState<number[]>([])
   const [coverFile, setCoverFile] = useState<File>()
   const [coverUploading, setCoverUploading] = useState(false)
   const [coverError, setCoverError] = useState('')
@@ -69,7 +78,7 @@ function SongEditPage() {
       setLoadingInfo(true)
       setInfoError('')
       try {
-        const resp = await fetchSongInfo({ sid: songId })
+        const resp = await fetchSongInfo({ sid: songId, meta: 1 })
         if (cancelled) return
         if (resp.code !== 0) {
           setInfoError(t('song.error.load'))
@@ -99,6 +108,8 @@ function SongEditPage() {
       length: info.length ? String(info.length) : '',
       bpm: info.bpm ? String(info.bpm) : '',
     })
+    setTagOptions(info.tagOptions ?? [])
+    setSelectedTags(info.tags ?? [])
   }, [info])
 
   const updateField = (key: keyof SongFormState, value: string) => {
@@ -119,6 +130,7 @@ function SongEditPage() {
   const errorFromCode = (code: number) => {
     const mod = Math.abs(code) % 1000
     if (mod === 5) return t('song.edit.error.permission')
+    if (mod === 6) return t('song.edit.error.forbid')
     if (mod === 4) return t('song.edit.error.duplicate')
     if (mod === 3) return t('song.edit.error.invalidChar')
     if (mod === 2) return t('song.error.missingId')
@@ -165,6 +177,7 @@ function SongEditPage() {
         bpm: bpmValue,
         titleOrg: form.titleOrg.trim() || undefined,
         artistOrg: form.artistOrg.trim() || undefined,
+        tags: selectedTags,
       })
       if (resp.code !== 0) {
         setSaveError(errorFromCode(resp.code))
@@ -190,6 +203,15 @@ function SongEditPage() {
     } finally {
       setSaving(false)
     }
+  }
+
+  const toggleTag = (id: number) => {
+    setSelectedTags((prev) => {
+      if (prev.includes(id)) return prev.filter((item) => item !== id)
+      return [...prev, id]
+    })
+    setSaveError('')
+    setSaveSuccess('')
   }
 
   const handleCoverFileChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -332,14 +354,37 @@ function SongEditPage() {
                     value={form.bpm}
                     placeholder="180"
                     onChange={(e) => updateField('bpm', e.target.value)}
-                  />
-                </label>
+              />
+            </label>
+          </div>
+          {tagOptions.length > 0 && (
+            <div className="song-tags">
+              <div className="song-tag-header">
+                <span>{t('song.edit.field.tags')}</span>
+                <small>{t('song.edit.tags.hint')}</small>
               </div>
-              <div className="song-editor-footer">
-                <p className="song-hint">{t('song.edit.login')}</p>
-                {saveError && <p className="song-error">{saveError}</p>}
-                {saveSuccess && <p className="song-success">{saveSuccess}</p>}
-                <div className="song-editor-actions">
+              <div className="song-tag-list">
+                {tagOptions.map((tag) => {
+                  const active = selectedTags.includes(tag.id)
+                  return (
+                    <button
+                      key={tag.id}
+                      type="button"
+                      className={`song-tag${active ? ' selected' : ''}`}
+                      onClick={() => toggleTag(tag.id)}
+                    >
+                      <span className="song-tag-name">{tag.name}</span>
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+          <div className="song-editor-footer">
+            <p className="song-hint">{t('song.edit.login')}</p>
+            {saveError && <p className="song-error">{saveError}</p>}
+            {saveSuccess && <p className="song-success">{saveSuccess}</p>}
+            <div className="song-editor-actions">
                   <button className="btn primary" type="button" onClick={handleSave} disabled={saving}>
                     {saving ? t('song.edit.saving') : t('song.edit.save')}
                   </button>

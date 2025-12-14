@@ -8,6 +8,7 @@ import WikiPage from './pages/Wiki'
 import SongPage from './pages/Song'
 import SongEditPage from './pages/SongEdit'
 import ChartPage from './pages/Chart'
+import ChartEditPage from './pages/ChartEdit'
 import PlayerPage from './pages/Player'
 
 const isPlayerRankPath = (path: string) => {
@@ -38,6 +39,10 @@ const isSongEditPath = (path: string) => {
   return path.startsWith('/song/') && path.includes('/edit')
 }
 
+const isChartEditPath = (path: string) => {
+  return path.startsWith('/chart/') && path.includes('/edit')
+}
+
 const isChartPath = (path: string) => {
   return path.startsWith('/chart/')
 }
@@ -53,6 +58,9 @@ function App() {
   }
   if (isSongEditPath(path)) {
     return <SongEditPage />
+  }
+  if (isChartEditPath(path)) {
+    return <ChartEditPage />
   }
   if (isChartPath(path)) {
     return <ChartPage />

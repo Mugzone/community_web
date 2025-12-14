@@ -379,6 +379,12 @@ export type RespSkinBuy = {
   data?: RespSkinBuyData
 }
 
+export type RespTagMeta = {
+  id: number
+  name: string
+  type: number
+}
+
 export type RespSongInfo = {
   code: number
   sid: number
@@ -389,6 +395,8 @@ export type RespSongInfo = {
   cover?: string
   length?: number
   bpm?: number
+  tags?: number[]
+  tagOptions?: RespTagMeta[]
 }
 
 export type RespSongChartsItem = {
@@ -423,6 +431,18 @@ export type RespChartInfo = {
   version?: string
   mode?: number
   length?: number
+  level?: number
+  freeStyle?: number
+  offset?: number
+  hide?: boolean
+  checksum?: string
+  tags?: number[]
+  tagOptions?: RespTagMeta[]
+  isSelf?: boolean
+  isAss?: boolean
+  isOrg?: boolean
+  isPub?: boolean
+  canHide?: boolean
   like?: number
   dislike?: number
   likeState?: number
@@ -583,7 +603,7 @@ export const fetchSkinDetail = (params: { sid: number }) => fetchSkinList({ sid:
 export const buySkin = (payload: { sid: number }) =>
   postForm<RespSkinBuy>('/skin/buy', { body: { sid: payload.sid, id: payload.sid } })
 
-export const fetchSongInfo = (params: { sid: number }) =>
+export const fetchSongInfo = (params: { sid: number; org?: number; meta?: number }) =>
   getJson<RespSongInfo>('/community/song/info', { params })
 
 export const saveSongInfo = (payload: {
@@ -594,6 +614,7 @@ export const saveSongInfo = (payload: {
   bpm: number
   titleOrg?: string
   artistOrg?: string
+  tags?: number[]
 }) =>
   postForm<PackBase>('/community/song/info', {
     body: {
@@ -604,6 +625,7 @@ export const saveSongInfo = (payload: {
       bpm: payload.bpm,
       orgt: payload.titleOrg,
       orga: payload.artistOrg,
+      tags: payload.tags !== undefined ? JSON.stringify(payload.tags) : undefined,
     },
   })
 
@@ -613,8 +635,37 @@ export const fetchSongCoverUpload = (params: { sid: number }) =>
 export const fetchSongCharts = (params: { sid: number }) =>
   getJson<RespSongCharts>('/community/song/charts', { params })
 
-export const fetchChartInfo = (params: { cid: number; hash?: string; org?: number }) =>
+export const fetchChartInfo = (params: { cid: number; hash?: string; org?: number; meta?: number }) =>
   getJson<RespChartInfo>('/community/chart/info', { params })
+
+export const saveChartInfo = (payload: {
+  cid: number
+  version?: string
+  creator?: number
+  length?: number
+  level?: number
+  mode?: number
+  free?: number
+  type?: number
+  hide?: boolean
+  offset?: number
+  tags?: number[]
+}) =>
+  postForm<PackBase>('/community/chart/info', {
+    body: {
+      cid: payload.cid,
+      version: payload.version,
+      creator: payload.creator,
+      length: payload.length,
+      level: payload.level,
+      mode: payload.mode,
+      free: payload.free,
+      type: payload.type,
+      hide: payload.hide === undefined ? undefined : payload.hide ? 'True' : 'False',
+      offset: payload.offset,
+      tags: payload.tags !== undefined ? JSON.stringify(payload.tags) : undefined,
+    },
+  })
 
 export const likeChart = (payload: { cid: number; state: number; hash?: string; score?: string; n?: number; choice?: number }) =>
   postForm<PackBase>('/community/chart/like', {

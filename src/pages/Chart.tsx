@@ -416,6 +416,13 @@ function ChartPage() {
             {info?.length ? <span className="pill ghost">{t('charts.card.length', { value: formatSeconds(info.length) })}</span> : null}
             {rankLevel !== undefined && <span className="pill ghost">{t('chart.meta.level', { level: rankLevel })}</span>}
           </div>
+          {chartId && !Number.isNaN(chartId) && (
+            <div className="song-actions">
+              <a className="btn ghost small" href={`/chart/${chartId}/edit`}>
+                {t('chart.edit.open')}
+              </a>
+            </div>
+          )}
           {loadingInfo && <p className="chart-loading">{t('charts.loading')}</p>}
           {infoError && <p className="chart-error">{infoError}</p>}
         </div>

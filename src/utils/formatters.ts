@@ -40,3 +40,10 @@ export const modeLabelsFromMask = (mask?: number) => {
   })
   return labels
 }
+
+export const chartTypeBadge = (type?: number) => {
+  if (type === 0) return { label: 'Alpha', className: 'pill type-alpha' }
+  if (type === 1) return { label: 'Beta', className: 'pill type-beta' }
+  if (type === 2) return { label: 'Stable', className: 'pill type-stable' }
+  return undefined
+}

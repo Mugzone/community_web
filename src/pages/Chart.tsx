@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import CommentThread from "../components/CommentThread";
 import PageLayout from "../components/PageLayout";
-import { useAuthModal } from "../components/UseAuthModal";
+import { useAuthModal } from "../components/useAuthModal";
 import { useI18n } from "../i18n";
 import {
   addComment,
@@ -10,16 +10,17 @@ import {
   fetchChartDonateList,
   fetchChartInfo,
   fetchComments,
+  clearChartRanking,
   fetchRankingList,
   fetchWiki,
   fetchWikiTemplate,
   getSession,
-  likeChart,
   type RespChartDonate,
   type RespChartInfo,
   type RespRanking,
 } from "../network/api";
-import { avatarUidUrl, coverUrl, modeLabel } from "../utils/formatters";
+import { avatarUidUrl, chartTypeBadge, coverUrl, modeLabel } from "../utils/formatters";
+import { isPublisher } from "../utils/auth";
 import { applyTemplateHtml, renderTemplateHtml } from "../utils/wikiTemplates";
 import { renderWiki, type WikiTemplate } from "../utils/wiki";
 import "../styles/chart.css";
@@ -37,9 +38,11 @@ const parseChartId = () => {
 const computeRating = (like?: number, dislike?: number) => {
   const l = like ?? 0;
   const d = dislike ?? 0;
-  const score = (l + 1) / (l + d + 2);
-  const percent = Math.round(score * 100);
-  const score5 = Math.round(score * 50) / 10;
+  const total = l + d;
+  if (total < 10) return undefined;
+  const positiveRate = l / total;
+  const percent = Math.round(positiveRate * 100);
+  const score5 = positiveRate * 5;
   return { percent, score5 };
 };
 
@@ -65,11 +68,7 @@ function ChartPage() {
   const [infoError, setInfoError] = useState("");
   const [loadingInfo, setLoadingInfo] = useState(false);
 
-  const [likeLoading, setLikeLoading] = useState(false);
-
-  const [activeTab, setActiveTab] = useState<
-    "ranking" | "comment" | "donate" | "wiki"
-  >("ranking");
+  const [activeTab, setActiveTab] = useState<"ranking" | "comment" | "donate" | "wiki">("ranking");
 
   const [ranking, setRanking] = useState<RespRanking>();
   const [rankingError, setRankingError] = useState("");
@@ -93,6 +92,9 @@ function ChartPage() {
   const [wikiLoading, setWikiLoading] = useState(false);
   const [templateLoading, setTemplateLoading] = useState(false);
   const [templateError, setTemplateError] = useState("");
+  const [adminMessage, setAdminMessage] = useState("");
+  const [adminMessageTone, setAdminMessageTone] = useState<"success" | "error" | "">("");
+  const [adminLoading, setAdminLoading] = useState(false);
 
   useEffect(() => {
     if (!chartId || Number.isNaN(chartId)) {
@@ -209,6 +211,13 @@ function ChartPage() {
       setWikiLoading(true);
       fetchWiki({ cid: chartId, raw: 1 })
         .then((resp) => {
+          if (resp.code === -1000) {
+            setWikiError(t('common.loginRequired'))
+            setWikiHtml('')
+            setWikiTemplates([])
+            setWikiBase('')
+            return
+          }
           if (resp.code !== 0 || !resp.wiki) {
             setWikiHtml("");
             setWikiTemplates([]);
@@ -291,44 +300,10 @@ function ChartPage() {
     };
   }, [t, wikiBase, wikiTemplates]);
 
-  const handleLike = async (state: 1 | 2) => {
-    if (!chartId || Number.isNaN(chartId)) return;
-    const session = getSession();
-    if (!session || session.uid === 1) {
-      auth.openAuth("signin");
-      return;
-    }
-    if (likeLoading) return;
-    setLikeLoading(true);
-    try {
-      const resp = await likeChart({ cid: chartId, state });
-      if (resp.code !== 0) return;
-      setInfo((prev) => {
-        if (!prev) return prev;
-        const nextState = prev.likeState === state ? 0 : state;
-        const delta = prev.likeState === state ? -1 : 1;
-        if (state === 1) {
-          return {
-            ...prev,
-            likeState: nextState,
-            like: Math.max(0, (prev.like ?? 0) + delta),
-          };
-        }
-        return {
-          ...prev,
-          likeState: nextState,
-          dislike: Math.max(0, (prev.dislike ?? 0) + delta),
-        };
-      });
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLikeLoading(false);
-    }
-  };
-
   const rating = computeRating(info?.like, info?.dislike);
   const rankLevel = ranking?.meta?.level;
+  const chartType = chartTypeBadge(info?.type);
+  const canManageRanking = isPublisher(getSession()?.groups);
 
   const commentFetcher = async ({ from }: { from?: number }) => {
     const resp = await fetchComments({ cid: chartId ?? 0, from });
@@ -374,6 +349,44 @@ function ChartPage() {
       setDonateSubmitting(false);
     }
   };
+
+  const handleClearRanking = async () => {
+    if (!chartId || Number.isNaN(chartId)) return
+    if (!canManageRanking) return
+    const session = getSession()
+    if (!session || session.uid === 1) {
+      setAdminMessage(t('common.loginRequired'))
+      setAdminMessageTone('error')
+      auth.openAuth('signin')
+      return
+    }
+    setAdminLoading(true)
+    setAdminMessage('')
+    setAdminMessageTone('')
+    try {
+      const resp = await clearChartRanking({ cid: chartId })
+      if (resp.code === -1000) {
+        setAdminMessage(t('common.loginRequired'))
+        setAdminMessageTone('error')
+        auth.openAuth('signin')
+        return
+      }
+      if (resp.code !== 0) {
+        setAdminMessage(t('chart.ranking.clearError'))
+        setAdminMessageTone('error')
+        return
+      }
+      setAdminMessage(t('chart.ranking.clearSuccess'))
+      setAdminMessageTone('success')
+      loadRanking()
+    } catch (err) {
+      console.error(err)
+      setAdminMessage(t('chart.ranking.clearError'))
+      setAdminMessageTone('error')
+    } finally {
+      setAdminLoading(false)
+    }
+  }
 
   const renderRankingTable = () => {
     if (rankingLoading) {
@@ -451,6 +464,8 @@ function ChartPage() {
               </a>
             )}
             <span className="pill ghost">{modeLabel(info?.mode)}</span>
+            {chartType && <span className={chartType.className}>{chartType.label}</span>}
+            {info?.freeStyle === 1 && <span className="pill ghost">{t("charts.badge.freestyle")}</span>}
             {info?.length ? (
               <span className="pill ghost">
                 {t("charts.card.length", { value: formatSeconds(info.length) })}
@@ -481,33 +496,15 @@ function ChartPage() {
           <div className="chart-score-main">
             <p className="eyebrow">{t("chart.score.title")}</p>
             <h2>
-              {t("chart.score.value", { value: rating.score5.toFixed(1) })}
+              {rating
+                ? t("chart.score.value", { value: rating.score5.toFixed(1) })
+                : "--"}
             </h2>
-            <p className="chart-score-sub">
-              {t("chart.score.percent", { value: rating.percent })}
-            </p>
-            <div className="chart-score-actions">
-              <button
-                className={`pill ghost ${
-                  info?.likeState === 1 ? "active" : ""
-                }`}
-                type="button"
-                onClick={() => handleLike(1)}
-                disabled={likeLoading}
-              >
-                {t("chart.score.like")} · {info?.like ?? 0}
-              </button>
-              <button
-                className={`pill ghost ${
-                  info?.likeState === 2 ? "active" : ""
-                }`}
-                type="button"
-                onClick={() => handleLike(2)}
-                disabled={likeLoading}
-              >
-                {t("chart.score.dislike")} · {info?.dislike ?? 0}
-              </button>
-            </div>
+            {rating ? (
+              <p className="chart-score-sub">
+                {t("chart.score.percent", { value: rating.percent })}
+              </p>
+            ) : null}
           </div>
           <div className="chart-score-meta">
             <p className="chart-score-label">{t("chart.meta.creator")}</p>
@@ -552,71 +549,66 @@ function ChartPage() {
 
           {activeTab === "ranking" && (
             <div className="chart-panel">
-              <div className="chart-rank-controls">
-                <label>
-                  <span>{t("chart.ranking.platform")}</span>
-                  <select
-                    value={rankFilters.pro ? 1 : 0}
-                    onChange={(e) => {
-                      const next = {
-                        ...rankFilters,
-                        pro: e.target.value === "1",
-                      };
-                      setRankFilters(next);
-                      loadRanking(next);
-                    }}
-                  >
-                    <option value={0}>
-                      {t("chart.ranking.platform.mobile")}
-                    </option>
-                    <option value={1}>{t("chart.ranking.platform.pc")}</option>
-                  </select>
-                </label>
-                <label>
-                  <span>{t("chart.ranking.sort")}</span>
-                  <select
-                    value={rankFilters.sort}
-                    onChange={(e) => {
-                      const next = {
-                        ...rankFilters,
-                        sort: e.target.value as RankFilters["sort"],
-                      };
-                      setRankFilters(next);
-                      loadRanking(next);
-                    }}
-                  >
-                    <option value="score">
-                      {t("chart.ranking.sort.score")}
-                    </option>
-                    <option value="combo">
-                      {t("chart.ranking.sort.combo")}
-                    </option>
-                    <option value="acc">{t("chart.ranking.sort.acc")}</option>
-                  </select>
-                </label>
-                <label>
-                  <span>{t("chart.ranking.modFilter")}</span>
-                  <select
-                    value={rankFilters.mod}
-                    onChange={(e) => {
-                      const next = {
-                        ...rankFilters,
-                        mod: e.target.value as RankFilters["mod"],
-                      };
-                      setRankFilters(next);
-                      loadRanking(next);
-                    }}
-                  >
-                    <option value="all">{t("chart.ranking.mod.all")}</option>
-                    <option value="noMod">{t("chart.ranking.noMod")}</option>
-                    <option value="noSpeed">
-                      {t("chart.ranking.noSpeed")}
-                    </option>
-                    <option value="noModNoSpeed">
-                      {t("chart.ranking.noModNoSpeed")}
-                    </option>
-                  </select>
-                </label>
+              <div className="chart-panel-header">
+                <div className="chart-rank-controls">
+                  <label>
+                    <span>{t("chart.ranking.platform")}</span>
+                    <select
+                      value={rankFilters.pro ? 1 : 0}
+                      onChange={(e) => {
+                        const next = { ...rankFilters, pro: e.target.value === "1" };
+                        setRankFilters(next);
+                        loadRanking(next);
+                      }}
+                    >
+                      <option value={0}>{t("chart.ranking.platform.mobile")}</option>
+                      <option value={1}>{t("chart.ranking.platform.pc")}</option>
+                    </select>
+                  </label>
+                  <label>
+                    <span>{t("chart.ranking.sort")}</span>
+                    <select
+                      value={rankFilters.sort}
+                      onChange={(e) => {
+                        const next = { ...rankFilters, sort: e.target.value as RankFilters["sort"] };
+                        setRankFilters(next);
+                        loadRanking(next);
+                      }}
+                    >
+                      <option value="score">{t("chart.ranking.sort.score")}</option>
+                      <option value="combo">{t("chart.ranking.sort.combo")}</option>
+                      <option value="acc">{t("chart.ranking.sort.acc")}</option>
+                    </select>
+                  </label>
+                  <label>
+                    <span>{t("chart.ranking.modFilter")}</span>
+                    <select
+                      value={rankFilters.mod}
+                      onChange={(e) => {
+                        const next = { ...rankFilters, mod: e.target.value as RankFilters["mod"] };
+                        setRankFilters(next);
+                        loadRanking(next);
+                      }}
+                    >
+                      <option value="all">{t("chart.ranking.mod.all")}</option>
+                      <option value="noMod">{t("chart.ranking.noMod")}</option>
+                      <option value="noSpeed">{t("chart.ranking.noSpeed")}</option>
+                      <option value="noModNoSpeed">
+                        {t("chart.ranking.noModNoSpeed")}
+                      </option>
+                    </select>
+                  </label>
+                </div>
+                {canManageRanking && (
+                  <div className="chart-admin-actions">
+                    <button className="btn ghost small" type="button" onClick={handleClearRanking} disabled={adminLoading}>
+                      {adminLoading ? t("chart.ranking.clearing") : t("chart.ranking.clear")}
+                    </button>
+                    {adminMessage && (
+                      <p className={`chart-admin-message ${adminMessageTone}`}>{adminMessage}</p>
+                    )}
+                  </div>
+                )}
               </div>
               {renderRankingTable()}
             </div>

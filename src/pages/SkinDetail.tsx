@@ -150,7 +150,18 @@ function SkinDetailPage() {
     setWikiError("");
     fetchWiki({ sid: skinId, lang: langValue, raw: 1 })
       .then((resp) => {
+<<<<<<< HEAD
         if (cancelled) return;
+=======
+        if (cancelled) return
+        if (resp.code === -1000) {
+          setWikiError(t('common.loginRequired'))
+          setWikiHtml('')
+          setWikiTemplates([])
+          setWikiBase('')
+          return
+        }
+>>>>>>> 584d61a (lots features)
         if (resp.code !== 0 || !resp.wiki) {
           setWikiHtml("");
           setWikiTemplates([]);

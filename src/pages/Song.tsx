@@ -9,12 +9,21 @@ import {
   fetchWikiTemplate,
   type RespSongChartsItem,
   type RespSongInfo,
+<<<<<<< HEAD
 } from "../network/api";
 import { coverUrl, modeLabel } from "../utils/formatters";
 import { renderWiki, type WikiTemplate } from "../utils/wiki";
 import { applyTemplateHtml, renderTemplateHtml } from "../utils/wikiTemplates";
 import "../styles/song.css";
 import "../styles/wiki.css";
+=======
+} from '../network/api'
+import { chartTypeBadge, coverUrl, modeLabel } from '../utils/formatters'
+import { renderWiki, type WikiTemplate } from '../utils/wiki'
+import { applyTemplateHtml, renderTemplateHtml } from '../utils/wikiTemplates'
+import './song.css'
+import './wiki.css'
+>>>>>>> 584d61a (lots features)
 
 const parseSongId = () => {
   const match = window.location.pathname.match(/\/song\/(\d+)/);
@@ -108,7 +117,18 @@ function SongPage() {
     setWikiError("");
     fetchWiki({ sid: songId, raw: 1 })
       .then((resp) => {
+<<<<<<< HEAD
         if (cancelled) return;
+=======
+        if (cancelled) return
+        if (resp.code === -1000) {
+          setWikiError(t('common.loginRequired'))
+          setWikiHtml('')
+          setWikiTemplates([])
+          setBaseWiki('')
+          return
+        }
+>>>>>>> 584d61a (lots features)
         if (resp.code !== 0 || !resp.wiki) {
           setWikiHtml("");
           setWikiTemplates([]);
@@ -200,12 +220,16 @@ function SongPage() {
     ? t("charts.card.bpm", { value: info.bpm })
     : t("charts.card.bpmUnknown");
 
+<<<<<<< HEAD
   const chartTypeLabel = (type?: number) => {
     if (type === 0) return "Alpha";
     if (type === 1) return "Beta";
     if (type === 2) return "Stable";
     return t("song.charts.type.unknown", { value: type ?? "-" });
   };
+=======
+  const chartTypeLabel = (type?: number) => chartTypeBadge(type)?.label ?? t('song.charts.type.unknown', { value: type ?? '-' })
+>>>>>>> 584d61a (lots features)
 
   const chartUpdatedLabel = (time?: number) => {
     if (!time) return t("charts.card.updatedUnknown");
@@ -269,13 +293,15 @@ function SongPage() {
             <div className="song-chart-grid">
               {Array.from({ length: 3 }).map((_, idx) => (
                 <div className="song-chart-card skeleton" key={idx}>
-                  <div className="song-chart-head" />
-                  <div className="song-chart-meta" />
+                  <div className="song-chart-main" />
+                  <div className="song-chart-meta-row" />
+                  <div className="song-chart-time-row" />
                 </div>
               ))}
             </div>
           ) : charts.length ? (
             <div className="song-chart-grid">
+<<<<<<< HEAD
               {charts.map((chart) => (
                 <a
                   className="song-chart-card"
@@ -308,6 +334,34 @@ function SongPage() {
                   </div>
                 </a>
               ))}
+=======
+              {charts.map((chart) => {
+                const typeBadge = chartTypeBadge(chart.type)
+                return (
+                  <a className="song-chart-card" href={`/chart/${chart.cid}`} key={chart.cid}>
+                    <div className="song-chart-main">
+                      <p className="song-chart-title">{chart.version || t('song.charts.untitled')}</p>
+                      <div className="song-chart-tags">
+                        <span className="pill ghost">{modeLabel(chart.mode)}</span>
+                        {typeBadge ? (
+                          <span className={typeBadge.className}>{typeBadge.label}</span>
+                        ) : (
+                          <span className="pill ghost">{chartTypeLabel(chart.type)}</span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="song-chart-meta-row">
+                      <span className="song-chart-meta">
+                        {chart.creator ? t('song.charts.creator', { name: chart.creator }) : t('song.charts.creatorUnknown')}
+                      </span>
+                    </div>
+                    <div className="song-chart-time-row">
+                      <span className="song-chart-time">{chartUpdatedLabel(chart.time)}</span>
+                    </div>
+                  </a>
+                )
+              })}
+>>>>>>> 584d61a (lots features)
             </div>
           ) : (
             <div className="song-empty">

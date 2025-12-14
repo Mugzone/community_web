@@ -151,6 +151,36 @@
   box-shadow: var(--shadow-sm);
 }
 
+.chart-panel-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.chart-admin-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  align-items: flex-end;
+}
+
+.chart-admin-message {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--color-muted);
+  text-align: right;
+}
+
+.chart-admin-message.success {
+  color: var(--success-strong);
+}
+
+.chart-admin-message.error {
+  color: var(--danger);
+}
+
 .chart-rank-controls {
   display: flex;
   gap: 0.6rem;

@@ -1,14 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import PageLayout from "../components/PageLayout";
-import { useAuthModal } from "../components/UseAuthModal";
+import { useAuthModal } from "../components/useAuthModal";
 import { useI18n } from "../i18n";
-import {
-  fetchChartInfo,
-  getSession,
-  saveChartInfo,
-  type RespChartInfo,
-  type RespTagMeta,
-} from "../network/api";
+import { fetchChartInfo, getSession, saveChartInfo, type RespChartInfo, type RespTagMeta } from "../network/api";
+import { hasGroup, isAssistant, isOrgMember, isPublisher } from "../utils/auth";
 import "../styles/song.css";
 import "../styles/chart.css";
 
@@ -141,10 +136,12 @@ function ChartEditPage() {
     return t("chart.edit.error.save");
   };
 
-  const metaLocked = info?.type === 2 && !info?.isOrg;
-  const canEditType = info?.isAss;
-  const canEditHide = info?.canHide;
-  const canEditCreator = info?.isOrg;
+  const sessionGroups = getSession()?.groups ?? [];
+  const hasPubRole = isPublisher(sessionGroups);
+  const metaLocked = info?.type === 2 && !isOrgMember(sessionGroups);
+  const canEditType = isAssistant(sessionGroups);
+  const canEditHide = isOrgMember(sessionGroups);
+  const canEditCreator = isOrgMember(sessionGroups);
 
   const modeOptions = useMemo(
     () => [
@@ -165,11 +162,11 @@ function ChartEditPage() {
       { value: "0", label: t("chart.edit.type.alpha") },
       { value: "1", label: t("chart.edit.type.beta") },
     ];
-    if (info?.isPub) {
+    if (hasPubRole) {
       opts.push({ value: "2", label: t("chart.edit.type.stable") });
     }
     return opts;
-  }, [info?.isPub, t]);
+  }, [hasPubRole, t]);
 
   const toggleTag = (id: number) => {
     setSelectedTags((prev) => {

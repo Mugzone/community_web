@@ -34,12 +34,14 @@ export type AuthSession = {
   key: string
   storeKey?: string
   username?: string
+  groups?: number[]
 }
 
 const STORAGE_KEY = 'auth_key'
 const STORAGE_UID = 'auth_uid'
 const STORAGE_STORE_KEY = 'auth_store_key'
 const STORAGE_USERNAME = 'auth_username'
+const STORAGE_GROUPS = 'auth_groups'
 
 let cachedSession: AuthSession | undefined
 let sessionPromise: Promise<AuthSession> | undefined
@@ -66,10 +68,12 @@ const loadStoredSession = (): AuthSession | undefined => {
   const uid = localStorage.getItem(STORAGE_UID)
   const storeKey = localStorage.getItem(STORAGE_STORE_KEY) ?? undefined
   const username = localStorage.getItem(STORAGE_USERNAME) ?? undefined
+  const groupsRaw = localStorage.getItem(STORAGE_GROUPS)
   if (!key || !uid) return undefined
   const parsedUid = Number(uid)
   if (!Number.isFinite(parsedUid)) return undefined
-  cachedSession = { uid: parsedUid, key, storeKey: storeKey || undefined, username: username || undefined }
+  const groups = groupsRaw ? groupsRaw.split(',').map((g) => Number(g)).filter((n) => Number.isFinite(n)) : undefined
+  cachedSession = { uid: parsedUid, key, storeKey: storeKey || undefined, username: username || undefined, groups }
   return cachedSession
 }
 
@@ -80,6 +84,7 @@ export const setSession = (session?: AuthSession) => {
     localStorage.removeItem(STORAGE_UID)
     localStorage.removeItem(STORAGE_STORE_KEY)
     localStorage.removeItem(STORAGE_USERNAME)
+    localStorage.removeItem(STORAGE_GROUPS)
     return
   }
   localStorage.setItem(STORAGE_KEY, session.key)
@@ -93,6 +98,11 @@ export const setSession = (session?: AuthSession) => {
     localStorage.setItem(STORAGE_USERNAME, session.username)
   } else {
     localStorage.removeItem(STORAGE_USERNAME)
+  }
+  if (session.groups?.length) {
+    localStorage.setItem(STORAGE_GROUPS, session.groups.join(','))
+  } else {
+    localStorage.removeItem(STORAGE_GROUPS)
   }
 }
 
@@ -438,11 +448,6 @@ export type RespChartInfo = {
   checksum?: string
   tags?: number[]
   tagOptions?: RespTagMeta[]
-  isSelf?: boolean
-  isAss?: boolean
-  isOrg?: boolean
-  isPub?: boolean
-  canHide?: boolean
   like?: number
   dislike?: number
   likeState?: number
@@ -637,6 +642,13 @@ export const fetchSongCharts = (params: { sid: number }) =>
 
 export const fetchChartInfo = (params: { cid: number; hash?: string; org?: number; meta?: number }) =>
   getJson<RespChartInfo>('/community/chart/info', { params })
+
+export const clearChartRanking = (payload: { cid: number }) =>
+  postForm<PackBase>('/ranking/clear', {
+    body: {
+      cid: payload.cid,
+    },
+  })
 
 export const saveChartInfo = (payload: {
   cid: number

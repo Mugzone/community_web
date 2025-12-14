@@ -93,6 +93,7 @@ function AuthModal({ mode, onClose, onSuccess }: AuthModalProps) {
           key: resp.token ?? resp.tokenStore ?? "",
           storeKey: resp.tokenStore,
           username: resp.username ?? fallbackName,
+          groups: resp.group,
         });
         onSuccess?.({ username: resp.username ?? fallbackName, uid: resp.uid });
       }

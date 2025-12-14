@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useI18n } from "../i18n";
 import { getSession } from "../network/api";
+import logo from "../assets/logo.png";
 
 type TopbarProps = {
   onSignIn: () => void;
@@ -74,7 +75,7 @@ function Topbar({
       <div className="topbar-container">
         <div className="topbar-left">
           <a className="brand" href="/">
-            <span className="material-icons brand-icon">music_note</span>
+            <img className="brand-logo" src={logo} alt="Malody" width={100} height={92} />
             <span className="brand-text">Malody V</span>
           </a>
           <div className="topbar-nav">

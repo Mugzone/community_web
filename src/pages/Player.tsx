@@ -220,6 +220,13 @@ function PlayerPage() {
     fetchWiki({ touid: playerId, lang: langValue, raw: 1 })
       .then((resp) => {
         if (cancelled) return;
+        if (resp.code === -1000) {
+          setWikiError(t("common.loginRequired"));
+          setWikiBase("");
+          setWikiTemplates([]);
+          setWikiHtml("");
+          return;
+        }
         if (resp.code !== 0 || !resp.wiki) {
           setWikiBase("");
           setWikiTemplates([]);

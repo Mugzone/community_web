@@ -340,6 +340,7 @@ export type RespGlobalRank = {
 
 export type RespStoreEventItem = {
   eid: number
+  scoreId?: number
   scoreID?: number
   active?: boolean
   cover?: string
@@ -355,6 +356,44 @@ export type RespStoreEvent = {
   hasMore?: boolean
   next?: number
   data?: RespStoreEventItem[]
+}
+
+export type RespEventChartItem = {
+  sid: number
+  cid: number
+  uid?: number
+  creator?: string
+  title?: string
+  artist?: string
+  version?: string
+  level?: number
+  length?: number
+  type?: number
+  cover?: string
+  mode?: number
+  time?: number
+  hot?: number
+  like?: number
+  dislike?: number
+}
+
+export type RespEventChart = {
+  code: number
+  data?: RespEventChartItem[]
+  hasMore?: boolean
+  next?: number
+}
+
+export type RespRankingEventItem = {
+  index?: number
+  score?: number
+  uid: number
+  username?: string
+}
+
+export type RespRankingEvent = {
+  code: number
+  data?: RespRankingEventItem[]
 }
 
 export type RespSkinListItem = {
@@ -600,6 +639,14 @@ export const fetchGlobalRank = (params: { mm?: number; mode?: number; from?: num
 export const fetchStoreEvents = (params?: { active?: number; from?: number }) =>
   getJson<RespStoreEvent>('/store/events', { params })
 
+export const fetchEventCharts = async (params: { eid: number; org?: number; from?: number }) => {
+  try {
+    return await getJson<RespEventChart>('/event/event', { params })
+  } catch (err) {
+    return getJson<RespEventChart>('/events/event', { params })
+  }
+}
+
 export const fetchSkinList = (params?: { uid?: number; mode?: number; word?: string; from?: number; sid?: number }) =>
   getJson<RespSkinList>('/skin/list', { params })
 
@@ -693,6 +740,9 @@ export const likeChart = (payload: { cid: number; state: number; hash?: string; 
 
 export const fetchRankingList = (params: { cid: number; pro?: number; order?: number; hash?: string; ver?: number; bver?: number }) =>
   getJson<RespRanking>('/ranking/list', { params })
+
+export const fetchEventRanking = (params: { eid: number }) =>
+  getJson<RespRankingEvent>('/ranking/event', { params })
 
 export const fetchComments = (params: { cid: number; from?: number; ver?: number; bver?: number }) =>
   getJson<RespCommentList>('/comment/list', { params })

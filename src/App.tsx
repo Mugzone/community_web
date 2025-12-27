@@ -2,6 +2,7 @@ import HomePage from "./pages/Home";
 import PlayerRankPage from "./pages/PlayerRank";
 import ChartListPage from "./pages/ChartList";
 import EventListPage from "./pages/EventList";
+import EventDetailPage from "./pages/EventDetail";
 import SkinListPage from "./pages/SkinList";
 import SkinDetailPage from "./pages/SkinDetail";
 import WikiPage from "./pages/Wiki";
@@ -25,6 +26,12 @@ const isChartListPath = (path: string) => {
 
 const isEventPath = (path: string) => {
   return path.startsWith("/score/event");
+};
+
+const hasEventId = () => {
+  const search = new URLSearchParams(window.location.search);
+  const eid = search.get("eid") ?? search.get("id");
+  return eid !== null && eid !== "";
 };
 
 const isSkinDetailPath = (path: string) =>
@@ -84,7 +91,7 @@ function App() {
     return <SkinListPage />;
   }
   if (isEventPath(path)) {
-    return <EventListPage />;
+    return hasEventId() ? <EventDetailPage /> : <EventListPage />;
   }
   if (isChartListPath(path)) {
     return <ChartListPage />;

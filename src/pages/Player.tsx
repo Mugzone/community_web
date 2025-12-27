@@ -15,7 +15,7 @@ import {
   type RespPlayerInfoData,
 } from "../network/api";
 import { avatarUrl, coverUrl, modeLabel } from "../utils/formatters";
-import { renderWiki, type WikiTemplate } from "../utils/wiki";
+import { bindHiddenToggles, renderWiki, type WikiTemplate } from "../utils/wiki";
 import { applyTemplateHtml, renderTemplateHtml } from "../utils/wikiTemplates";
 import "../styles/player.css";
 import "../styles/wiki.css";
@@ -71,6 +71,7 @@ function PlayerPage() {
   const [wikiError, setWikiError] = useState("");
   const [wikiTemplateLoading, setWikiTemplateLoading] = useState(false);
   const [wikiTemplateError, setWikiTemplateError] = useState("");
+  const wikiRef = useRef<HTMLDivElement>(null);
   const infoLoadedRef = useRef<number | undefined>(undefined);
   const activityLoadedRef = useRef<number | undefined>(undefined);
   const chartsLoadedRef = useRef<number | undefined>(undefined);
@@ -310,9 +311,14 @@ function PlayerPage() {
     };
   }, [t, wikiBase, wikiTemplates]);
 
+  useEffect(() => {
+    if (activeTab !== "wiki") return;
+    return bindHiddenToggles(wikiRef.current);
+  }, [activeTab, wikiHtml]);
+
   const displayName =
     info?.name || info?.username || t("player.placeholder.name");
-  const wikiLink = playerId ? `/wiki?touid=${playerId}` : "/wiki";
+  const wikiLink = playerId ? `/wiki/?touid=${playerId}` : "/wiki/";
 
   const metaBadges = [
     info?.regtime
@@ -574,6 +580,7 @@ function PlayerPage() {
                 {wikiHtml ? (
                   <div
                     className="wiki-body"
+                    ref={wikiRef}
                     dangerouslySetInnerHTML={{ __html: wikiHtml }}
                   />
                 ) : (

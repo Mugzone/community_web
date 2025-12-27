@@ -25,6 +25,21 @@ export type WikiRenderOptions = {
   templateLoading: string
 }
 
+export const bindHiddenToggles = (container: HTMLElement | null) => {
+  if (!container) return () => {}
+  const handleClick = (event: Event) => {
+    const target = event.target as HTMLElement | null
+    const trigger = target?.closest?.('.hide-top')
+    if (!trigger || !container.contains(trigger)) return
+    const wrapper = trigger.closest('.hidden')
+    wrapper?.classList.toggle('open')
+  }
+  container.addEventListener('click', handleClick)
+  return () => {
+    container.removeEventListener('click', handleClick)
+  }
+}
+
 const escapeHtml = (input: string) =>
   input
     .replace(/&/g, '&amp;')

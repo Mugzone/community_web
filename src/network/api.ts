@@ -821,6 +821,24 @@ export const saveWiki = (payload: {
 export const fetchWikiTemplate = (params: { name: string } & Record<string, string | number | undefined>) =>
   getJson<RespWikiTemplate>('/web/wiki/template', { params })
 
+export const lockWikiPage = (payload: { pid: number; uid: number; locked: number }) =>
+  postForm<PackBase>('/community/wiki/lock', {
+    params: { uid: payload.uid },
+    body: { pid: payload.pid, locked: payload.locked },
+  })
+
+export const updateWikiTitle = (payload: { pid: number; uid: number; title: string }) =>
+  postForm<PackBase>('/community/wiki/title', {
+    params: { uid: payload.uid },
+    body: { pid: payload.pid, title: payload.title },
+  })
+
+export const deleteWikiPage = (payload: { pid: number; uid: number }) =>
+  postForm<PackBase>('/community/wiki/delete', {
+    params: { uid: payload.uid },
+    body: { pid: payload.pid },
+  })
+
 export const login = (payload: { name: string; psw: string; ver?: number; h?: string; bver?: number }) =>
   postForm<RespLogin>('/account/login/wt', {
     auth: false,

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import CommentThread from "../components/CommentThread";
 import PageLayout from "../components/PageLayout";
 import { UseAuthModal } from "../components/UseAuthModal";
@@ -16,7 +16,7 @@ import {
   type RespSkinListItem,
 } from "../network/api";
 import { coverUrl, modeLabelsFromMask } from "../utils/formatters";
-import { renderWiki, type WikiTemplate } from "../utils/wiki";
+import { bindHiddenToggles, renderWiki, type WikiTemplate } from "../utils/wiki";
 import { applyTemplateHtml, renderTemplateHtml } from "../utils/wikiTemplates";
 import "../styles/skin-detail.css";
 import "../styles/comment.css";
@@ -75,6 +75,7 @@ function SkinDetailPage() {
   const [wikiHtml, setWikiHtml] = useState("");
   const [wikiBase, setWikiBase] = useState("");
   const [wikiTemplates, setWikiTemplates] = useState<WikiTemplate[]>([]);
+  const wikiRef = useRef<HTMLDivElement>(null);
   const [wikiError, setWikiError] = useState("");
   const [wikiLoading, setWikiLoading] = useState(false);
   const [templateLoading, setTemplateLoading] = useState(false);
@@ -240,6 +241,8 @@ function SkinDetailPage() {
       cancelled = true;
     };
   }, [t, wikiBase, wikiTemplates]);
+
+  useEffect(() => bindHiddenToggles(wikiRef.current), [wikiHtml]);
 
   const handleBuy = async () => {
     if (!skinId || Number.isNaN(skinId)) return;
@@ -436,6 +439,7 @@ function SkinDetailPage() {
               {wikiHtml ? (
                 <div
                   className="wiki-body"
+                  ref={wikiRef}
                   dangerouslySetInnerHTML={{ __html: wikiHtml }}
                 />
               ) : (

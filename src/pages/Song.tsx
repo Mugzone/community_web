@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import PageLayout from "../components/PageLayout";
 import { UseAuthModal } from "../components/UseAuthModal";
 import { useI18n } from "../i18n";
@@ -11,7 +11,7 @@ import {
   type RespSongInfo,
 } from "../network/api";
 import { chartTypeBadge, coverUrl, modeLabel } from "../utils/formatters";
-import { renderWiki, type WikiTemplate } from "../utils/wiki";
+import { bindHiddenToggles, renderWiki, type WikiTemplate } from "../utils/wiki";
 import { applyTemplateHtml, renderTemplateHtml } from "../utils/wikiTemplates";
 import "../styles/song.css";
 import "../styles/wiki.css";
@@ -47,6 +47,7 @@ function SongPage() {
   const [wikiHtml, setWikiHtml] = useState("");
   const [baseWiki, setBaseWiki] = useState("");
   const [wikiTemplates, setWikiTemplates] = useState<WikiTemplate[]>([]);
+  const wikiRef = useRef<HTMLDivElement>(null);
   const [templateError, setTemplateError] = useState("");
 
   const renderOptions = useMemo(
@@ -199,6 +200,8 @@ function SongPage() {
       cancelled = true;
     };
   }, [baseWiki, t, wikiTemplates]);
+
+  useEffect(() => bindHiddenToggles(wikiRef.current), [wikiHtml]);
 
   const infoLength = info?.length
     ? t("charts.card.length", { value: formatSeconds(info.length) })
@@ -358,6 +361,7 @@ function SongPage() {
               {wikiHtml ? (
                 <div
                   className="wiki-body"
+                  ref={wikiRef}
                   dangerouslySetInnerHTML={{ __html: wikiHtml }}
                 />
               ) : (

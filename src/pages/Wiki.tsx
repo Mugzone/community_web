@@ -4,14 +4,18 @@ import { UseAuthModal } from "../components/UseAuthModal";
 import type { Locale } from "../i18n";
 import { useI18n } from "../i18n";
 import {
+  deleteWikiPage,
   fetchWiki,
   fetchWikiTemplate,
   getSession,
+  lockWikiPage,
   saveWiki,
+  updateWikiTitle,
   type RespWiki,
 } from "../network/api";
-import { renderWiki, type WikiTemplate } from "../utils/wiki";
+import { bindHiddenToggles, renderWiki, type WikiTemplate } from "../utils/wiki";
 import { applyTemplateHtml, renderTemplateHtml } from "../utils/wikiTemplates";
+import { isOrgMember } from "../utils/auth";
 import "../styles/wiki.css";
 
 type WikiContext = "page" | "song" | "chart" | "user";
@@ -23,10 +27,35 @@ type WikiParams = {
   touid?: number;
 };
 
-const localeToLang: Record<Locale, number> = {
-  "en-US": 0,
-  "zh-CN": 1,
-  ja: 2,
+const localeToDbLang: Record<Locale, number> = {
+  "en-US": 1,
+  "zh-CN": 2,
+  ja: 4,
+};
+
+const dbLangToApi: Record<number, number> = {
+  1: 0,
+  2: 1,
+  4: 3,
+};
+
+const dbLangByCode: Record<string, number> = {
+  en: 1,
+  sc: 2,
+  jp: 4,
+  ja: 4,
+  zh: 2,
+  "zh-cn": 2,
+};
+
+const dbLangFromParam = (value: string | null) => {
+  if (!value) return undefined;
+  const normalized = value.trim().toLowerCase();
+  if (normalized in dbLangByCode) return dbLangByCode[normalized];
+  const numeric = Number(normalized);
+  if (!Number.isFinite(numeric)) return undefined;
+  if (numeric === 1 || numeric === 2 || numeric === 4) return numeric;
+  return numeric >= 0 && numeric <= 2 ? [1, 2, 4][numeric] : undefined;
 };
 
 const parseLocationParams = () => {
@@ -47,7 +76,7 @@ const parseLocationParams = () => {
       cid: readNumber("cid"),
       touid: readNumber("touid"),
     },
-    lang: readNumber("lang"),
+    lang: dbLangFromParam(search.get("lang")),
   };
 };
 
@@ -70,7 +99,7 @@ function WikiPage() {
   const { t, lang } = useI18n();
   const { params, lang: urlLang } = useMemo(() => parseLocationParams(), []);
   const [langValue, setLangValue] = useState<number>(
-    urlLang ?? localeToLang[lang] ?? 0
+    urlLang ?? localeToDbLang[lang] ?? 1
   );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -85,6 +114,9 @@ function WikiPage() {
   const [saveError, setSaveError] = useState("");
   const [saveSuccess, setSaveSuccess] = useState("");
   const [pendingSave, setPendingSave] = useState(false);
+  const [manageError, setManageError] = useState("");
+  const [manageSuccess, setManageSuccess] = useState("");
+  const [manageBusy, setManageBusy] = useState(false);
   const auth = UseAuthModal({
     onSuccess: () => {
       if (!pendingSave) return;
@@ -105,6 +137,9 @@ function WikiPage() {
   const hasTarget = Boolean(
     params.pid || params.sid || params.cid || params.touid
   );
+  const sessionGroups = getSession()?.groups ?? [];
+  const canManageWiki =
+    context === "page" && Boolean(params.pid) && isOrgMember(sessionGroups);
   const renderOptions = useMemo(
     () => ({
       hiddenLabel: t("wiki.hiddenLabel"),
@@ -116,30 +151,14 @@ function WikiPage() {
 
   const languageOptions = useMemo(
     () => [
-      { label: t("wiki.lang.en"), value: 0 },
-      { label: t("wiki.lang.zh"), value: 1 },
-      { label: t("wiki.lang.ja"), value: 2 },
-      { label: t("wiki.lang.ko"), value: 3 },
-      { label: t("wiki.lang.tc"), value: 4 },
+      { label: t("wiki.lang.en"), value: 1 },
+      { label: t("wiki.lang.zh"), value: 2 },
+      { label: t("wiki.lang.ja"), value: 4 },
     ],
     [t]
   );
 
-  useEffect(() => {
-    const container = contentRef.current;
-    if (!container) return;
-    const toggles = Array.from(container.querySelectorAll(".hidden .hide-top"));
-    const handlers = toggles.map((el) => {
-      const handle = () => {
-        el.parentElement?.classList.toggle("open");
-      };
-      el.addEventListener("click", handle);
-      return () => el.removeEventListener("click", handle);
-    });
-    return () => {
-      handlers.forEach((fn) => fn());
-    };
-  }, [wikiHtml]);
+  useEffect(() => bindHiddenToggles(contentRef.current), [wikiHtml]);
 
   useEffect(() => {
     if (!hasTarget) {
@@ -154,10 +173,12 @@ function WikiPage() {
     const fetchData = async () => {
       setLoading(true);
       setError("");
+      setManageError("");
+      setManageSuccess("");
       try {
         const resp: RespWiki = await fetchWiki({
           ...params,
-          lang: langValue,
+          lang: dbLangToApi[langValue] ?? 0,
           raw: 1,
         });
         if (cancelled) return;
@@ -284,7 +305,7 @@ function WikiPage() {
     try {
       const resp = await saveWiki({
         ...params,
-        lang: langValue,
+        lang: dbLangToApi[langValue] ?? 0,
         wiki: draft,
         uid: session.uid,
       });
@@ -308,6 +329,112 @@ function WikiPage() {
       setSaveError(t("wiki.error.save"));
     } finally {
       setSaving(false);
+    }
+  };
+
+  const requireAuth = () => {
+    const session = getSession();
+    if (!session || session.uid === 1) {
+      auth.openAuth("signin");
+      setManageError(t("wiki.error.auth"));
+      return undefined;
+    }
+    return session;
+  };
+
+  const handleToggleLock = async () => {
+    if (!params.pid || manageBusy) return;
+    const session = requireAuth();
+    if (!session) return;
+    setManageBusy(true);
+    setManageError("");
+    setManageSuccess("");
+    const nextLocked = locked ? 0 : 1;
+    try {
+      const resp = await lockWikiPage({
+        pid: params.pid,
+        uid: session.uid,
+        locked: nextLocked,
+      });
+      if (resp.code !== 0 && resp.code !== 1) {
+        setManageError(t("wiki.manage.error"));
+        return;
+      }
+      setLocked(resp.code === 1);
+      setManageSuccess(
+        resp.code === 1
+          ? t("wiki.manage.lockSuccess")
+          : t("wiki.manage.unlockSuccess")
+      );
+    } catch (err) {
+      console.error(err);
+      setManageError(t("wiki.manage.error"));
+    } finally {
+      setManageBusy(false);
+    }
+  };
+
+  const handleTitleChange = async () => {
+    if (!params.pid || manageBusy) return;
+    const session = requireAuth();
+    if (!session) return;
+    const nextTitle = window.prompt(
+      t("wiki.manage.titlePrompt"),
+      title || t("wiki.title.fallback")
+    );
+    if (!nextTitle) return;
+    const trimmed = nextTitle.trim();
+    if (!trimmed) return;
+    setManageBusy(true);
+    setManageError("");
+    setManageSuccess("");
+    try {
+      const resp = await updateWikiTitle({
+        pid: params.pid,
+        uid: session.uid,
+        title: trimmed,
+      });
+      if (resp.code === -2) {
+        setManageError(t("wiki.manage.titleExists"));
+        return;
+      }
+      if (resp.code !== 0) {
+        setManageError(t("wiki.manage.error"));
+        return;
+      }
+      setTitle(trimmed);
+      setManageSuccess(t("wiki.manage.titleChanged"));
+    } catch (err) {
+      console.error(err);
+      setManageError(t("wiki.manage.error"));
+    } finally {
+      setManageBusy(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!params.pid || manageBusy) return;
+    const session = requireAuth();
+    if (!session) return;
+    if (!window.confirm(t("wiki.manage.confirmDelete"))) return;
+    setManageBusy(true);
+    setManageError("");
+    setManageSuccess("");
+    try {
+      const resp = await deleteWikiPage({
+        pid: params.pid,
+        uid: session.uid,
+      });
+      if (resp.code !== 0) {
+        setManageError(t("wiki.manage.error"));
+        return;
+      }
+      window.location.href = "/";
+    } catch (err) {
+      console.error(err);
+      setManageError(t("wiki.manage.error"));
+    } finally {
+      setManageBusy(false);
     }
   };
 
@@ -358,13 +485,45 @@ function WikiPage() {
                 </button>
               </>
             ) : (
-              <button
-                className="btn primary small"
-                type="button"
-                onClick={() => setEditMode(true)}
-              >
-                {t("wiki.edit")}
-              </button>
+              <>
+                {canManageWiki && (
+                  <>
+                    <button
+                      className="btn ghost small"
+                      type="button"
+                      onClick={handleToggleLock}
+                      disabled={manageBusy}
+                    >
+                      {locked
+                        ? t("wiki.manage.unlock")
+                        : t("wiki.manage.lock")}
+                    </button>
+                    <button
+                      className="btn ghost small"
+                      type="button"
+                      onClick={handleTitleChange}
+                      disabled={manageBusy}
+                    >
+                      {t("wiki.manage.changeTitle")}
+                    </button>
+                    <button
+                      className="btn danger small"
+                      type="button"
+                      onClick={handleDelete}
+                      disabled={manageBusy}
+                    >
+                      {t("wiki.manage.delete")}
+                    </button>
+                  </>
+                )}
+                <button
+                  className="btn primary small"
+                  type="button"
+                  onClick={() => setEditMode(true)}
+                >
+                  {t("wiki.edit")}
+                </button>
+              </>
             )}
           </div>
         </div>
@@ -408,6 +567,10 @@ function WikiPage() {
             {templateError && <div className="wiki-error">{templateError}</div>}
             {saveError && <div className="wiki-error">{saveError}</div>}
             {saveSuccess && <div className="wiki-success">{saveSuccess}</div>}
+            {manageError && <div className="wiki-error">{manageError}</div>}
+            {manageSuccess && (
+              <div className="wiki-success">{manageSuccess}</div>
+            )}
             {wikiHtml ? (
               <div
                 className="wiki-body"

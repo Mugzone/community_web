@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import CommentThread from "../components/CommentThread";
 import PageLayout from "../components/PageLayout";
 import { UseAuthModal } from "../components/UseAuthModal";
@@ -22,7 +22,7 @@ import {
 import { avatarUidUrl, chartTypeBadge, coverUrl, modeLabel } from "../utils/formatters";
 import { isPublisher } from "../utils/auth";
 import { applyTemplateHtml, renderTemplateHtml } from "../utils/wikiTemplates";
-import { renderWiki, type WikiTemplate } from "../utils/wiki";
+import { bindHiddenToggles, renderWiki, type WikiTemplate } from "../utils/wiki";
 import "../styles/chart.css";
 import "../styles/comment.css";
 import "../styles/wiki.css";
@@ -92,6 +92,7 @@ function ChartPage() {
   const [wikiLoading, setWikiLoading] = useState(false);
   const [templateLoading, setTemplateLoading] = useState(false);
   const [templateError, setTemplateError] = useState("");
+  const wikiRef = useRef<HTMLDivElement>(null);
   const [adminMessage, setAdminMessage] = useState("");
   const [adminMessageTone, setAdminMessageTone] = useState<"success" | "error" | "">("");
   const [adminLoading, setAdminLoading] = useState(false);
@@ -299,6 +300,8 @@ function ChartPage() {
       cancelled = true;
     };
   }, [t, wikiBase, wikiTemplates]);
+
+  useEffect(() => bindHiddenToggles(wikiRef.current), [wikiHtml]);
 
   const rating = computeRating(info?.like, info?.dislike);
   const rankLevel = ranking?.meta?.level;
@@ -708,6 +711,7 @@ function ChartPage() {
                   {wikiHtml ? (
                     <div
                       className="wiki-body"
+                      ref={wikiRef}
                       dangerouslySetInnerHTML={{ __html: wikiHtml }}
                     />
                   ) : (

@@ -234,6 +234,8 @@ export type RespPlayerInfoData = {
   avatar?: string
   sign?: string
   gold?: number
+  goldD?: number
+  gold_d?: number
   level?: number
   exp?: number
   playcount?: number
@@ -241,6 +243,25 @@ export type RespPlayerInfoData = {
   combo?: number
   mmr?: number
   regtime?: number
+  gender?: number
+  area?: number
+  country?: number
+  birth?: number
+  lastPlay?: number
+  last_play?: number
+  playTime?: number
+  play_time?: number
+  playedTime?: number
+  played_time?: number
+  stableCharts?: number
+  unstableCharts?: number
+  chartSlot?: number
+  stableCount?: number
+  unstableCount?: number
+  slot?: number
+  count_2?: number
+  count_1?: number
+  count_0?: number
 }
 
 export type RespPlayerInfo = {
@@ -642,6 +663,24 @@ export const fetchPlayerCharts = (params: { uid: number; from?: number; order?: 
 
 export const fetchPlayerAllRank = (params: { uid: number }) =>
   getJson<RespPlayerAllRank>('/ranking/player/all', { params: { touid: params.uid } })
+
+export const savePlayerInfo = (payload: {
+  name?: string
+  birth?: string
+  gender?: number
+  area?: number
+}) =>
+  postForm<PackBase>('/player/info', {
+    body: {
+      name: payload.name,
+      birth: payload.birth,
+      gender: payload.gender,
+      area: payload.area,
+    },
+  })
+
+export const fetchPlayerImageUpload = (params: { type: number; touid?: number }) =>
+  getJson<RespImageUpload>('/player/image', { params })
 
 export const fetchGlobalRank = (params: { mm?: number; mode?: number; from?: number; ver?: number; bver?: number }) =>
   getJson<RespGlobalRank>('/ranking/global', { params })

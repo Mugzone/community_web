@@ -4,8 +4,10 @@ export const coverUrl = (cover?: string) => {
 }
 
 export const avatarUrl = (avatar?: string) => {
-  if (!avatar || avatar.length === 0) return '//cni.machart.top/static/img/avatar/default.jpg'
-  return avatar.startsWith('http') ? avatar : `//cni.machart.top/avatar/${avatar}!avatar64`
+  if (!avatar || avatar.length === 0) return '//cni.machart.top/static/img/empty.jpg'
+  if (avatar.startsWith('http')) return avatar
+  if (avatar.startsWith('/')) return `//cni.machart.top${avatar}`
+  return `//cni.machart.top/avatar/${avatar}!avatar64`
 }
 
 export const avatarUidUrl = (avatar?: number) => {

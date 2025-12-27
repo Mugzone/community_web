@@ -13,6 +13,7 @@ import SongEditPage from "./pages/SongEdit";
 import ChartPage from "./pages/Chart";
 import ChartEditPage from "./pages/ChartEdit";
 import PlayerPage from "./pages/Player";
+import PlayerEditPage from "./pages/PlayerEdit";
 
 const isPlayerRankPath = (path: string) => {
   return (
@@ -74,8 +75,18 @@ const isPlayerPath = (path: string) => {
   return path.startsWith("/player/") || path.startsWith("/accounts/user/");
 };
 
+const isPlayerEditPath = (path: string) => {
+  return (
+    path.startsWith("/accounts/config/profile") ||
+    path.startsWith("/account/config/profile")
+  );
+};
+
 function App() {
   const path = window.location.pathname;
+  if (isPlayerEditPath(path)) {
+    return <PlayerEditPage />;
+  }
   if (isPlayerPath(path)) {
     return <PlayerPage />;
   }

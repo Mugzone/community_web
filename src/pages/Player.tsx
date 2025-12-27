@@ -7,6 +7,7 @@ import {
   fetchPlayerAllRank,
   fetchPlayerCharts,
   fetchPlayerInfo,
+  getSession,
   fetchWiki,
   fetchWikiTemplate,
   type RespPlayerActivityItem,
@@ -15,6 +16,7 @@ import {
   type RespPlayerInfoData,
 } from "../network/api";
 import { avatarUrl, coverUrl, modeLabel } from "../utils/formatters";
+import { regionMap } from "../utils/profile";
 import { bindHiddenToggles, renderWiki, type WikiTemplate } from "../utils/wiki";
 import { applyTemplateHtml, renderTemplateHtml } from "../utils/wikiTemplates";
 import "../styles/player.css";
@@ -30,24 +32,42 @@ const parsePlayerId = () => {
   return uid ? Number(uid) : undefined;
 };
 
+const toDateValue = (value?: number | string) => {
+  if (value === undefined || value === null) return undefined;
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    if (!trimmed) return undefined;
+    const asNumber = Number(trimmed);
+    if (!Number.isNaN(asNumber)) return toDateValue(asNumber);
+    const date = new Date(trimmed);
+    if (Number.isNaN(date.getTime())) return undefined;
+    return date;
+  }
+  if (!Number.isFinite(value)) return undefined;
+  const ms = value > 10_000_000_000 ? value : value * 1000;
+  const date = new Date(ms);
+  if (Number.isNaN(date.getTime())) return undefined;
+  return date;
+};
+
 const formatTime = (ts?: number) => {
-  if (!ts) return "";
-  const date = new Date(ts * 1000);
-  if (Number.isNaN(date.getTime())) return "";
+  const date = toDateValue(ts);
+  if (!date) return "";
   return date.toLocaleString();
 };
 
 const formatDate = (ts?: number) => {
-  if (!ts) return "";
-  const date = new Date(ts * 1000);
-  if (Number.isNaN(date.getTime())) return "";
+  const date = toDateValue(ts);
+  if (!date) return "";
   return date.toLocaleDateString();
 };
+
 
 function PlayerPage() {
   const { t, lang } = useI18n();
   const playerId = useMemo(() => parsePlayerId(), []);
   const auth = UseAuthModal();
+  const session = getSession();
 
   const [info, setInfo] = useState<RespPlayerInfoData>();
   const [infoError, setInfoError] = useState("");
@@ -316,9 +336,77 @@ function PlayerPage() {
     return bindHiddenToggles(wikiRef.current);
   }, [activeTab, wikiHtml]);
 
+  const formatNumber = (value?: number) => {
+    if (value === undefined || value === null || Number.isNaN(value)) {
+      return t("player.profile.unknown");
+    }
+    return new Intl.NumberFormat(lang).format(value);
+  };
+
+  const formatDuration = (value?: number) => {
+    if (value === undefined || value === null || Number.isNaN(value)) {
+      return t("player.profile.unknown");
+    }
+    const total = Math.max(0, Math.floor(value));
+    if (total === 0) return t("player.time.zero");
+    const days = Math.floor(total / 86400);
+    const hours = Math.floor((total % 86400) / 3600);
+    const minutes = Math.floor((total % 3600) / 60);
+    const parts: string[] = [];
+    if (days) parts.push(t("player.time.days", { value: days }));
+    if (hours) parts.push(t("player.time.hours", { value: hours }));
+    if (minutes || parts.length === 0) {
+      parts.push(t("player.time.minutes", { value: minutes }));
+    }
+    return parts.join(" ");
+  };
+
+  const formatGender = (value?: number) => {
+    if (value === 1) return t("player.gender.male");
+    if (value === 2) return t("player.gender.female");
+    if (value === 3) return t("player.gender.other");
+    return t("player.gender.unknown");
+  };
+
+  const formatAge = (value?: number | string) => {
+    const date = toDateValue(value);
+    if (!date) return t("player.profile.unknown");
+    const now = new Date();
+    let age = now.getFullYear() - date.getFullYear();
+    const monthDiff = now.getMonth() - date.getMonth();
+    if (
+      monthDiff < 0 ||
+      (monthDiff === 0 && now.getDate() < date.getDate())
+    ) {
+      age -= 1;
+    }
+    if (!Number.isFinite(age) || age < 0) return t("player.profile.unknown");
+    return String(age);
+  };
+
+  const formatRegion = (value?: number) => {
+    const region = regionMap[value ?? 0];
+    if (!region) return t("player.profile.unknown");
+    const localized = t(region.labelKey);
+    return localized || region.fallback;
+  };
+
   const displayName =
     info?.name || info?.username || t("player.placeholder.name");
   const wikiLink = playerId ? `/wiki/?touid=${playerId}` : "/wiki/";
+  const canEditProfile =
+    session && session.uid !== 1 && playerId && session.uid === playerId;
+
+  const lastPlayValue = info?.lastPlay ?? info?.last_play;
+  const playTimeValue = info?.playTime ?? info?.play_time;
+  const playedTimeValue = info?.playedTime ?? info?.played_time;
+  const goldIncomeValue = info?.goldD ?? info?.gold_d;
+  const areaValue = info?.area ?? info?.country;
+  const stableChartsValue =
+    info?.stableCharts ?? info?.stableCount ?? info?.count_2;
+  const unstableChartsValue =
+    info?.unstableCharts ?? info?.unstableCount ?? info?.count_1;
+  const chartSlotValue = info?.chartSlot ?? info?.slot ?? info?.count_0;
 
   const metaBadges = [
     info?.regtime
@@ -334,6 +422,72 @@ function PlayerPage() {
       ? t("player.meta.exp", { value: info.exp })
       : undefined,
   ].filter(Boolean) as string[];
+
+  const basicRows = [
+    [
+      {
+        label: t("player.profile.joinedLabel"),
+        value: info?.regtime
+          ? formatDate(info.regtime)
+          : t("player.profile.unknown"),
+      },
+      {
+        label: t("player.profile.lastPlayLabel"),
+        value: lastPlayValue
+          ? formatDate(lastPlayValue)
+          : t("player.profile.lastPlay.never"),
+      },
+      {
+        label: t("player.profile.playTimeLabel"),
+        value: formatDuration(playTimeValue),
+      },
+    ],
+    [
+      { label: t("player.profile.genderLabel"), value: formatGender(info?.gender) },
+      { label: t("player.profile.ageLabel"), value: formatAge(info?.birth) },
+      { label: t("player.profile.locationLabel"), value: formatRegion(areaValue) },
+    ],
+    [
+      {
+        label: t("player.profile.goldLabel"),
+        value: formatNumber(info?.gold),
+      },
+      ...(goldIncomeValue
+        ? [
+            {
+              label: t("player.profile.incomeLabel"),
+              value: formatNumber(goldIncomeValue),
+            },
+          ]
+        : []),
+      ...(playedTimeValue
+        ? [
+            {
+              label: t("player.profile.chartsPlayedLabel"),
+              value: formatDuration(playedTimeValue),
+            },
+          ]
+        : []),
+    ],
+    [
+      {
+        label: t("player.profile.stableChartsLabel"),
+        value: formatNumber(stableChartsValue),
+      },
+      {
+        label: t("player.profile.unstableChartsLabel"),
+        value: formatNumber(unstableChartsValue),
+      },
+      ...(chartSlotValue !== undefined && chartSlotValue !== null
+        ? [
+            {
+              label: t("player.profile.chartSlotLabel"),
+              value: formatNumber(chartSlotValue),
+            },
+          ]
+        : []),
+    ],
+  ];
 
   return (
     <PageLayout className="player-page" topbarProps={auth.topbarProps}>
@@ -356,6 +510,26 @@ function PlayerPage() {
             <a className="pill ghost" href={wikiLink}>
               {t("player.wikiLink")}
             </a>
+            {canEditProfile && (
+              <a className="btn ghost small player-edit-link" href="/accounts/config/profile">
+                {t("player.edit.open")}
+              </a>
+            )}
+          </div>
+          <div className="player-basics">
+            {basicRows.map((row, rowIndex) => (
+              <div className="player-basic-row" key={`row-${rowIndex}`}>
+                {row.map((item, itemIndex) => (
+                  <div
+                    className="player-basic-item"
+                    key={`item-${rowIndex}-${item.label}-${itemIndex}`}
+                  >
+                    <span className="player-basic-label">{item.label}</span>
+                    <span className="player-basic-value">{item.value}</span>
+                  </div>
+                ))}
+              </div>
+            ))}
           </div>
           {infoError && <p className="player-error">{infoError}</p>}
           {infoLoading && (

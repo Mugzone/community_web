@@ -7,6 +7,7 @@ import EventEditPage from "./pages/EventEdit";
 import SkinListPage from "./pages/SkinList";
 import SkinDetailPage from "./pages/SkinDetail";
 import WikiPage from "./pages/Wiki";
+import WikiCreatePage from "./pages/WikiCreate";
 import SongPage from "./pages/Song";
 import SongEditPage from "./pages/SongEdit";
 import ChartPage from "./pages/Chart";
@@ -49,6 +50,10 @@ const isWikiPath = (path: string) => {
   return path.startsWith("/wiki/");
 };
 
+const isWikiCreatePath = (path: string) => {
+  return path === "/wiki/create" || path === "/wiki/create/";
+};
+
 const isSongPath = (path: string) => {
   return path.startsWith("/song/");
 };
@@ -85,6 +90,9 @@ function App() {
   }
   if (isSongPath(path)) {
     return <SongPage />;
+  }
+  if (isWikiCreatePath(path)) {
+    return <WikiCreatePage />;
   }
   if (isWikiPath(path)) {
     return <WikiPage />;

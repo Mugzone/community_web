@@ -587,6 +587,12 @@ export type RespWikiTemplate = {
   message?: string
 }
 
+export type RespCreateWiki = {
+  code: number
+  id?: number
+  exist?: number
+}
+
 export const fetchBasicInfo = () => getJson<RespBasicInfo>('/push/info/wt', { auth: false })
 
 export const fetchStoreList = (
@@ -677,7 +683,13 @@ export const createEvent = (payload: {
 export const fetchEventCoverUpload = (params: { eid: number; type?: number }) =>
   getJson<RespImageUpload>('/event/image', { params: { ...params, type: params.type ?? 1 } })
 
-export const fetchSkinList = (params?: { uid?: number; mode?: number; word?: string; from?: number; sid?: number }) =>
+export const fetchSkinList = (params?: {
+  uid?: number
+  mode?: number
+  word?: string
+  from?: number
+  sid?: number
+}) =>
   getJson<RespSkinList>('/skin/list', { params })
 
 export const fetchSkinDetail = (params: { sid: number }) => fetchSkinList({ sid: params.sid })
@@ -820,6 +832,12 @@ export const saveWiki = (payload: {
 
 export const fetchWikiTemplate = (params: { name: string } & Record<string, string | number | undefined>) =>
   getJson<RespWikiTemplate>('/web/wiki/template', { params })
+
+export const createWikiPage = (payload: { uid: number; title: string; type?: number }) =>
+  postForm<RespCreateWiki>('/community/wiki/create', {
+    params: { uid: payload.uid },
+    body: { title: payload.title, type: payload.type ?? 1 },
+  })
 
 export const lockWikiPage = (payload: { pid: number; uid: number; locked: number }) =>
   postForm<PackBase>('/community/wiki/lock', {

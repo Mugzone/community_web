@@ -5,12 +5,14 @@ import {
   fetchEventCharts,
   fetchEventRanking,
   fetchStoreEvents,
+  getSession,
   type RespEventChartItem,
   type RespRankingEventItem,
   type RespStoreEventItem,
 } from "../network/api";
 import { avatarUidUrl, chartTypeBadge, coverUrl, modeLabel } from "../utils/formatters";
 import { buildEventStatus, parseEventDate } from "../utils/events";
+import { isOrgMember } from "../utils/auth";
 import { useI18n } from "../i18n";
 import "../styles/event-detail.css";
 
@@ -36,6 +38,7 @@ function EventDetailPage() {
   const [infoError, setInfoError] = useState("");
   const [chartsError, setChartsError] = useState("");
   const [rankingError, setRankingError] = useState("");
+  const canManage = isOrgMember(getSession()?.groups ?? []);
 
   const statusLabel = useMemo(
     () => ({
@@ -185,6 +188,7 @@ function EventDetailPage() {
         <div className="event-detail-summary">
           <p className="eyebrow">{t("events.detail.eyebrow")}</p>
           <h1>{info?.name ?? t("events.name.untitled")}</h1>
+          <p className="event-detail-desc">{t("events.detail.desc")}</p>
           <div className="event-detail-meta">
             <span className="pill ghost">{statusLabel[status]}</span>
             <span className="pill ghost">{rangeLabel}</span>
@@ -194,10 +198,17 @@ function EventDetailPage() {
               </span>
             )}
           </div>
+          <div className="event-detail-actions">
+            {canManage && eventId && !Number.isNaN(eventId) && (
+              <a className="btn ghost small" href={`/score/event/edit?eid=${eventId}`}>
+                {t("events.edit.open")}
+              </a>
+            )}
+          </div>
           {infoLoading && !info && (
             <p className="event-detail-loading">{t("charts.loading")}</p>
           )}
-          {infoError && <p className="event-detail-error">{infoError}</p>}
+          {infoError && <p className="eve nt-detail-error">{infoError}</p>}
         </div>
       </header>
 

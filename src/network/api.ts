@@ -396,6 +396,10 @@ export type RespRankingEvent = {
   data?: RespRankingEventItem[]
 }
 
+export type RespEventCreate = {
+  code: number
+}
+
 export type RespSkinListItem = {
   id: number
   uid?: number
@@ -646,6 +650,32 @@ export const fetchEventCharts = async (params: { eid: number; org?: number; from
     return getJson<RespEventChart>('/events/event', { params })
   }
 }
+
+export const createEvent = (payload: {
+  eid?: number
+  name: string
+  type: number
+  start: string
+  end: string
+  cids: string
+  cover?: string
+  wiki?: number
+}) =>
+  postForm<RespEventCreate>('/event/create', {
+    body: {
+      eid: payload.eid,
+      name: payload.name,
+      type: payload.type,
+      start: payload.start,
+      end: payload.end,
+      cids: payload.cids,
+      cover: payload.cover,
+      wiki: payload.wiki,
+    },
+  })
+
+export const fetchEventCoverUpload = (params: { eid: number; type?: number }) =>
+  getJson<RespImageUpload>('/event/image', { params: { ...params, type: params.type ?? 1 } })
 
 export const fetchSkinList = (params?: { uid?: number; mode?: number; word?: string; from?: number; sid?: number }) =>
   getJson<RespSkinList>('/skin/list', { params })

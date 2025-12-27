@@ -92,7 +92,6 @@ function WikiPage() {
       handleSave();
     },
   });
-  const [templateLoading, setTemplateLoading] = useState(false);
   const [templateError, setTemplateError] = useState("");
   const contentRef = useRef<HTMLDivElement>(null);
 
@@ -212,10 +211,6 @@ function WikiPage() {
   }, [context, hasTarget, langValue, params, renderOptions, t]);
 
   const contextLabel = t(`wiki.context.${context}`);
-  const templateInfo =
-    templates.length > 0
-      ? t("wiki.templates.found", { count: templates.length })
-      : t("wiki.templates.none");
   const livePreview = useMemo(
     () => renderWiki(draft, renderOptions),
     [draft, renderOptions]
@@ -226,7 +221,6 @@ function WikiPage() {
       setWikiHtml(html);
       return;
     }
-    setTemplateLoading(true);
     setTemplateError("");
     try {
       const blocks = await Promise.all(
@@ -253,14 +247,12 @@ function WikiPage() {
       setTemplateError(t("wiki.template.error"));
       setWikiHtml(html);
     } finally {
-      setTemplateLoading(false);
     }
   };
 
   useEffect(() => {
     if (!baseHtml) {
       setWikiHtml("");
-      setTemplateLoading(false);
       setTemplateError("");
       return;
     }
@@ -325,14 +317,9 @@ function WikiPage() {
         <div>
           <p className="eyebrow">{t("wiki.eyebrow")}</p>
           <h1>{title || t("wiki.title.fallback")}</h1>
-          <p className="wiki-subtitle">{t("wiki.subtitle")}</p>
           <div className="wiki-meta-row">
             <span className="pill ghost">{contextLabel}</span>
             {locked && <span className="pill danger">{t("wiki.locked")}</span>}
-            <span className="pill ghost">{templateInfo}</span>
-            {templateLoading && (
-              <span className="pill ghost">{t("wiki.template.loading")}</span>
-            )}
           </div>
         </div>
         <div className="wiki-controls">

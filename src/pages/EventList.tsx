@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import PageLayout from "../components/PageLayout";
 import { UseAuthModal } from "../components/UseAuthModal";
-import { fetchStoreEvents } from "../network/api";
+import { fetchStoreEvents, getSession } from "../network/api";
 import type { RespStoreEventItem } from "../network/api";
 import { coverUrl } from "../utils/formatters";
 import { buildEventStatus, parseEventDate, type EventStatus } from "../utils/events";
+import { isOrgMember } from "../utils/auth";
 import { useI18n } from "../i18n";
 import "../styles/event-list.css";
 
@@ -22,6 +23,7 @@ function EventListPage() {
   const [error, setError] = useState("");
   const [hasMore, setHasMore] = useState(false);
   const [next, setNext] = useState<number | undefined>();
+  const canManage = isOrgMember(getSession()?.groups ?? []);
 
   const statusLabel = useMemo(
     () => ({
@@ -96,6 +98,11 @@ function EventListPage() {
               />
               <span>{t("events.filter.activeOnly")}</span>
             </label>
+            {canManage && (
+              <a className="btn primary" href="/score/event/edit">
+                {t("events.create")}
+              </a>
+            )}
           </div>
         </div>
         <div className="event-hero-card">

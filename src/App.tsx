@@ -3,6 +3,7 @@ import PlayerRankPage from "./pages/PlayerRank";
 import ChartListPage from "./pages/ChartList";
 import EventListPage from "./pages/EventList";
 import EventDetailPage from "./pages/EventDetail";
+import EventEditPage from "./pages/EventEdit";
 import SkinListPage from "./pages/SkinList";
 import SkinDetailPage from "./pages/SkinDetail";
 import WikiPage from "./pages/Wiki";
@@ -26,6 +27,10 @@ const isChartListPath = (path: string) => {
 
 const isEventPath = (path: string) => {
   return path.startsWith("/score/event");
+};
+
+const isEventEditPath = (path: string) => {
+  return path.startsWith("/score/event/edit");
 };
 
 const hasEventId = () => {
@@ -89,6 +94,9 @@ function App() {
   }
   if (isSkinListPath(path)) {
     return <SkinListPage />;
+  }
+  if (isEventEditPath(path)) {
+    return <EventEditPage />;
   }
   if (isEventPath(path)) {
     return hasEventId() ? <EventDetailPage /> : <EventListPage />;

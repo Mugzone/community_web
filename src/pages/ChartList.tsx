@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
+import ChartCard from "../components/ChartCard";
 import PageLayout from "../components/PageLayout";
 import { UseAuthModal } from "../components/UseAuthModal";
 import { fetchStoreList } from "../network/api";
@@ -179,7 +180,7 @@ function ChartListPage() {
         </div>
         <div className="chart-hero-card">
           <p className="eyebrow">{t("charts.filter.title")}</p>
-          <form className="chart-filters" onSubmit={onSubmitFilters}>
+          <form className="chart-filters chart-list-filters" onSubmit={onSubmitFilters}>
             <label className="chart-field">
               <span>{t("charts.filter.keyword")}</span>
               <input
@@ -232,26 +233,28 @@ function ChartListPage() {
                 />
               </div>
             </div>
-            <label className="chart-checkbox">
-              <input
-                type="checkbox"
-                checked={filters.free}
-                onChange={(e) =>
-                  setFilters({ ...filters, free: e.target.checked })
-                }
-              />
-              <span>{t("charts.filter.free")}</span>
-            </label>
-            <label className="chart-checkbox">
-              <input
-                type="checkbox"
-                checked={filters.beta}
-                onChange={(e) =>
-                  setFilters({ ...filters, beta: e.target.checked })
-                }
-              />
-              <span>{t("charts.filter.beta")}</span>
-            </label>
+            <div className="chart-checkbox-row">
+              <label className="chart-checkbox">
+                <input
+                  type="checkbox"
+                  checked={filters.free}
+                  onChange={(e) =>
+                    setFilters({ ...filters, free: e.target.checked })
+                  }
+                />
+                <span>{t("charts.filter.free")}</span>
+              </label>
+              <label className="chart-checkbox">
+                <input
+                  type="checkbox"
+                  checked={filters.beta}
+                  onChange={(e) =>
+                    setFilters({ ...filters, beta: e.target.checked })
+                  }
+                />
+                <span>{t("charts.filter.beta")}</span>
+              </label>
+            </div>
             <div className="chart-actions-row">
               <button className="btn primary" type="submit" disabled={loading}>
                 {loading ? t("charts.loading") : t("charts.filter.apply")}
@@ -281,53 +284,31 @@ function ChartListPage() {
         {charts.length ? (
           <div className="chart-grid">
             {charts.map((item) => (
-              <a
-                className="chart-card"
-                href={`/song/${item.sid}`}
+              <ChartCard
                 key={item.sid}
-              >
-                <div
-                  className="chart-card-cover"
-                  style={{ backgroundImage: `url(${item.cover})` }}
-                >
-                  <div className="chart-card-badges">
-                    {item.modeLabels.slice(0, 3).map((label) => (
-                      <span className="pill chart-mode-pill" key={label}>
-                        {label}
-                      </span>
-                    ))}
-                    {filters.free && (
-                      <span className="pill ghost">
-                        {t("charts.badge.freestyle")}
-                      </span>
-                    )}
-                    {filters.beta && (
-                      <span className="pill ghost">
-                        {t("charts.badge.beta")}
-                      </span>
-                    )}
-                  </div>
-                </div>
-                <div className="chart-card-body">
-                  <div className="chart-card-header">
-                    <div>
-                      <p className="chart-card-title">{item.title}</p>
-                      <p className="chart-card-artist">{item.artist}</p>
-                    </div>
-                  </div>
-                  <div className="chart-card-meta">
+                href={`/song/${item.sid}`}
+                cover={item.cover}
+                title={item.title}
+                artist={item.artist}
+                badges={item.modeLabels.slice(0, 3).map((label) => (
+                  <span className="pill chart-mode-pill" key={label}>
+                    {label}
+                  </span>
+                ))}
+                meta={
+                  <>
                     <span className="meta-pill">
                       {formatLength(item.length)}
                     </span>
                     <span className="meta-pill">{formatBpm(item.bpm)}</span>
-                  </div>
-                  <div className="chart-card-footer">
-                    <span className="chart-card-updated">
-                      {formatUpdated(item.lastedit)}
-                    </span>
-                  </div>
-                </div>
-              </a>
+                  </>
+                }
+                footer={
+                  <span className="chart-card-updated">
+                    {formatUpdated(item.lastedit)}
+                  </span>
+                }
+              />
             ))}
           </div>
         ) : (

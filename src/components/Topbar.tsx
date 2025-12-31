@@ -27,7 +27,7 @@ function Topbar({
   userName,
   userId,
 }: TopbarProps) {
-  const { t, lang, setLang, locales } = useI18n();
+  const { t } = useI18n();
   const [showLangMenu, setShowLangMenu] = useState(false);
   const langMenuRef = useRef<HTMLDivElement>(null);
   const session = getSession();
@@ -55,20 +55,6 @@ function Topbar({
     };
   }, [showLangMenu]);
 
-  const toggleTheme = () => {
-    const html = document.documentElement;
-    const currentTheme = html.dataset.theme;
-    const newTheme = currentTheme === "dark" ? "light" : "dark";
-    html.dataset.theme = newTheme;
-    html.dataset.themePref = newTheme;
-    html.style.colorScheme = newTheme;
-    localStorage.setItem("malody-theme", newTheme);
-  };
-
-  const handleLanguageChange = (locale: (typeof locales)[0]) => {
-    setLang(locale);
-    setShowLangMenu(false);
-  };
 
   return (
     <nav className="topbar">
@@ -116,40 +102,6 @@ function Topbar({
               </button>
             </>
           )}
-          <div className="language-selector" ref={langMenuRef}>
-            <button
-              className="theme-toggle"
-              type="button"
-              onClick={() => setShowLangMenu(!showLangMenu)}
-              aria-label="Select language"
-            >
-              <span className="material-icons">language</span>
-            </button>
-            {showLangMenu && (
-              <div className="language-menu">
-                {locales.map((locale) => (
-                  <button
-                    key={locale}
-                    className={`language-option ${
-                      lang === locale ? "active" : ""
-                    }`}
-                    type="button"
-                    onClick={() => handleLanguageChange(locale)}
-                  >
-                    {t(`language.${locale}`)}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-          <button
-            className="theme-toggle"
-            type="button"
-            onClick={toggleTheme}
-            aria-label="Toggle theme"
-          >
-            <span className="material-icons">brightness_6</span>
-          </button>
         </div>
       </div>
     </nav>

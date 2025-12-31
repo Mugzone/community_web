@@ -49,6 +49,10 @@ function HomePage() {
   const { t } = useI18n();
   const auth = UseAuthModal();
   const [newsItems, setNewsItems] = useState<NewsItem[]>([]);
+  const [newsCovers, setNewsCovers] = useState<
+    { src: string; title: string; link?: string }[]
+  >([]);
+  const [activeCover, setActiveCover] = useState(0);
   const [arrivalItems, setArrivalItems] = useState<MapItem[]>([]);
   const wikiEntry = useMemo(
     () => ({
@@ -77,7 +81,11 @@ function HomePage() {
 
     fetchBasicInfo()
       .then((res) => {
-        if (res.code !== 0 || !res.news) return;
+        if (res.code !== 0 || !res.news) {
+          setNewsItems(withWikiEntry([]));
+          setNewsCovers([]);
+          return;
+        }
         const mapped = res.news.map((item: RespBasicInfoNews) => ({
           title: item.title ?? "Untitled",
           link: item.link ?? "#",
@@ -85,11 +93,23 @@ function HomePage() {
           desc: item.desc,
           time: item.time,
         }));
-        if (mapped.length) setNewsItems(withWikiEntry(mapped));
-        else setNewsItems(withWikiEntry([]));
+        setNewsItems(withWikiEntry(mapped));
+        const coverItems = res.news.flatMap((item) => {
+          const desc = item.desc?.trim();
+          if (!desc || !desc.startsWith("http")) return [];
+          return [
+            {
+              src: desc,
+              title: item.title ?? "News",
+              link: item.link,
+            },
+          ];
+        });
+        setNewsCovers(coverItems);
       })
       .catch(() => {
         setNewsItems(withWikiEntry([]));
+        setNewsCovers([]);
       });
 
     fetchStoreList({ from: 0, free: 0 })
@@ -102,6 +122,18 @@ function HomePage() {
         setArrivalItems([]);
       });
   }, [wikiEntry]);
+
+  useEffect(() => {
+    if (newsCovers.length) setActiveCover(0);
+  }, [newsCovers.length]);
+
+  useEffect(() => {
+    if (newsCovers.length < 2) return undefined;
+    const timer = window.setInterval(() => {
+      setActiveCover((prev) => (prev + 1) % newsCovers.length);
+    }, 5000);
+    return () => window.clearInterval(timer);
+  }, [newsCovers.length]);
 
   return (
     <PageLayout topbarProps={auth.topbarProps}>
@@ -136,6 +168,57 @@ function HomePage() {
       </header>
 
       <StatGrid items={stats} />
+
+      {newsCovers.length ? (
+        <div className="news-carousel">
+          <div className="news-carousel-frame">
+            <div
+              className="news-carousel-track"
+              style={{ transform: `translateX(-${activeCover * 100}%)` }}
+            >
+              {newsCovers.map((item, index) => {
+                const image = (
+                  <img
+                    src={item.src}
+                    alt={item.title}
+                    className="news-carousel-image"
+                    loading={index === 0 ? "eager" : "lazy"}
+                  />
+                );
+                return item.link ? (
+                  <a
+                    className="news-carousel-slide"
+                    href={item.link}
+                    key={`${item.src}-${index}`}
+                  >
+                    {image}
+                  </a>
+                ) : (
+                  <div
+                    className="news-carousel-slide"
+                    key={`${item.src}-${index}`}
+                  >
+                    {image}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+          <div className="news-carousel-dots">
+            {newsCovers.map((item, index) => (
+              <button
+                key={`${item.src}-dot-${index}`}
+                type="button"
+                className={`news-carousel-dot${
+                  index === activeCover ? " active" : ""
+                }`}
+                onClick={() => setActiveCover(index)}
+                aria-label={`Slide ${index + 1}`}
+              />
+            ))}
+          </div>
+        </div>
+      ) : null}
 
       <section className="section">
         <div className="news-arrival-grid">

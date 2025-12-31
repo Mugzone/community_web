@@ -159,6 +159,15 @@
   flex-wrap: wrap;
 }
 
+.chart-wiki-header {
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.chart-wiki-title {
+  font-weight: 700;
+}
+
 .chart-admin-actions {
   display: flex;
   flex-direction: column;

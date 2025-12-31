@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
+import ChartCard from "../components/ChartCard";
 import PageLayout from "../components/PageLayout";
 import { UseAuthModal } from "../components/UseAuthModal";
 import { fetchSkinList } from "../network/api";
@@ -201,16 +202,19 @@ function SkinListPage() {
         {skins.length ? (
           <div className="skin-grid">
             {skins.map((item) => (
-              <a
-                className="chart-card skin-card"
-                href={`/store/skin/detail/${item.id}`}
+              <ChartCard
                 key={item.id}
-              >
-                <div
-                  className="chart-card-cover"
-                  style={{ backgroundImage: `url(${item.cover})` }}
-                >
-                  <div className="chart-card-badges">
+                className="skin-card"
+                href={`/store/skin/detail/${item.id}`}
+                cover={item.cover}
+                title={item.name}
+                artist={
+                  item.creator
+                    ? t("skins.creator", { name: item.creator })
+                    : t("skins.creator.unknown")
+                }
+                badges={
+                  <>
                     {item.modeLabels.slice(0, 3).map((label) => (
                       <span className="pill chart-mode-pill" key={label}>
                         {label}
@@ -221,34 +225,24 @@ function SkinListPage() {
                         {t("skins.badge.owned")}
                       </span>
                     )}
-                  </div>
-                </div>
-                <div className="chart-card-body">
-                  <div className="chart-card-header">
-                    <div>
-                      <p className="chart-card-title">{item.name}</p>
-                      <p className="chart-card-artist">
-                        {item.creator
-                          ? t("skins.creator", { name: item.creator })
-                          : t("skins.creator.unknown")}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="chart-card-meta">
+                  </>
+                }
+                meta={
+                  <>
                     <span className="meta-pill">{formatPrice(item.price)}</span>
                     {item.sales !== undefined && item.sales !== null && (
                       <span className="meta-pill">
                         {formatSales(item.sales)}
                       </span>
                     )}
-                  </div>
-                  <div className="chart-card-footer">
-                    <span className="chart-card-updated">
-                      {formatUpdated(item.time)}
-                    </span>
-                  </div>
-                </div>
-              </a>
+                  </>
+                }
+                footer={
+                  <span className="chart-card-updated">
+                    {formatUpdated(item.time)}
+                  </span>
+                }
+              />
             ))}
           </div>
         ) : (

@@ -695,6 +695,14 @@ function ChartPage() {
 
           {activeTab === "wiki" && (
             <div className="chart-panel">
+              {chartId && !Number.isNaN(chartId) && (
+                <div className="chart-panel-header chart-wiki-header">
+                  <span className="chart-wiki-title">{t("chart.tab.wiki")}</span>
+                  <a className="link" href={`/wiki/?cid=${chartId}`}>
+                    {t("chart.wiki.viewFull")}
+                  </a>
+                </div>
+              )}
               {wikiError && <div className="chart-error">{wikiError}</div>}
               {(wikiLoading || templateLoading) && !wikiError && (
                 <div className="wiki-skeleton">

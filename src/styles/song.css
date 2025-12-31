@@ -112,8 +112,7 @@
 
 .song-chart-time-row {
   display: flex;
-  justify-content: flex-end;
-  margin-top: -0.15rem;
+  justify-content: flex-start;
 }
 
 .song-chart-time {

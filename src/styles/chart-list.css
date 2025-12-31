@@ -95,110 +95,22 @@
   align-items: center;
 }
 
-.chart-count {
-  color: var(--color-muted);
-  font-weight: 600;
+.chart-list-filters .chart-checkbox-row {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  align-items: center;
+  grid-column: span 2;
+}
+
+.chart-list-filters .chart-actions-row {
+  grid-column: 1 / -1;
 }
 
 .chart-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: 1rem;
-}
-
-.chart-card {
-  color: inherit;
-  text-decoration: none;
-  background: var(--color-surface);
-  border-radius: 14px;
-  border: 1px solid var(--color-border);
-  overflow: hidden;
-  box-shadow: var(--shadow-sm);
-  display: flex;
-  flex-direction: column;
-  min-height: 100%;
-}
-
-.chart-card:hover {
-  border-color: rgba(93, 181, 255, 0.22);
-  box-shadow: var(--shadow-md), 0 0 0 2px var(--glow-primary);
-}
-
-.chart-card-cover {
-  position: relative;
-  height: 170px;
-  background-size: cover;
-  background-position: center;
-}
-
-.chart-card-badges {
-  position: absolute;
-  top: 12px;
-  left: 12px;
-  display: flex;
-  gap: 0.4rem;
-  flex-wrap: wrap;
-}
-
-.chart-card-badges .pill {
-  position: static;
-}
-
-.chart-mode-pill {
-  font-size: 0.8rem;
-}
-
-.chart-card-body {
-  padding: 0.9rem 1rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.65rem;
-  flex: 1;
-}
-
-.chart-card-header {
-  display: flex;
-  gap: 0.75rem;
-  align-items: flex-start;
-  padding-bottom: 0.2rem;
-}
-
-.chart-card-title {
-  margin: 0;
-  font-weight: 800;
-}
-
-.chart-card-artist {
-  margin: 0.15rem 0 0;
-  color: var(--color-muted);
-}
-
-.chart-card-meta {
-  display: flex;
-  gap: 0.4rem;
-  flex-wrap: wrap;
-}
-
-.meta-pill {
-  background: rgba(93, 181, 255, 0.12);
-  border: 1px solid rgba(93, 181, 255, 0.14);
-  color: var(--color-text);
-  padding: 0.25rem 0.6rem;
-  border-radius: 999px;
-  font-weight: 700;
-  font-size: 0.9rem;
-}
-
-.chart-card-footer {
-  margin-top: auto;
-  display: flex;
-  align-items: center;
-  color: var(--color-muted);
-  font-weight: 600;
-}
-
-.chart-card-updated {
-  font-weight: 600;
 }
 
 .chart-empty {

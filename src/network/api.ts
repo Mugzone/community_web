@@ -145,7 +145,7 @@ type PostOptions = FetchOptions & {
   body?: Record<string, string | number | undefined>
 }
 
-const CLIENT_VER = 327935
+const CLIENT_VER = 1
 const MALODY_VERSION = '6.3.22'
 const buildVersionHeader = (clientVersion?: string) => {
   if (!canSendCustomHeaders) return undefined
@@ -625,21 +625,22 @@ export const fetchStoreList = (
     word?: string
     lvge?: number
     lvle?: number
+    __v__?: string
     mcver?: number
   },
   options?: { clientVersion?: string },
 ) =>
   getJson<RespStoreList>('/store/list', {
-    params,
+    params: { __v__: MALODY_VERSION, mcver: CLIENT_VER, ...params },
     headers: buildVersionHeader(options?.clientVersion),
   })
 
 export const fetchStorePromote = (
-  params?: { mode?: number; from?: number; free?: number },
+  params?: { mode?: number; from?: number; free?: number; __v__?: string },
   options?: { clientVersion?: string },
 ) =>
   getJson<RespStoreList>('/store/promote', {
-    params,
+    params: { __v__: MALODY_VERSION, mcver: CLIENT_VER, ...params },
     headers: buildVersionHeader(options?.clientVersion),
   })
 

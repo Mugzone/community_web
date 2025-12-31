@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import ChartCard from "../components/ChartCard";
 import PageLayout from "../components/PageLayout";
 import { UseAuthModal } from "../components/UseAuthModal";
 import { useI18n } from "../i18n";
@@ -640,30 +641,29 @@ function PlayerPage() {
               <div className="player-empty">{t("player.charts.empty")}</div>
             )}
             <div className="player-chart-grid">
-              {charts.map((item) => (
-                <a
-                  className="player-chart-card"
-                  key={item.cid}
-                  href={`/chart/${item.cid}`}
-                >
-                  <div
-                    className="player-chart-cover"
-                    style={{ backgroundImage: `url(${coverUrl(item.cover)})` }}
+              {charts.map((item) => {
+                const mode = modeLabel(item.mode);
+
+                return (
+                  <ChartCard
+                    key={item.cid}
+                    href={`/chart/${item.cid}`}
+                    cover={coverUrl(item.cover)}
+                    title={item.title || t("player.charts.untitled")}
+                    artist={item.artist || t("player.charts.unknown")}
+                    badges={
+                      mode ? (
+                        <span className="pill chart-mode-pill">{mode}</span>
+                      ) : null
+                    }
+                    meta={
+                      item.version ? (
+                        <span className="meta-pill">{item.version}</span>
+                      ) : null
+                    }
                   />
-                  <div className="player-chart-body">
-                    <p className="player-chart-title">
-                      {item.title || t("player.charts.untitled")}
-                    </p>
-                    <p className="player-chart-meta">
-                      {item.artist || t("player.charts.unknown")} ·{" "}
-                      {modeLabel(item.mode)}
-                    </p>
-                    {item.version && (
-                      <span className="pill ghost">{item.version}</span>
-                    )}
-                  </div>
-                </a>
-              ))}
+                );
+              })}
             </div>
           </section>
         )}
@@ -695,9 +695,6 @@ function PlayerPage() {
                 >
                   <div className="player-rank-head">
                     <span className="pill ghost">{modeLabel(item.mode)}</span>
-                    <span className="player-rank-score">
-                      {item.value ?? "—"}
-                    </span>
                   </div>
                   <p className="player-rank-pos">
                     {t("player.rank.position", {
@@ -732,7 +729,6 @@ function PlayerPage() {
             <div className="player-section-head">
               <div>
                 <p className="eyebrow">{t("player.section.wiki")}</p>
-                <h2>{t("player.section.wikiTitle")}</h2>
               </div>
               <a className="btn ghost small" href={wikiLink}>
                 {t("player.wikiLink")}

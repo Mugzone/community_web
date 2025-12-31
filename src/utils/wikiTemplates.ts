@@ -106,11 +106,14 @@ export const renderTemplateHtml = (
       )}</div>`;
     const max = Math.max(...list.map((i) => Number(i.total) || 0), 1);
     const items = list
-      .map((item) => {
+      .map((item, index) => {
         const percent = Math.round(((Number(item.total) || 0) / max) * 100);
-        return `<li><div class="wiki-template-bar" style="width:${percent}%"></div><span>${escapeHtml(
-          item.username ?? ""
-        )}</span><span class="wiki-template-value">${
+        const name = escapeHtml(item.username ?? "");
+        const labelText = `${index + 1}. ${name}`;
+        const label = item.uid
+          ? `<a class="wiki-template-label" href="/player/${item.uid}">${labelText}</a>`
+          : `<span class="wiki-template-label">${labelText}</span>`;
+        return `<li>${label}<div class="wiki-template-bar" style="width:${percent}%"></div><span class="wiki-template-value">${
           item.total ?? 0
         }</span></li>`;
       })

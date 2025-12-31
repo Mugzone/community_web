@@ -412,34 +412,64 @@ function ChartPage() {
           <span>#</span>
           <span>{t("chart.ranking.player")}</span>
           <span>{t("chart.ranking.score")}</span>
+          <span>{t("chart.ranking.level")}</span>
           <span>{t("chart.ranking.acc")}</span>
           <span>{t("chart.ranking.combo")}</span>
           <span>{t("chart.ranking.time")}</span>
         </div>
-        {data.map((item) => (
-          <div
-            className="chart-rank-row"
-            key={`${item.uid}-${item.time}-${item.score}`}
-          >
-            <span className="chart-rank-pos">{item.ranking ?? "-"}</span>
-            <a className="chart-rank-player" href={`/player/${item.uid}`}>
-              <img
-                className="chart-rank-avatar"
-                src={avatarUidUrl(item.uid)}
-                alt={item.username || t("chart.ranking.unknown")}
-              />
-              <span>{item.username || t("chart.ranking.unknown")}</span>
-            </a>
-            <span>{item.score}</span>
-            <span>{`${item.acc?.toFixed(2) ?? "0"}%`}</span>
-            <span>{item.combo}</span>
-            <span>
-              {item.time
-                ? new Date(item.time * 1000).toLocaleDateString()
-                : "-"}
-            </span>
-          </div>
-        ))}
+        {data.map((item) => {
+          const judgeValue =
+            typeof item.judge === "number" && Number.isFinite(item.judge)
+              ? item.judge
+              : undefined;
+          const rankValue =
+            typeof item.rank === "number" && Number.isFinite(item.rank)
+              ? item.rank
+              : undefined;
+          const rankMap: Record<number, number> = {
+            0: 0,
+            1: 5,
+            2: 4,
+            3: 3,
+            4: 2,
+            5: 1,
+          };
+          const rankDisplay =
+            rankValue === undefined ? undefined : rankMap[rankValue];
+          const rankLabel =
+            rankDisplay === undefined ? "-" : `M${rankDisplay}`;
+          const judgeClass =
+            judgeValue !== undefined && judgeValue >= 0 && judgeValue <= 4
+              ? `chart-rank-grade judge-${judgeValue}`
+              : "chart-rank-grade";
+          return (
+            <div
+              className="chart-rank-row"
+              key={`${item.uid}-${item.time}-${item.score}`}
+            >
+              <span className="chart-rank-pos">{item.ranking ?? "-"}</span>
+              <a className="chart-rank-player" href={`/player/${item.uid}`}>
+                <img
+                  className="chart-rank-avatar"
+                  src={avatarUidUrl(item.uid)}
+                  alt={item.username || t("chart.ranking.unknown")}
+                />
+                <span>{item.username || t("chart.ranking.unknown")}</span>
+              </a>
+              <span>{item.score}</span>
+              <span className={judgeClass}>{rankLabel}</span>
+              <span>{`${item.acc?.toFixed(2) ?? "0"}%`}</span>
+              <span
+                className={item.fc ? "chart-rank-combo is-fc" : "chart-rank-combo"}
+              >
+                {item.combo}
+              </span>
+              <span title={item.time ? new Date(item.time * 1000).toLocaleString() : ""}>
+                {formatRelativeTime(item.time)}
+              </span>
+            </div>
+          );
+        })}
       </div>
     );
   };
@@ -448,6 +478,20 @@ function ChartPage() {
   const creatorUid = info?.uid;
   const publisherName = info?.publisher || t("chart.placeholder.publisher");
   const publisherUid = info?.publisherId;
+  const formatRelativeTime = (value?: number) => {
+    if (!value) return "-";
+    const now = Date.now();
+    const diffMs = now - value * 1000;
+    const diffMinutes = Math.floor(diffMs / 60000);
+    if (diffMinutes <= 1) return t("chart.ranking.time.justNow");
+    if (diffMinutes < 60) return t("chart.ranking.time.withinHour");
+    const diffHours = Math.floor(diffMinutes / 60);
+    if (diffHours < 24) return t("chart.ranking.time.withinDay");
+    const diffDays = Math.floor(diffHours / 24);
+    if (diffDays < 7) return t("chart.ranking.time.withinWeek");
+    if (diffDays < 30) return t("chart.ranking.time.withinMonth");
+    return t("chart.ranking.time.days", { value: diffDays });
+  };
 
   return (
     <PageLayout className="chart-page" topbarProps={auth.topbarProps}>

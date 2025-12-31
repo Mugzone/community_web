@@ -350,32 +350,6 @@
   gap: 0.25rem;
 }
 
-.wiki-template-bars {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: grid;
-  gap: 0.4rem;
-}
-
-.wiki-template-bars li {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.wiki-template-bar {
-  height: 12px;
-  background: linear-gradient(90deg, var(--primary), var(--primary-strong));
-  border-radius: 6px;
-}
-
-.wiki-template-value {
-  font-weight: 700;
-  color: var(--color-text);
-}
-
 .wiki-template-warning {
   background: rgba(234, 179, 8, 0.12);
   border-color: rgba(234, 179, 8, 0.6);

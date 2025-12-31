@@ -283,7 +283,7 @@
 .chart-rank-head,
 .chart-rank-row {
   display: grid;
-  grid-template-columns: 40px 1.6fr 1fr 0.9fr 0.9fr 1fr;
+  grid-template-columns: 40px 1.6fr 1fr 0.85fr 0.9fr 0.9fr 1fr;
   gap: 0.4rem;
   align-items: center;
 }
@@ -324,6 +324,34 @@
   height: 28px;
   border-radius: 50%;
   object-fit: cover;
+}
+
+.chart-rank-combo.is-fc {
+  font-weight: 800;
+}
+
+.chart-rank-grade {
+  font-weight: 800;
+}
+
+.chart-rank-grade.judge-0 {
+  color: var(--judge-0);
+}
+
+.chart-rank-grade.judge-1 {
+  color: var(--judge-1);
+}
+
+.chart-rank-grade.judge-2 {
+  color: var(--judge-2);
+}
+
+.chart-rank-grade.judge-3 {
+  color: var(--judge-3);
+}
+
+.chart-rank-grade.judge-4 {
+  color: var(--judge-4);
 }
 
 .chart-rank-empty {
@@ -451,6 +479,6 @@
 
   .chart-rank-head,
   .chart-rank-row {
-    grid-template-columns: 32px 1.2fr 1fr 0.8fr 0.8fr 1fr;
+    grid-template-columns: 32px 1.2fr 1fr 0.8fr 0.8fr 0.8fr 1fr;
   }
 }

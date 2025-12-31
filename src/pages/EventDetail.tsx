@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import PageLayout from "../components/PageLayout";
 import { UseAuthModal } from "../components/UseAuthModal";
+import RankingBars from "../components/RankingBars";
 import {
   fetchEventCharts,
   fetchEventRanking,
@@ -10,7 +11,7 @@ import {
   type RespRankingEventItem,
   type RespStoreEventItem,
 } from "../network/api";
-import { avatarUidUrl, chartTypeBadge, coverUrl, modeLabel } from "../utils/formatters";
+import { chartTypeBadge, coverUrl, modeLabel } from "../utils/formatters";
 import { buildEventStatus, parseEventDate } from "../utils/events";
 import { isOrgMember } from "../utils/auth";
 import { useI18n } from "../i18n";
@@ -291,37 +292,14 @@ function EventDetailPage() {
           ) : rankingLoading && !ranking.length ? (
             <div className="chart-empty">{t("charts.loading")}</div>
           ) : ranking.length ? (
-            <div className="event-ranking-wrap">
-              <table className="event-ranking-table">
-                <thead>
-                  <tr>
-                    <th>{t("events.detail.ranking.table.rank")}</th>
-                    <th>{t("events.detail.ranking.table.player")}</th>
-                    <th>{t("events.detail.ranking.table.score")}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {ranking.map((row, index) => (
-                    <tr key={`${row.uid}-${row.index ?? index}`}>
-                      <td>{row.index ?? index + 1}</td>
-                      <td>
-                        <div className="event-ranking-player">
-                          <img
-                            className="event-ranking-avatar"
-                            src={avatarUidUrl(row.uid)}
-                            alt={row.username ?? t("events.detail.ranking.table.player")}
-                          />
-                          <a className="event-ranking-name" href={`/player/${row.uid}`}>
-                            {row.username ?? `#${row.uid}`}
-                          </a>
-                        </div>
-                      </td>
-                      <td className="event-ranking-score">{row.score ?? 0}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <RankingBars
+              items={ranking.map((row, index) => ({
+                uid: row.uid,
+                name: row.username ?? `#${row.uid}`,
+                value: row.score ?? 0,
+                rank: row.index ?? index + 1,
+              }))}
+            />
           ) : (
             <div className="chart-empty">{t("events.detail.ranking.empty")}</div>
           )}

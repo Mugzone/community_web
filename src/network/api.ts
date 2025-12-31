@@ -23,6 +23,10 @@ export type PackBase = {
   message?: string
 }
 
+export type RespActivationCode = {
+  code: number
+}
+
 export type RespImageUpload = {
   code: number
   url?: string
@@ -679,6 +683,9 @@ export const savePlayerInfo = (payload: {
       area: payload.area,
     },
   })
+
+export const submitActivationCode = (payload: { code: string }) =>
+  postForm<RespActivationCode>('/player/code', { body: { code: payload.code } })
 
 export const fetchPlayerImageUpload = (params: { type: number; touid?: number }) =>
   getJson<RespImageUpload>('/player/image', { params })

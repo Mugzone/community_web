@@ -444,6 +444,11 @@ function ChartPage() {
     );
   };
 
+  const creatorName = info?.creator || t("chart.placeholder.creator");
+  const creatorUid = info?.uid;
+  const publisherName = info?.publisher || t("chart.placeholder.publisher");
+  const publisherUid = info?.publisherId;
+
   return (
     <PageLayout className="chart-page" topbarProps={auth.topbarProps}>
       <header className="chart-hero content-container">
@@ -510,11 +515,58 @@ function ChartPage() {
             ) : null}
           </div>
           <div className="chart-score-meta">
-            <p className="chart-score-label">{t("chart.meta.creator")}</p>
-            <p className="chart-score-value">
-              {info?.creator || t("chart.placeholder.creator")}
-            </p>
-            {info?.cid && <p className="chart-score-id">CID {info.cid}</p>}
+            <div className="chart-score-meta-grid">
+              <div className="chart-score-person">
+                <p className="chart-score-label">{t("chart.meta.creator")}</p>
+                <div className="chart-score-creator">
+                  {creatorUid ? (
+                    <a
+                      className="chart-score-avatar"
+                      href={`/player/${creatorUid}`}
+                      aria-label={creatorName}
+                    >
+                      <img src={avatarUidUrl(creatorUid)} alt={creatorName} />
+                    </a>
+                  ) : (
+                    <div className="chart-score-avatar placeholder" aria-hidden="true" />
+                  )}
+                  <div className="chart-score-creator-info">
+                    {creatorUid ? (
+                      <a className="chart-score-value link" href={`/player/${creatorUid}`}>
+                        {creatorName}
+                      </a>
+                    ) : (
+                      <p className="chart-score-value">{creatorName}</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+              <div className="chart-score-person">
+                <p className="chart-score-label">{t("chart.meta.publisher")}</p>
+                <div className="chart-score-creator">
+                  {publisherUid ? (
+                    <a
+                      className="chart-score-avatar"
+                      href={`/player/${publisherUid}`}
+                      aria-label={publisherName}
+                    >
+                      <img src={avatarUidUrl(publisherUid)} alt={publisherName} />
+                    </a>
+                  ) : (
+                    <div className="chart-score-avatar placeholder" aria-hidden="true" />
+                  )}
+                  <div className="chart-score-creator-info">
+                    {publisherUid ? (
+                      <a className="chart-score-value link" href={`/player/${publisherUid}`}>
+                        {publisherName}
+                      </a>
+                    ) : (
+                      <p className="chart-score-value">{publisherName}</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </section>
 
@@ -564,8 +616,8 @@ function ChartPage() {
                         loadRanking(next);
                       }}
                     >
-                      <option value={0}>{t("chart.ranking.platform.mobile")}</option>
-                      <option value={1}>{t("chart.ranking.platform.pc")}</option>
+                      <option value={0}>Default</option>
+                      <option value={1}>Pro</option>
                     </select>
                   </label>
                   <label>

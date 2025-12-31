@@ -95,6 +95,10 @@
   align-items: center;
 }
 
+.chart-filters .chart-actions-row {
+  grid-column: 1 / -1;
+}
+
 .chart-list-filters .chart-checkbox-row {
   display: flex;
   gap: 0.6rem;

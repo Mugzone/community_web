@@ -409,21 +409,6 @@ function PlayerPage() {
     info?.unstableCharts ?? info?.unstableCount ?? info?.count_1;
   const chartSlotValue = info?.chartSlot ?? info?.slot ?? info?.count_0;
 
-  const metaBadges = [
-    info?.regtime
-      ? t("player.joined", { time: formatDate(info.regtime) })
-      : undefined,
-    info?.playcount !== undefined
-      ? t("player.meta.playcount", { value: info.playcount })
-      : undefined,
-    info?.gold !== undefined
-      ? t("player.meta.gold", { value: info.gold })
-      : undefined,
-    info?.exp !== undefined
-      ? t("player.meta.exp", { value: info.exp })
-      : undefined,
-  ].filter(Boolean) as string[];
-
   const basicRows = [
     [
       {
@@ -503,14 +488,6 @@ function PlayerPage() {
           {playerId && <p className="player-uid">UID {playerId}</p>}
           {info?.sign && <p className="player-sign">{info.sign}</p>}
           <div className="player-meta">
-            {metaBadges.map((text) => (
-              <span className="pill ghost" key={text}>
-                {text}
-              </span>
-            ))}
-            <a className="pill ghost" href={wikiLink}>
-              {t("player.wikiLink")}
-            </a>
             {canEditProfile && (
               <a className="btn ghost small player-edit-link" href="/accounts/config/profile">
                 {t("player.edit.open")}

@@ -247,9 +247,14 @@ function WikiPage() {
       const blocks = await Promise.all(
         tmplList.map(async (tmpl) => {
           try {
+            const params = { ...tmpl.params };
+            if (tmpl.name === "_eventsum" && params.uid) {
+              params._uid = params.uid;
+              delete params.uid;
+            }
             const resp = await fetchWikiTemplate({
               name: tmpl.name,
-              ...tmpl.params,
+              ...params,
             });
             if (resp.code !== 0) return renderTemplateHtml(t, tmpl, resp);
             return renderTemplateHtml(t, tmpl, resp);

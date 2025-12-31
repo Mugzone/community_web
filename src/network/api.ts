@@ -506,6 +506,8 @@ export type RespChartInfo = {
   creator?: string
   type?: number
   uid?: number
+  publisher?: string
+  publisherId?: number
   version?: string
   mode?: number
   length?: number

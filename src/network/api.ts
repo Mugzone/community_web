@@ -603,6 +603,16 @@ export type RespWiki = {
   locked?: boolean
 }
 
+export type RespWikiSearchItem = {
+  pid: number
+  title: string
+}
+
+export type RespWikiSearch = {
+  code: number
+  data?: RespWikiSearchItem[]
+}
+
 export type RespSaveWiki = {
   code: number
 }
@@ -618,6 +628,20 @@ export type RespCreateWiki = {
   code: number
   id?: number
   exist?: number
+}
+
+export type RespPushNews = {
+  code: number
+}
+
+export type RespPlayerSearchItem = {
+  uid: number
+  username: string
+}
+
+export type RespPlayerSearch = {
+  code: number
+  data?: RespPlayerSearchItem[]
 }
 
 export const fetchBasicInfo = () => getJson<RespBasicInfo>('/push/info/wt', { auth: false })
@@ -858,6 +882,9 @@ export const fetchWiki = (params: {
 }) =>
   getJson<RespWiki>('/community/wiki', { params })
 
+export const searchWiki = (params: { keyword: string }) =>
+  getJson<RespWikiSearch>('/community/wiki/search', { params })
+
 export const saveWiki = (payload: {
   wiki: string
   lang?: number
@@ -905,6 +932,15 @@ export const deleteWikiPage = (payload: { pid: number; uid: number }) =>
     params: { uid: payload.uid },
     body: { pid: payload.pid },
   })
+
+export const toggleWikiNews = (payload: { pid: number; uid: number }) =>
+  postForm<RespPushNews>('/push/news', {
+    params: { uid: payload.uid },
+    body: { pid: payload.pid },
+  })
+
+export const searchPlayer = (params: { keyword: string; ver?: number; bver?: number }) =>
+  getJson<RespPlayerSearch>('/player/search', { params })
 
 export const login = (payload: { name: string; psw: string; ver?: number; h?: string; bver?: number }) =>
   postForm<RespLogin>('/account/login/wt', {

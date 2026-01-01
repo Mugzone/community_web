@@ -28,11 +28,10 @@ function ChartCard({
       <div
         className="chart-card-cover"
         style={{ backgroundImage: `url(${cover})` }}
-      >
-        {badges && <div className="chart-card-badges">{badges}</div>}
-      </div>
+      />
       <div className="chart-card-body">
         <div className="chart-card-header">
+          {badges && <div className="chart-card-badges">{badges}</div>}
           <div>
             <p className="chart-card-title">{title}</p>
             {artist && <p className="chart-card-artist">{artist}</p>}

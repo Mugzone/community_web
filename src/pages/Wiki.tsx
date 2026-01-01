@@ -10,6 +10,7 @@ import {
   getSession,
   lockWikiPage,
   saveWiki,
+  toggleWikiNews,
   updateWikiTitle,
   type RespWiki,
 } from "../network/api";
@@ -443,6 +444,39 @@ function WikiPage() {
     }
   };
 
+  const handleToggleNews = async () => {
+    if (!params.pid || manageBusy) return;
+    const session = requireAuth();
+    if (!session) return;
+    setManageBusy(true);
+    setManageError("");
+    setManageSuccess("");
+    try {
+      const resp = await toggleWikiNews({
+        pid: params.pid,
+        uid: session.uid,
+      });
+      if (resp.code === 1) {
+        setManageSuccess(t("wiki.manage.newsAdded"));
+        return;
+      }
+      if (resp.code === 2) {
+        setManageSuccess(t("wiki.manage.newsRemoved"));
+        return;
+      }
+      if (resp.code === -5) {
+        setManageError(t("wiki.manage.permission"));
+        return;
+      }
+      setManageError(t("wiki.manage.error"));
+    } catch (err) {
+      console.error(err);
+      setManageError(t("wiki.manage.error"));
+    } finally {
+      setManageBusy(false);
+    }
+  };
+
   return (
     <PageLayout className="wiki-page" topbarProps={auth.topbarProps}>
       <header className="wiki-hero content-container">
@@ -518,6 +552,14 @@ function WikiPage() {
                       disabled={manageBusy}
                     >
                       {t("wiki.manage.delete")}
+                    </button>
+                    <button
+                      className="btn ghost small"
+                      type="button"
+                      onClick={handleToggleNews}
+                      disabled={manageBusy}
+                    >
+                      {t("wiki.manage.pushNews")}
                     </button>
                   </>
                 )}

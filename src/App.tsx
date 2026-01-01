@@ -15,6 +15,7 @@ import ChartEditPage from './pages/ChartEdit'
 import PlayerPage from './pages/Player'
 import PlayerEditPage from './pages/PlayerEdit'
 import ActivationCodePage from './pages/ActivationCode'
+import SearchPage from './pages/Search'
 
 const isPlayerRankPath = (path: string) => {
   return (
@@ -87,6 +88,10 @@ const isActivationCodePath = (path: string) => {
   return path === '/code' || path === '/code/'
 }
 
+const isSearchPath = (path: string) => {
+  return path.startsWith('/search')
+}
+
 function App() {
   const path = window.location.pathname
   if (isPlayerEditPath(path)) {
@@ -94,6 +99,9 @@ function App() {
   }
   if (isActivationCodePath(path)) {
     return <ActivationCodePage />
+  }
+  if (isSearchPath(path)) {
+    return <SearchPage />
   }
   if (isPlayerPath(path)) {
     return <PlayerPage />

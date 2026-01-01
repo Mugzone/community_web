@@ -482,3 +482,53 @@
     grid-template-columns: 32px 1.2fr 1fr 0.8fr 0.8fr 0.8fr 1fr;
   }
 }
+
+@media (max-width: 767px) {
+  .chart-rank-head,
+  .chart-rank-row {
+    grid-template-columns: 32px minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 0.9fr);
+    grid-template-areas:
+      "pos player score level"
+      ". acc combo time";
+  }
+
+  .chart-rank-head > *,
+  .chart-rank-row > * {
+    min-width: 0;
+  }
+
+  .chart-rank-head > :nth-child(1),
+  .chart-rank-row > :nth-child(1) {
+    grid-area: pos;
+  }
+
+  .chart-rank-head > :nth-child(2),
+  .chart-rank-row > :nth-child(2) {
+    grid-area: player;
+  }
+
+  .chart-rank-head > :nth-child(3),
+  .chart-rank-row > :nth-child(3) {
+    grid-area: score;
+  }
+
+  .chart-rank-head > :nth-child(4),
+  .chart-rank-row > :nth-child(4) {
+    grid-area: level;
+  }
+
+  .chart-rank-head > :nth-child(5),
+  .chart-rank-row > :nth-child(5) {
+    grid-area: acc;
+  }
+
+  .chart-rank-head > :nth-child(6),
+  .chart-rank-row > :nth-child(6) {
+    grid-area: combo;
+  }
+
+  .chart-rank-head > :nth-child(7),
+  .chart-rank-row > :nth-child(7) {
+    grid-area: time;
+  }
+}

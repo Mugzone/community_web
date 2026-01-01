@@ -150,6 +150,7 @@ function CommentThread({
     }
     const target = comments.find((item) => item.tid === tid);
     if (!target || target.uid !== session.uid) return;
+    if (!window.confirm(t("comment.confirmDelete"))) return;
     setDeletingTid(tid);
     setDeleteError("");
     try {

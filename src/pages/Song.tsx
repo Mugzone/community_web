@@ -31,6 +31,31 @@ const formatSeconds = (value?: number) => {
   return `${minutes}:${String(seconds).padStart(2, "0")}`;
 };
 
+const copyToClipboard = async (value: string) => {
+  if (!value) return;
+  if (navigator.clipboard?.writeText) {
+    try {
+      await navigator.clipboard.writeText(value);
+      return;
+    } catch (err) {
+      console.error(err);
+    }
+  }
+  try {
+    const textarea = document.createElement("textarea");
+    textarea.value = value;
+    textarea.setAttribute("readonly", "true");
+    textarea.style.position = "fixed";
+    textarea.style.opacity = "0";
+    document.body.appendChild(textarea);
+    textarea.select();
+    document.execCommand("copy");
+    document.body.removeChild(textarea);
+  } catch (err) {
+    console.error(err);
+  }
+};
+
 function SongPage() {
   const { t } = useI18n();
   const auth = UseAuthModal();
@@ -49,6 +74,8 @@ function SongPage() {
   const [wikiTemplates, setWikiTemplates] = useState<WikiTemplate[]>([]);
   const wikiRef = useRef<HTMLDivElement>(null);
   const [templateError, setTemplateError] = useState("");
+  const [chartView, setChartView] = useState<"grid" | "list">("grid");
+  const [modeFilter, setModeFilter] = useState("all");
 
   const renderOptions = useMemo(
     () => ({
@@ -57,6 +84,55 @@ function SongPage() {
       templateLoading: t("wiki.template.loading"),
     }),
     [t]
+  );
+
+  const isListView = chartView === "list";
+  const availableModes = useMemo(() => {
+    const modes = new Map<number, string>();
+    charts.forEach((chart) => {
+      if (chart.mode === undefined || chart.mode === null) return;
+      modes.set(chart.mode, modeLabel(chart.mode));
+    });
+    return Array.from(modes.entries()).sort((a, b) => a[0] - b[0]);
+  }, [charts]);
+
+  useEffect(() => {
+    if (modeFilter === "all") return;
+    const current = Number(modeFilter);
+    if (!availableModes.some(([mode]) => mode === current)) {
+      setModeFilter("all");
+    }
+  }, [availableModes, modeFilter]);
+
+  const filteredCharts = useMemo(() => {
+    if (modeFilter === "all") return charts;
+    const current = Number(modeFilter);
+    return charts.filter((chart) => chart.mode === current);
+  }, [charts, modeFilter]);
+
+  const chartTableHead = (
+    <div className="song-chart-head">
+      <span>
+        <label className="song-chart-mode-filter">
+          <span>{t("song.charts.table.mode")}</span>
+          <select
+            value={modeFilter}
+            onChange={(event) => setModeFilter(event.target.value)}
+          >
+            <option value="all">{t("charts.mode.all")}</option>
+            {availableModes.map(([mode, label]) => (
+              <option key={mode} value={String(mode)}>
+                {label}
+              </option>
+            ))}
+          </select>
+        </label>
+      </span>
+      <span>{t("song.charts.table.title")}</span>
+      <span>{t("song.charts.table.type")}</span>
+      <span>{t("song.charts.table.creator")}</span>
+      <span className="song-chart-updated">{t("song.charts.table.updated")}</span>
+    </div>
   );
 
   useEffect(() => {
@@ -240,13 +316,25 @@ function SongPage() {
             </p>
           )}
           <div className="song-meta-row">
-            <span className="pill ghost">{infoLength}</span>
-            <span className="pill ghost">{infoBpm}</span>
             {songId && !Number.isNaN(songId) && (
-              <span className="pill ghost">
-                {t("song.meta.id", { id: songId })}
+                <span
+                    className="pill ghost copyable"
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => copyToClipboard(`s${songId}`)}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        copyToClipboard(`s${songId}`);
+                      }
+                    }}
+                >
+                {`s${songId}`}
               </span>
             )}
+            <span className="pill ghost">{infoLength}</span>
+            <span className="pill ghost">{infoBpm}</span>
+
           </div>
           {songId && !Number.isNaN(songId) && (
             <div className="song-actions">
@@ -269,63 +357,146 @@ function SongPage() {
               <p className="eyebrow">{t("song.charts.eyebrow")}</p>
               <h2>{t("song.charts.title")}</h2>
             </div>
+            <div className="toggle-group song-chart-toggle">
+              <button
+                className={`toggle-btn ${chartView === "grid" ? "active" : ""}`}
+                type="button"
+                aria-pressed={chartView === "grid"}
+                onClick={() => setChartView("grid")}
+              >
+                {t("song.charts.view.grid")}
+              </button>
+              <button
+                className={`toggle-btn ${chartView === "list" ? "active" : ""}`}
+                type="button"
+                aria-pressed={chartView === "list"}
+                onClick={() => setChartView("list")}
+              >
+                {t("song.charts.view.list")}
+              </button>
+            </div>
           </div>
           {chartsError && <div className="song-error">{chartsError}</div>}
           {loadingCharts && !chartsError ? (
-            <div className="song-chart-grid">
-              {Array.from({ length: 3 }).map((_, idx) => (
-                <div className="song-chart-card skeleton" key={idx}>
-                  <div className="song-chart-main" />
-                  <div className="song-chart-meta-row" />
-                  <div className="song-chart-time-row" />
-                </div>
-              ))}
-            </div>
+            isListView ? (
+              <div className="song-chart-table">
+                {chartTableHead}
+                {Array.from({ length: 4 }).map((_, idx) => (
+                  <div className="song-chart-row skeleton" key={idx}>
+                    <span className="song-chart-cell" />
+                    <span className="song-chart-cell" />
+                    <span className="song-chart-cell" />
+                    <span className="song-chart-cell" />
+                    <span className="song-chart-cell" />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="song-chart-grid">
+                {Array.from({ length: 3 }).map((_, idx) => (
+                  <div className="song-chart-card skeleton" key={idx}>
+                    <div className="song-chart-main" />
+                    <div className="song-chart-meta-row" />
+                    <div className="song-chart-time-row" />
+                  </div>
+                ))}
+              </div>
+            )
           ) : charts.length ? (
-            <div className="song-chart-grid">
-              {charts.map((chart) => {
-                const typeBadge = chartTypeBadge(chart.type);
-                return (
-                  <a
-                    className="song-chart-card"
-                    href={`/chart/${chart.cid}`}
-                    key={chart.cid}
-                  >
-                    <div className="song-chart-main">
-                      <p className="song-chart-title">
-                        {chart.version || t("song.charts.untitled")}
-                      </p>
-                      <div className="song-chart-tags">
-                        <span className="pill ghost">
+            isListView ? (
+              <div className="song-chart-table">
+                {chartTableHead}
+                {filteredCharts.length ? (
+                  filteredCharts.map((chart) => {
+                    const typeBadge = chartTypeBadge(chart.type);
+                    return (
+                      <a
+                        className="song-chart-row"
+                        href={`/chart/${chart.cid}`}
+                        key={chart.cid}
+                      >
+                        <span className="song-chart-cell">
                           {modeLabel(chart.mode)}
                         </span>
-                        {typeBadge ? (
-                          <span className={typeBadge.className}>
-                            {typeBadge.label}
+                        <span className="song-chart-title-cell">
+                          {chart.version || t("song.charts.untitled")}
+                        </span>
+                        <span className="song-chart-cell">
+                          {typeBadge ? (
+                            <span className={typeBadge.className}>
+                              {typeBadge.label}
+                            </span>
+                          ) : (
+                            <span className="pill ghost">
+                              {chartTypeLabel(chart.type)}
+                            </span>
+                          )}
+                        </span>
+                        <span className="song-chart-cell">
+                          {chart.creator || t("song.charts.creatorUnknown")}
+                        </span>
+                        <span className="song-chart-cell song-chart-updated">
+                          {chartUpdatedLabel(chart.time)}
+                        </span>
+                      </a>
+                    );
+                  })
+                ) : (
+                  <div className="song-chart-row song-chart-empty-row">
+                    <span>{t("song.charts.empty")}</span>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="song-chart-grid">
+                {filteredCharts.length ? (
+                  filteredCharts.map((chart) => {
+                    const typeBadge = chartTypeBadge(chart.type);
+                    return (
+                      <a
+                        className="song-chart-card"
+                        href={`/chart/${chart.cid}`}
+                        key={chart.cid}
+                      >
+                        <div className="song-chart-main">
+                          <p className="song-chart-title">
+                            {chart.version || t("song.charts.untitled")}
+                          </p>
+                          <div className="song-chart-tags">
+                            <span className="pill ghost">
+                              {modeLabel(chart.mode)}
+                            </span>
+                            {typeBadge ? (
+                              <span className={typeBadge.className}>
+                                {typeBadge.label}
+                              </span>
+                            ) : (
+                              <span className="pill ghost">
+                                {chartTypeLabel(chart.type)}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <div className="song-chart-meta-row">
+                          <span className="song-chart-meta">
+                            {chart.creator
+                              ? t("song.charts.creator", { name: chart.creator })
+                              : t("song.charts.creatorUnknown")}
                           </span>
-                        ) : (
-                          <span className="pill ghost">
-                            {chartTypeLabel(chart.type)}
+                        </div>
+                        <div className="song-chart-time-row">
+                          <span className="song-chart-time">
+                            {chartUpdatedLabel(chart.time)}
                           </span>
-                        )}
-                      </div>
-                    </div>
-                    <div className="song-chart-meta-row">
-                      <span className="song-chart-meta">
-                        {chart.creator
-                          ? t("song.charts.creator", { name: chart.creator })
-                          : t("song.charts.creatorUnknown")}
-                      </span>
-                    </div>
-                    <div className="song-chart-time-row">
-                      <span className="song-chart-time">
-                        {chartUpdatedLabel(chart.time)}
-                      </span>
-                    </div>
-                  </a>
-                );
-              })}
-            </div>
+                        </div>
+                      </a>
+                    );
+                  })
+                ) : (
+                  <div className="song-empty">{t("song.charts.empty")}</div>
+                )}
+              </div>
+            )
           ) : (
             <div className="song-empty">
               {loadingCharts ? t("charts.loading") : t("song.charts.empty")}

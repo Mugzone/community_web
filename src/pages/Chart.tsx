@@ -53,6 +53,31 @@ const formatSeconds = (value?: number) => {
   return `${minutes}:${String(seconds).padStart(2, "0")}`;
 };
 
+const copyToClipboard = async (value: string) => {
+  if (!value) return;
+  if (navigator.clipboard?.writeText) {
+    try {
+      await navigator.clipboard.writeText(value);
+      return;
+    } catch (err) {
+      console.error(err);
+    }
+  }
+  try {
+    const textarea = document.createElement("textarea");
+    textarea.value = value;
+    textarea.setAttribute("readonly", "true");
+    textarea.style.position = "fixed";
+    textarea.style.opacity = "0";
+    document.body.appendChild(textarea);
+    textarea.select();
+    document.execCommand("copy");
+    document.body.removeChild(textarea);
+  } catch (err) {
+    console.error(err);
+  }
+};
+
 type RankFilters = {
   pro: boolean;
   sort: "score" | "combo" | "acc";
@@ -363,6 +388,7 @@ function ChartPage() {
       auth.openAuth('signin')
       return
     }
+    if (!window.confirm(t('chart.ranking.confirmClear'))) return
     setAdminLoading(true)
     setAdminMessage('')
     setAdminMessageTone('')
@@ -515,7 +541,24 @@ function ChartPage() {
                 {t("chart.meta.song", { id: info.sid })}
               </a>
             )}
+            {chartId && !Number.isNaN(chartId) && (
+              <span
+                className="pill ghost copyable"
+                role="button"
+                tabIndex={0}
+                onClick={() => copyToClipboard(`c${chartId}`)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    copyToClipboard(`c${chartId}`);
+                  }
+                }}
+              >
+                {`c${chartId}`}
+              </span>
+            )}
             <span className="pill ghost">{modeLabel(info?.mode)}</span>
+
             {chartType && <span className={chartType.className}>{chartType.label}</span>}
             {info?.freeStyle === 1 && <span className="pill ghost">{t("charts.badge.freestyle")}</span>}
             {info?.length ? (

@@ -1,0 +1,118 @@
+.range-slider-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-weight: 700;
+  color: var(--color-text);
+  grid-column: span 2;
+}
+
+.range-slider-label {
+  font-weight: 700;
+}
+
+.range-slider-container {
+  display: grid;
+  grid-template-columns: 70px 1fr 70px;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.range-slider-input {
+  padding: 0.55rem 0.5rem;
+  border-radius: 8px;
+  border: 1px solid var(--color-border-strong);
+  font-weight: 600;
+  font-size: 0.85rem;
+  background: rgba(15, 23, 42, 0.28);
+  color: var(--color-text);
+  text-align: center;
+  -moz-appearance: textfield;
+}
+
+.range-slider-input::-webkit-outer-spin-button,
+.range-slider-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+:root[data-theme='light'] .range-slider-input {
+  background: var(--color-surface);
+}
+
+.range-slider-input:focus {
+  outline: 2px solid var(--primary-soft);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px var(--glow-primary);
+}
+
+.range-slider-track-wrapper {
+  padding: 0.5rem 0;
+}
+
+.range-slider-track {
+  position: relative;
+  height: 6px;
+  background: var(--color-border);
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.range-slider-fill {
+  position: absolute;
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary), var(--primary-soft));
+  border-radius: 3px;
+  pointer-events: none;
+}
+
+.range-slider-thumb {
+  position: absolute;
+  top: 50%;
+  width: 18px;
+  height: 18px;
+  background: var(--primary);
+  border: 2px solid var(--color-bg);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  cursor: grab;
+  transition: box-shadow 0.15s ease, transform 0.1s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+  z-index: 2;
+}
+
+.range-slider-thumb:hover {
+  box-shadow: 0 0 0 4px var(--glow-primary), 0 2px 8px rgba(0, 0, 0, 0.3);
+  transform: translate(-50%, -50%) scale(1.1);
+}
+
+.range-slider-thumb.active {
+  cursor: grabbing;
+  box-shadow: 0 0 0 6px var(--glow-primary), 0 4px 12px rgba(0, 0, 0, 0.35);
+  transform: translate(-50%, -50%) scale(1.15);
+}
+
+.range-slider-thumb-max {
+  z-index: 3;
+}
+
+@media (max-width: 640px) {
+  .range-slider-field {
+    grid-column: span 1;
+  }
+
+  .range-slider-container {
+    grid-template-columns: 60px 1fr 60px;
+    gap: 0.5rem;
+  }
+
+  .range-slider-input {
+    padding: 0.45rem 0.35rem;
+    font-size: 0.8rem;
+  }
+
+  .range-slider-thumb {
+    width: 16px;
+    height: 16px;
+  }
+}

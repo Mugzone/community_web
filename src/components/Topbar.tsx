@@ -39,7 +39,7 @@ function Topbar({
   const navToggleRef = useRef<HTMLButtonElement>(null);
   const searchPanelRef = useRef<HTMLDivElement>(null);
   const searchToggleRef = useRef<HTMLButtonElement>(null);
-  const initialSearch = useMemo(() => {
+  const initialSearch = useMemo<{ type: SearchType; keyword: string }>(() => {
     const params = new URLSearchParams(window.location.search);
     const typeParam = params.get("type");
     return {

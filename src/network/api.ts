@@ -665,6 +665,34 @@ export const fetchStoreList = (
     headers: buildVersionHeader(options?.clientVersion),
   })
 
+/** V2版本的store list接口，支持更丰富的筛选条件 */
+export const fetchStoreListV2 = (
+  params?: {
+    word?: string       // 搜索关键词(匹配title,artist,creator,version,tag)
+    org?: number        // 是否显示原始标题 (0/1)
+    mode?: number       // 模式过滤(-1表示全部)
+    type?: string       // chart状态过滤,逗号分隔(0=alpha,1=beta,2=stable)
+    free?: number       // Freestyle过滤(-1表示全部)
+    lvmin?: number      // 最低难度
+    lvmax?: number      // 最高难度
+    bpmmin?: number     // 最低BPM
+    bpmmax?: number     // 最高BPM
+    lenmin?: number     // 最短时长(秒)
+    lenmax?: number     // 最长时长(秒)
+    author?: number     // 谱师ID
+    mcver?: number      // 客户端版本
+    sort?: string       // 排序字段(time,hot,level)
+    order?: string      // 排序方向(asc,desc)
+    from?: number       // 分页起点(offset)
+    limit?: number      // 每页数量
+  },
+  options?: { clientVersion?: string },
+) =>
+  getJson<RespStoreList>('/store/list2', {
+    params: { mcver: CLIENT_VER, ...params },
+    headers: buildVersionHeader(options?.clientVersion),
+  })
+
 export const fetchStorePromote = (
   params?: { mode?: number; from?: number; free?: number; __v__?: string },
   options?: { clientVersion?: string },

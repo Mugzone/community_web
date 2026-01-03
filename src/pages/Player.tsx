@@ -63,6 +63,16 @@ const formatDate = (ts?: number) => {
   return date.toLocaleDateString();
 };
 
+const getGroupLabel = (group?: number[]): string | null => {
+  if (!group || !group.length) return null;
+  // Priority: 3 (Publisher) > 8 (Assistant) > 9 (Organization) > 5 (Editor)
+  if (group.includes(3)) return "Publisher";
+  if (group.includes(8)) return "Assistant";
+  if (group.includes(9)) return "Organization";
+  if (group.includes(5)) return "Editor";
+  return null;
+};
+
 
 function PlayerPage() {
   const { t, lang } = useI18n();
@@ -100,6 +110,20 @@ function PlayerPage() {
   const [activeTab, setActiveTab] = useState<
     "activity" | "charts" | "rank" | "wiki"
   >("activity");
+  const initialTabApplied = useRef(false);
+
+  useEffect(() => {
+    if (initialTabApplied.current || info?.tab === undefined) return;
+    initialTabApplied.current = true;
+    const tabMap: Record<number, "activity" | "charts" | "rank" | "wiki"> = {
+      0: "activity",
+      1: "rank",
+      2: "charts",
+      3: "wiki",
+    };
+    const mapped = tabMap[info.tab];
+    if (mapped) setActiveTab(mapped);
+  }, [info?.tab]);
 
   useEffect(() => {
     if (!playerId || Number.isNaN(playerId)) {
@@ -408,6 +432,10 @@ function PlayerPage() {
   const unstableChartsValue =
     info?.unstableCharts ?? info?.unstableCount ?? info?.count_1;
   const chartSlotValue = info?.chartSlot ?? info?.slot ?? info?.count_0;
+  const chartViewAllKeyword = info?.username || displayName;
+  const chartViewAllLink = chartViewAllKeyword
+    ? `/all_chart?keyword=${encodeURIComponent(chartViewAllKeyword)}`
+    : "/all_chart";
 
   const basicRows = [
     [
@@ -483,7 +511,7 @@ function PlayerPage() {
           style={{ backgroundImage: `url(${avatarUrl(info?.avatar)})` }}
         />
         <div className="player-identity">
-          <p className="eyebrow">{t("player.eyebrow")}</p>
+          <p className="eyebrow">{getGroupLabel(info?.group) ?? t("player.eyebrow")}</p>
           <h1>{displayName}</h1>
           {playerId && <p className="player-uid">UID {playerId}</p>}
           {info?.sign && <p className="player-sign">{info.sign}</p>}
@@ -642,6 +670,13 @@ function PlayerPage() {
                 );
               })}
             </div>
+            {charts.length === 15 && (
+              <div className="chart-actions">
+                <a className="load-more" href={chartViewAllLink}>
+                  {t("player.charts.viewAll")}
+                </a>
+              </div>
+            )}
           </section>
         )}
 
@@ -675,7 +710,10 @@ function PlayerPage() {
                   </div>
                   <p className="player-rank-pos">
                     {t("player.rank.position", {
-                      value: item.rank ?? t("player.rank.unknown"),
+                      value:
+                        item.gradeRank !== undefined || item.rank !== undefined
+                          ? `${item.gradeRank ?? "-"} / ${item.rank ?? "-"}`
+                          : t("player.rank.unknown"),
                     })}
                   </p>
                   <div className="player-rank-meta">

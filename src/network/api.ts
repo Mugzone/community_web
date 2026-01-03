@@ -266,6 +266,8 @@ export type RespPlayerInfoData = {
   count_2?: number
   count_1?: number
   count_0?: number
+  group?: number[]
+  tab?: number
 }
 
 export type RespPlayerInfo = {
@@ -308,6 +310,7 @@ export type RespPlayerChartList = {
 export type RespPlayerAllRankItem = {
   mode?: number
   rank?: number
+  gradeRank?: number
   value?: number
   acc?: number
   combo?: number
@@ -487,6 +490,7 @@ export type RespSongChartsItem = {
   type?: number
   mode?: number
   time?: number
+  hot?: number
 }
 
 export type RespSongCharts = {
@@ -502,6 +506,8 @@ export type RespChartInfo = {
   cid: number
   title?: string
   artist?: string
+  titleOrg?: string
+  artistOrg?: string
   cover?: string
   creator?: string
   type?: number

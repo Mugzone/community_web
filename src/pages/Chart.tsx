@@ -85,9 +85,12 @@ type RankFilters = {
 };
 
 function ChartPage() {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const auth = UseAuthModal();
   const chartId = useMemo(() => parseChartId(), []);
+  const copyHintTimer = useRef<number | null>(null);
+  const [showCopyHint, setShowCopyHint] = useState(false);
+  const prefersOrgTitle = lang === "zh-CN" || lang === "ja";
 
   const [info, setInfo] = useState<RespChartInfo>();
   const [infoError, setInfoError] = useState("");
@@ -132,7 +135,10 @@ function ChartPage() {
       setLoadingInfo(true);
       setInfoError("");
       try {
-        const resp = await fetchChartInfo({ cid: chartId });
+        const resp = await fetchChartInfo({
+          cid: chartId,
+          org: prefersOrgTitle ? 1 : undefined,
+        });
         if (cancelled) return;
         if (resp.code !== 0) {
           setInfoError(t("chart.error.load"));
@@ -151,6 +157,14 @@ function ChartPage() {
       cancelled = true;
     };
   }, [chartId, t]);
+
+  useEffect(() => {
+    return () => {
+      if (copyHintTimer.current) {
+        window.clearTimeout(copyHintTimer.current);
+      }
+    };
+  }, []);
 
   const buildOrder = (filters: RankFilters) => {
     let order = 0;
@@ -432,6 +446,25 @@ function ChartPage() {
     const data = ranking?.data ?? [];
     if (!data.length)
       return <div className="chart-rank-empty">{t("chart.ranking.empty")}</div>;
+    const modLabelsFromMask = (value?: number) => {
+      if (value === undefined || value === null) return [];
+      if (value === 0) return [t("chart.ranking.mod.none")];
+      const modMap = [
+        { mask: 1 << 0, label: t("chart.ranking.mod.auto") },
+        { mask: 1 << 1, label: t("chart.ranking.mod.luck") },
+        { mask: 1 << 2, label: t("chart.ranking.mod.flip") },
+        { mask: 1 << 3, label: t("chart.ranking.mod.const") },
+        { mask: 1 << 4, label: t("chart.ranking.mod.dash") },
+        { mask: 1 << 5, label: t("chart.ranking.mod.rush") },
+        { mask: 1 << 6, label: t("chart.ranking.mod.hide") },
+        { mask: 1 << 7, label: t("chart.ranking.mod.origin") },
+        { mask: 1 << 8, label: t("chart.ranking.mod.slow") },
+        { mask: 1 << 9, label: t("chart.ranking.mod.death") },
+        { mask: 1 << 10, label: t("chart.ranking.mod.fair") },
+        { mask: 1 << 11, label: t("chart.ranking.mod.invert") },
+      ];
+      return modMap.filter((mod) => (value & mod.mask) !== 0).map((mod) => mod.label);
+    };
     return (
       <div className="chart-rank-table">
         <div className="chart-rank-head">
@@ -448,6 +481,18 @@ function ChartPage() {
             typeof item.judge === "number" && Number.isFinite(item.judge)
               ? item.judge
               : undefined;
+          const judgeStats = [
+            { key: "best", label: t("chart.ranking.judge.best"), value: item.best },
+            { key: "cool", label: t("chart.ranking.judge.cool"), value: item.cool },
+            { key: "good", label: t("chart.ranking.judge.good"), value: item.good },
+            { key: "miss", label: t("chart.ranking.judge.miss"), value: item.miss },
+          ];
+          const hasJudgeStats = judgeStats.some(
+            (stat) => typeof stat.value === "number" && Number.isFinite(stat.value),
+          );
+          const modLabels = modLabelsFromMask(item.mod);
+          const hasModLabels = modLabels.length > 0;
+          const showJudgePill = hasJudgeStats || hasModLabels;
           const rankValue =
             typeof item.rank === "number" && Number.isFinite(item.rank)
               ? item.rank
@@ -483,7 +528,29 @@ function ChartPage() {
                 <span>{item.username || t("chart.ranking.unknown")}</span>
               </a>
               <span>{item.score}</span>
-              <span className={judgeClass}>{rankLabel}</span>
+              <span className="chart-rank-grade-wrap">
+                <span className={judgeClass}>{rankLabel}</span>
+                {showJudgePill && (
+                  <span className="chart-rank-judges" aria-hidden="true">
+                    {judgeStats.map((stat) => (
+                      <span className="chart-rank-judge" key={stat.key}>
+                        <span className="chart-rank-judge-label">{stat.label}</span>
+                        <span className="chart-rank-judge-value">
+                          {stat.value ?? 0}
+                        </span>
+                      </span>
+                    ))}
+                    {hasJudgeStats && hasModLabels && (
+                      <span className="chart-rank-judge-sep" aria-hidden="true">
+                        •
+                      </span>
+                    )}
+                    {hasModLabels && (
+                      <span className="chart-rank-judge-mods">{modLabels.join(" · ")}</span>
+                    )}
+                  </span>
+                )}
+              </span>
               <span>{`${item.acc?.toFixed(2) ?? "0"}%`}</span>
               <span
                 className={item.fc ? "chart-rank-combo is-fc" : "chart-rank-combo"}
@@ -504,6 +571,7 @@ function ChartPage() {
   const creatorUid = info?.uid;
   const publisherName = info?.publisher || t("chart.placeholder.publisher");
   const publisherUid = info?.publisherId;
+  const hasPublisher = Boolean(info?.publisher || publisherUid);
   const formatRelativeTime = (value?: number) => {
     if (!value) return "-";
     const now = Date.now();
@@ -519,6 +587,18 @@ function ChartPage() {
     return t("chart.ranking.time.days", { value: diffDays });
   };
 
+  const handleCopyChartId = () => {
+    if (!chartId || Number.isNaN(chartId)) return;
+    copyToClipboard(`c${chartId}`);
+    setShowCopyHint(true);
+    if (copyHintTimer.current) {
+      window.clearTimeout(copyHintTimer.current);
+    }
+    copyHintTimer.current = window.setTimeout(() => {
+      setShowCopyHint(false);
+    }, 1600);
+  };
+
   return (
     <PageLayout className="chart-page" topbarProps={auth.topbarProps}>
       <header className="chart-hero content-container">
@@ -528,33 +608,51 @@ function ChartPage() {
         />
         <div className="chart-summary">
           <p className="eyebrow">{t("chart.eyebrow")}</p>
-          <h1>{info?.title || t("chart.placeholder.title")}</h1>
+          <h1 className="chart-title">
+            {info?.sid && (
+              <a
+                className="chart-song-link"
+                href={`/song/${info.sid}`}
+                aria-label={t("chart.meta.song", { id: info.sid })}
+              >
+                <span className="material-icons" aria-hidden="true">
+                  arrow_back
+                </span>
+                <span className="sr-only">{t("chart.meta.song", { id: info.sid })}</span>
+              </a>
+            )}
+            {(prefersOrgTitle ? info?.titleOrg : info?.title) ||
+              info?.title ||
+              t("chart.placeholder.title")}
+          </h1>
           <p className="chart-artist">
-            {info?.artist || t("chart.placeholder.artist")}
+            {(prefersOrgTitle ? info?.artistOrg : info?.artist) ||
+              info?.artist ||
+              t("chart.placeholder.artist")}
           </p>
           <p className="chart-version">
             {info?.version || t("chart.placeholder.version")}
           </p>
           <div className="chart-meta-row">
-            {info?.sid && (
-              <a className="pill ghost" href={`/song/${info.sid}`}>
-                {t("chart.meta.song", { id: info.sid })}
-              </a>
-            )}
             {chartId && !Number.isNaN(chartId) && (
               <span
                 className="pill ghost copyable"
                 role="button"
                 tabIndex={0}
-                onClick={() => copyToClipboard(`c${chartId}`)}
+                onClick={handleCopyChartId}
                 onKeyDown={(event) => {
                   if (event.key === "Enter" || event.key === " ") {
                     event.preventDefault();
-                    copyToClipboard(`c${chartId}`);
+                    handleCopyChartId();
                   }
                 }}
               >
                 {`c${chartId}`}
+              </span>
+            )}
+            {showCopyHint && (
+              <span className="copy-hint" role="status" aria-live="polite">
+                {t("common.copied")}
               </span>
             )}
             <span className="pill ghost">{modeLabel(info?.mode)}</span>
@@ -628,31 +726,33 @@ function ChartPage() {
                   </div>
                 </div>
               </div>
-              <div className="chart-score-person">
-                <p className="chart-score-label">{t("chart.meta.publisher")}</p>
-                <div className="chart-score-creator">
-                  {publisherUid ? (
-                    <a
-                      className="chart-score-avatar"
-                      href={`/player/${publisherUid}`}
-                      aria-label={publisherName}
-                    >
-                      <img src={avatarUidUrl(publisherUid)} alt={publisherName} />
-                    </a>
-                  ) : (
-                    <div className="chart-score-avatar placeholder" aria-hidden="true" />
-                  )}
-                  <div className="chart-score-creator-info">
+              {hasPublisher && (
+                <div className="chart-score-person">
+                  <p className="chart-score-label">{t("chart.meta.publisher")}</p>
+                  <div className="chart-score-creator">
                     {publisherUid ? (
-                      <a className="chart-score-value link" href={`/player/${publisherUid}`}>
-                        {publisherName}
+                      <a
+                        className="chart-score-avatar"
+                        href={`/player/${publisherUid}`}
+                        aria-label={publisherName}
+                      >
+                        <img src={avatarUidUrl(publisherUid)} alt={publisherName} />
                       </a>
                     ) : (
-                      <p className="chart-score-value">{publisherName}</p>
+                      <div className="chart-score-avatar placeholder" aria-hidden="true" />
                     )}
+                    <div className="chart-score-creator-info">
+                      {publisherUid ? (
+                        <a className="chart-score-value link" href={`/player/${publisherUid}`}>
+                          {publisherName}
+                        </a>
+                      ) : (
+                        <p className="chart-score-value">{publisherName}</p>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
         </section>
@@ -723,7 +823,7 @@ function ChartPage() {
                     </select>
                   </label>
                   <label>
-                    <span>{t("chart.ranking.modFilter")}</span>
+                    <span>{t("chart.ranking.modFilter")}</span>w
                     <select
                       value={rankFilters.mod}
                       onChange={(e) => {
@@ -735,9 +835,6 @@ function ChartPage() {
                       <option value="all">{t("chart.ranking.mod.all")}</option>
                       <option value="noMod">{t("chart.ranking.noMod")}</option>
                       <option value="noSpeed">{t("chart.ranking.noSpeed")}</option>
-                      <option value="noModNoSpeed">
-                        {t("chart.ranking.noModNoSpeed")}
-                      </option>
                     </select>
                   </label>
                 </div>

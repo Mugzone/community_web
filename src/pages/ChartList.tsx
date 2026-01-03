@@ -84,7 +84,7 @@ const defaultFilters: FilterState = {
 };
 
 function ChartListPage() {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const auth = UseAuthModal();
   const initialFilters = useMemo(() => parseInitialFilters(), []);
   const [filters, setFilters] = useState<FilterState>(initialFilters);
@@ -119,23 +119,6 @@ function ChartListPage() {
     [t]
   );
 
-  const sortOptions = useMemo(
-    () => [
-      { value: "time", label: t("charts.filter.sortTime") },
-      { value: "hot", label: t("charts.filter.sortHot") },
-      { value: "level", label: t("charts.filter.sortLevel") },
-    ],
-    [t]
-  );
-
-  const orderOptions = useMemo(
-    () => [
-      { value: "desc", label: t("charts.filter.orderDesc") },
-      { value: "asc", label: t("charts.filter.orderAsc") },
-    ],
-    [t]
-  );
-
   const typeOptions = useMemo(
     () => [
       { value: 2, label: t("charts.filter.typeStable") },
@@ -159,6 +142,7 @@ function ChartListPage() {
       from?: number;
       free?: number;
       word?: string;
+      org?: number;
       lvmin?: number;
       lvmax?: number;
       bpmmin?: number;
@@ -171,6 +155,7 @@ function ChartListPage() {
       from,
       sort: current.sort,
       order: current.order,
+      org: lang === "en-US" ? 0 : 1,
     };
 
     if (current.mode !== -1) {

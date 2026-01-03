@@ -309,6 +309,8 @@
   background: var(--color-surface);
   display: grid;
   gap: 0.35rem;
+  text-decoration: none;
+  color: inherit;
 }
 
 .wiki-template-chart {

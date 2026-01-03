@@ -78,7 +78,7 @@
 .song-chart-head,
 .song-chart-row {
   display: grid;
-  grid-template-columns: 0.75fr minmax(220px, 2fr) 0.8fr 1fr 1fr;
+  grid-template-columns: 0.75fr minmax(220px, 2fr) 0.8fr 0.7fr 1fr 1fr;
   gap: 0.6rem;
   align-items: center;
 }

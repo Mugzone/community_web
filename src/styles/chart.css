@@ -24,6 +24,38 @@
   margin: 0.15rem 0 0.35rem;
 }
 
+.chart-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.chart-song-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+  text-decoration: none;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.chart-song-link:hover,
+.chart-song-link:focus-visible {
+  border-color: rgba(93, 181, 255, 0.35);
+  box-shadow: 0 0 0 2px var(--glow-primary);
+  color: var(--primary-strong);
+}
+
+.chart-song-link .material-icons {
+  font-size: 1.1rem;
+}
+
 .chart-artist {
   margin: 0;
   color: var(--color-muted);
@@ -294,6 +326,7 @@
 }
 
 .chart-rank-row {
+  position: relative;
   padding: 0.35rem 0.25rem;
   border-radius: 8px;
   transition: background 0.15s ease;
@@ -305,6 +338,54 @@
 
 :root[data-theme='light'] .chart-rank-row:hover {
   background: var(--color-surface-2);
+}
+
+.chart-rank-grade-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.chart-rank-judges {
+  position: absolute;
+  left: 50%;
+  bottom: 100%;
+  display: flex;
+  gap: 0.4rem;
+  padding: 0.25rem 0.4rem;
+  border-radius: 999px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
+  font-size: 0.75rem;
+  opacity: 0;
+  transform: translate(-50%, -0.35rem);
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+  white-space: nowrap;
+}
+
+.chart-rank-row:hover .chart-rank-judges,
+.chart-rank-row:focus-within .chart-rank-judges {
+  opacity: 1;
+}
+
+.chart-rank-judge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+.chart-rank-judge-label {
+  color: var(--color-muted);
+}
+
+.chart-rank-judge-sep {
+  color: var(--color-muted);
+}
+
+.chart-rank-judge-mods {
+  color: var(--color-text);
 }
 
 .chart-rank-pos {

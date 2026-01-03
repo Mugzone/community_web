@@ -60,6 +60,8 @@ function SongPage() {
   const { t } = useI18n();
   const auth = UseAuthModal();
   const songId = useMemo(() => parseSongId(), []);
+  const copyHintTimer = useRef<number | null>(null);
+  const [showCopyHint, setShowCopyHint] = useState(false);
   const [info, setInfo] = useState<RespSongInfo>();
   const [charts, setCharts] = useState<RespSongChartsItem[]>([]);
   const [infoError, setInfoError] = useState("");
@@ -74,7 +76,15 @@ function SongPage() {
   const [wikiTemplates, setWikiTemplates] = useState<WikiTemplate[]>([]);
   const wikiRef = useRef<HTMLDivElement>(null);
   const [templateError, setTemplateError] = useState("");
-  const [chartView, setChartView] = useState<"grid" | "list">("grid");
+  const [chartView, setChartView] = useState<"grid" | "list">(() => {
+    const saved = localStorage.getItem("song-chart-view");
+    return saved === "list" ? "list" : "grid";
+  });
+
+  const handleChartViewChange = (view: "grid" | "list") => {
+    setChartView(view);
+    localStorage.setItem("song-chart-view", view);
+  };
   const [modeFilter, setModeFilter] = useState("all");
 
   const renderOptions = useMemo(
@@ -130,6 +140,7 @@ function SongPage() {
       </span>
       <span>{t("song.charts.table.title")}</span>
       <span>{t("song.charts.table.type")}</span>
+      <span>{t("song.charts.table.hot")}</span>
       <span>{t("song.charts.table.creator")}</span>
       <span className="song-chart-updated">{t("song.charts.table.updated")}</span>
     </div>
@@ -226,6 +237,14 @@ function SongPage() {
   }, [renderOptions, songId, t]);
 
   useEffect(() => {
+    return () => {
+      if (copyHintTimer.current) {
+        window.clearTimeout(copyHintTimer.current);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
     if (!baseWiki) {
       setWikiHtml("");
       setTemplateError("");
@@ -293,7 +312,19 @@ function SongPage() {
     if (!time) return t("charts.card.updatedUnknown");
     const date = new Date(time * 1000);
     if (Number.isNaN(date.getTime())) return t("charts.card.updatedUnknown");
-    return t("charts.card.updated", { time: date.toLocaleDateString() });
+    return date.toLocaleDateString();
+  };
+
+  const handleCopySongId = () => {
+    if (!songId || Number.isNaN(songId)) return;
+    copyToClipboard(`s${songId}`);
+    setShowCopyHint(true);
+    if (copyHintTimer.current) {
+      window.clearTimeout(copyHintTimer.current);
+    }
+    copyHintTimer.current = window.setTimeout(() => {
+      setShowCopyHint(false);
+    }, 1600);
   };
 
   return (
@@ -305,31 +336,36 @@ function SongPage() {
         />
         <div className="song-summary">
           <p className="eyebrow">{t("song.eyebrow")}</p>
-          <h1>{info?.title || t("song.placeholder.title")}</h1>
+          <h1>{info?.titleOrg || info?.title || t("song.placeholder.title")}</h1>
           <p className="song-artist">
-            {info?.artist || t("song.placeholder.artist")}
+            {info?.artistOrg || info?.artist || t("song.placeholder.artist")}
           </p>
           {(info?.titleOrg || info?.artistOrg) && (
             <p className="song-original">
-              {info?.titleOrg ?? ""}{" "}
-              {info?.artistOrg ? `· ${info.artistOrg}` : ""}
+              {info?.title ?? ""}{" "}
+              {info?.artist ? `- ${info.artist}` : ""}
             </p>
           )}
           <div className="song-meta-row">
             {songId && !Number.isNaN(songId) && (
-                <span
-                    className="pill ghost copyable"
-                    role="button"
-                    tabIndex={0}
-                    onClick={() => copyToClipboard(`s${songId}`)}
-                    onKeyDown={(event) => {
-                      if (event.key === "Enter" || event.key === " ") {
-                        event.preventDefault();
-                        copyToClipboard(`s${songId}`);
-                      }
-                    }}
-                >
+              <span
+                className="pill ghost copyable"
+                role="button"
+                tabIndex={0}
+                onClick={handleCopySongId}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    handleCopySongId();
+                  }
+                }}
+              >
                 {`s${songId}`}
+              </span>
+            )}
+            {showCopyHint && (
+              <span className="copy-hint" role="status" aria-live="polite">
+                {t("common.copied")}
               </span>
             )}
             <span className="pill ghost">{infoLength}</span>
@@ -362,7 +398,7 @@ function SongPage() {
                 className={`toggle-btn ${chartView === "grid" ? "active" : ""}`}
                 type="button"
                 aria-pressed={chartView === "grid"}
-                onClick={() => setChartView("grid")}
+                onClick={() => handleChartViewChange("grid")}
               >
                 {t("song.charts.view.grid")}
               </button>
@@ -370,7 +406,7 @@ function SongPage() {
                 className={`toggle-btn ${chartView === "list" ? "active" : ""}`}
                 type="button"
                 aria-pressed={chartView === "list"}
-                onClick={() => setChartView("list")}
+                onClick={() => handleChartViewChange("list")}
               >
                 {t("song.charts.view.list")}
               </button>
@@ -383,6 +419,7 @@ function SongPage() {
                 {chartTableHead}
                 {Array.from({ length: 4 }).map((_, idx) => (
                   <div className="song-chart-row skeleton" key={idx}>
+                    <span className="song-chart-cell" />
                     <span className="song-chart-cell" />
                     <span className="song-chart-cell" />
                     <span className="song-chart-cell" />
@@ -410,17 +447,16 @@ function SongPage() {
                   filteredCharts.map((chart) => {
                     const typeBadge = chartTypeBadge(chart.type);
                     return (
-                      <a
+                      <div
                         className="song-chart-row"
-                        href={`/chart/${chart.cid}`}
                         key={chart.cid}
                       >
                         <span className="song-chart-cell">
                           {modeLabel(chart.mode)}
                         </span>
-                        <span className="song-chart-title-cell">
+                        <a className="song-chart-title-cell" href={`/chart/${chart.cid}`}>
                           {chart.version || t("song.charts.untitled")}
-                        </span>
+                        </a>
                         <span className="song-chart-cell">
                           {typeBadge ? (
                             <span className={typeBadge.className}>
@@ -432,13 +468,20 @@ function SongPage() {
                             </span>
                           )}
                         </span>
+                        <span className="song-chart-cell">{chart.hot ?? "-"}</span>
                         <span className="song-chart-cell">
-                          {chart.creator || t("song.charts.creatorUnknown")}
+                          {chart.uid ? (
+                            <a href={`/player/${chart.uid}`}>
+                              {chart.creator || t("song.charts.creatorUnknown")}
+                            </a>
+                          ) : (
+                            chart.creator || t("song.charts.creatorUnknown")
+                          )}
                         </span>
                         <span className="song-chart-cell song-chart-updated">
                           {chartUpdatedLabel(chart.time)}
                         </span>
-                      </a>
+                      </div>
                     );
                   })
                 ) : (

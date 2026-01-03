@@ -32,6 +32,7 @@ export const renderTemplateHtml = (
     | undefined;
   const asChart = (payload?: unknown) =>
     payload as {
+      id?: number;
       title?: string;
       artist?: string;
       version?: string;
@@ -66,11 +67,12 @@ export const renderTemplateHtml = (
     const coverStyle = cover
       ? `style="background-image:url('${escapeHtml(cover)}')"`
       : "";
-    return `<div class="wiki-template-card wiki-template-chart"><div class="wiki-template-cover" ${coverStyle}></div><div class="wiki-template-body"><p class="wiki-template-title">${escapeHtml(
+    const link = c.id ? `href="/chart/${c.id}"` : "";
+    return `<a class="wiki-template-card wiki-template-chart" ${link}><div class="wiki-template-cover" ${coverStyle}></div><div class="wiki-template-body"><p class="wiki-template-title">${escapeHtml(
       c.title ?? ""
     )}</p><p class="wiki-template-meta">${escapeHtml(
       c.artist ?? ""
-    )} · ${escapeHtml(c.version ?? "")}</p>${finish}</div></div>`;
+    )} · ${escapeHtml(c.version ?? "")}</p>${finish}</div></a>`;
   }
 
   if (name === "_grouplist") {

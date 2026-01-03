@@ -168,6 +168,9 @@ a {
 }
 
 .load-more {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   border: 1px solid var(--color-border-strong);
   background: rgba(15, 23, 42, 0.45);
   color: var(--color-text);
@@ -556,8 +559,18 @@ a {
 }
 
 .topbar-search-form select {
-  padding: 0.35rem 0.4rem;
+  appearance: none;
+  padding: 0.35rem 1.5rem 0.35rem 0.5rem;
   border-right: 1px solid var(--color-border);
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23e5e7eb' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.3rem center;
+}
+
+.topbar-search-form select option {
+  background: var(--color-surface);
+  color: var(--color-text);
 }
 
 .topbar-search-form input {
@@ -650,7 +663,7 @@ a {
   gap: 0.75rem;
 }
 
-@media (min-width: 768px) {
+@media (min-width: 930px) {
   .topbar-nav {
     display: flex;
   }
@@ -673,14 +686,14 @@ a {
   }
 }
 
-@media (max-width: 767px) {
+@media (max-width: 929px) {
   .topbar-container {
     justify-content: flex-start;
     gap: 0.75rem;
   }
 
   .topbar-actions {
-    margin-left: 0.5rem;
+    margin-left: auto;
   }
 
   .brand-text {
@@ -991,6 +1004,13 @@ a {
 .pill.copyable:focus-visible {
   box-shadow: 0 0 0 2px var(--glow-primary);
   border-color: rgba(93, 181, 255, 0.26);
+}
+
+.copy-hint {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-muted);
+  align-self: center;
 }
 
 .pill.danger {

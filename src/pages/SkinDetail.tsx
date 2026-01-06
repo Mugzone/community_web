@@ -149,7 +149,7 @@ function SkinDetailPage() {
     let cancelled = false;
     setWikiLoading(true);
     setWikiError("");
-    fetchWiki({ sid: skinId, lang: langValue, raw: 1 })
+    fetchWiki({ prefix: `skin_${skinId}`, lang: langValue, raw: 1 })
       .then((resp) => {
         if (cancelled) return;
         if (resp.code === -1000) {
@@ -418,7 +418,7 @@ function SkinDetailPage() {
               <h2>{t("skinDetail.wiki.title")}</h2>
             </div>
             {skinId && (
-              <a className="link" href={`/wiki/?sid=${skinId}`}>
+              <a className="link" href={`/wiki/?prefix=skin_${skinId}`}>
                 {t("skinDetail.wiki.edit")}
               </a>
             )}

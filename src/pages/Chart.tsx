@@ -12,12 +12,14 @@ import {
   fetchComments,
   clearChartRanking,
   fetchRankingList,
+  fetchRankingFirst5,
   fetchWiki,
   fetchWikiTemplate,
   getSession,
   type RespChartDonate,
   type RespChartInfo,
   type RespRanking,
+  type RespRankingFirst5,
 } from "../network/api";
 import { avatarUidUrl, chartTypeBadge, coverUrl, modeLabel } from "../utils/formatters";
 import { isPublisher } from "../utils/auth";
@@ -125,6 +127,9 @@ function ChartPage() {
   const [adminMessageTone, setAdminMessageTone] = useState<"success" | "error" | "">("");
   const [adminLoading, setAdminLoading] = useState(false);
 
+  const [first5, setFirst5] = useState<RespRankingFirst5>();
+  const [first5Loading, setFirst5Loading] = useState(false);
+
   useEffect(() => {
     if (!chartId || Number.isNaN(chartId)) {
       setInfoError(t("chart.error.missingId"));
@@ -208,6 +213,29 @@ function ChartPage() {
     loadRanking();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (!chartId || Number.isNaN(chartId)) return;
+    let cancelled = false;
+    const loadFirst5 = async () => {
+      setFirst5Loading(true);
+      try {
+        const resp = await fetchRankingFirst5({ cid: chartId });
+        if (cancelled) return;
+        if (resp.code === 0) {
+          setFirst5(resp);
+        }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        if (!cancelled) setFirst5Loading(false);
+      }
+    };
+    loadFirst5();
+    return () => {
+      cancelled = true;
+    };
+  }, [chartId]);
 
   const loadDonate = useCallback(async () => {
     if (!chartId || Number.isNaN(chartId)) {
@@ -757,6 +785,58 @@ function ChartPage() {
           </div>
         </section>
 
+        <section className="chart-first5">
+          <p className="eyebrow">{t("chart.first5.title")}</p>
+          <div className="chart-first5-list">
+            {first5Loading ? (
+              <>
+                <div className="chart-first5-card skeleton" />
+                <div className="chart-first5-card skeleton" />
+                <div className="chart-first5-card skeleton" />
+              </>
+            ) : (
+              <>
+                {[
+                  { data: first5?.first3, level: 2 },
+                  { data: first5?.first4, level: 3 },
+                  { data: first5?.first5, level: 4 },
+                ].map(({ data, level }) => (
+                  <div
+                    className={`chart-first5-card level-${level}`}
+                    key={level}
+                  >
+                    {data ? (
+                      <a
+                        className="chart-first5-link"
+                        href={`/player/${data.uid}`}
+                      >
+                        <img
+                          className="chart-first5-avatar"
+                          src={avatarUidUrl(data.uid)}
+                          alt={data.username}
+                        />
+                        <span className="chart-first5-name">{data.username}</span>
+                        <span className="chart-first5-time">
+                          {data.time
+                            ? new Date(data.time * 1000).toLocaleDateString()
+                            : ""}
+                        </span>
+                      </a>
+                    ) : (
+                      <div className="chart-first5-empty">
+                        <div className="chart-first5-avatar placeholder" />
+                        <span className="chart-first5-name">
+                          {t("chart.first5.vacant")}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </>
+            )}
+          </div>
+        </section>
+
         <section className="section">
           <div className="chart-tabs">
             <button
@@ -823,7 +903,7 @@ function ChartPage() {
                     </select>
                   </label>
                   <label>
-                    <span>{t("chart.ranking.modFilter")}</span>w
+                    <span>{t("chart.ranking.modFilter")}</span>
                     <select
                       value={rankFilters.mod}
                       onChange={(e) => {

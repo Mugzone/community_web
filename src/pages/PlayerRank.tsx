@@ -125,7 +125,7 @@ function PlayerRankPage() {
       </section>
 
       <div className="rank-table-wrap">
-        <table className="rank-table">
+        <table className="rank-table rank-table-keep-third">
           <thead>
             <tr>
               <th>#</th>
@@ -142,7 +142,7 @@ function PlayerRankPage() {
             {rows.map((row) => (
               <tr key={`${row.rank}-${row.uid}`}>
                 <td>{row.rank}</td>
-                <td className="player-cell">
+                <td className="player-cell" data-rank={row.rank}>
                   <img
                     className="rank-avatar"
                     src={avatarUidUrl(row.uid)}

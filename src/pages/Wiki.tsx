@@ -19,13 +19,14 @@ import { applyTemplateHtml, renderTemplateHtml } from "../utils/wikiTemplates";
 import { isOrgMember } from "../utils/auth";
 import "../styles/wiki.css";
 
-type WikiContext = "page" | "song" | "chart" | "user";
+type WikiContext = "page" | "song" | "chart" | "user" | "skin";
 
 type WikiParams = {
   pid?: number;
   sid?: number;
   cid?: number;
   touid?: number;
+  prefix?: string;
 };
 
 const localeToDbLang: Record<Locale, number> = {
@@ -76,6 +77,7 @@ const parseLocationParams = () => {
       sid: readNumber("sid"),
       cid: readNumber("cid"),
       touid: readNumber("touid"),
+      prefix: search.get("prefix") ?? undefined,
     },
     lang: dbLangFromParam(search.get("lang")),
   };
@@ -92,6 +94,10 @@ const buildFallbackTitle = (
     return t("wiki.title.song", { id: params.sid });
   if (context === "user" && params.touid)
     return t("wiki.title.user", { id: params.touid });
+  if (context === "skin" && params.prefix) {
+    const match = params.prefix.match(/^skin_(\d+)/);
+    return t("wiki.title.skin", { id: match?.[1] ?? params.prefix });
+  }
   if (params.pid) return t("wiki.title.page", { id: params.pid });
   return t("wiki.title.fallback");
 };
@@ -128,15 +134,18 @@ function WikiPage() {
   const [templateError, setTemplateError] = useState("");
   const contentRef = useRef<HTMLDivElement>(null);
 
+  const isSkinKey = Boolean(params.prefix?.startsWith("skin_"));
   const context: WikiContext = params.cid
     ? "chart"
     : params.sid
     ? "song"
     : params.touid
     ? "user"
+    : isSkinKey
+    ? "skin"
     : "page";
   const hasTarget = Boolean(
-    params.pid || params.sid || params.cid || params.touid
+    params.pid || params.sid || params.cid || params.touid || params.prefix
   );
   const sessionGroups = getSession()?.groups ?? [];
   const canManageWiki =

@@ -293,6 +293,11 @@ function EventDetailPage() {
             <div className="chart-empty">{t("charts.loading")}</div>
           ) : ranking.length ? (
             <RankingBars
+              columns={{
+                rank: t("events.detail.ranking.table.rank"),
+                player: t("events.detail.ranking.table.player"),
+                value: t("events.detail.ranking.table.score"),
+              }}
               items={ranking.map((row, index) => ({
                 uid: row.uid,
                 name: row.username ?? `#${row.uid}`,

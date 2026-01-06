@@ -1,4 +1,4 @@
-import { coverUrl } from "./formatters";
+import { avatarUidUrl, coverUrl } from "./formatters";
 import type { RespWikiTemplate } from "../network/api";
 import type { WikiTemplate } from "./wiki";
 
@@ -110,19 +110,28 @@ export const renderTemplateHtml = (
     const items = list
       .map((item, index) => {
         const percent = Math.round(((Number(item.total) || 0) / max) * 100);
-        const name = escapeHtml(item.username ?? "");
-        const labelText = `${index + 1}. ${name}`;
+        const name = escapeHtml(item.username ?? (item.uid ? `#${item.uid}` : "-"));
+        const rank = index + 1;
+        const avatar = item.uid
+          ? `<img class="wiki-template-avatar" src="${escapeHtml(
+              avatarUidUrl(item.uid)
+            )}" alt="${name}">`
+          : `<span class="wiki-template-avatar placeholder" aria-hidden="true"></span>`;
         const label = item.uid
-          ? `<a class="wiki-template-label" href="/player/${item.uid}">${labelText}</a>`
-          : `<span class="wiki-template-label">${labelText}</span>`;
-        return `<li>${label}<div class="wiki-template-bar" style="width:${percent}%"></div><span class="wiki-template-value">${
+          ? `<a class="wiki-template-label" href="/player/${item.uid}">${name}</a>`
+          : `<span class="wiki-template-label">${name}</span>`;
+        return `<li><span class="wiki-template-rank">${rank}</span><div class="wiki-template-user">${avatar}${label}</div><span class="wiki-template-value">${
           item.total ?? 0
-        }</span></li>`;
+        }</span><div class="wiki-template-bar" style="width:${percent}%"></div></li>`;
       })
       .join("");
     return `<div class="wiki-template-card"><p class="wiki-template-title">${t(
       "wiki.template.eventsum"
-    )}</p><ul class="wiki-template-bars">${items}</ul></div>`;
+    )}</p><div class="wiki-template-bars-wrap"><div class="wiki-template-bars-head"><span>${t(
+      "wiki.template.table.rank"
+    )}</span><span>${t("wiki.template.table.player")}</span><span>${t(
+      "wiki.template.table.value"
+    )}</span></div><ul class="wiki-template-bars">${items}</ul></div></div>`;
   }
 
   if (

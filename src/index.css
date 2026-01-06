@@ -280,6 +280,7 @@ a {
 }
 
 .rank-meta {
+  float: right;
   display: flex;
   gap: 0.4rem;
   color: var(--color-muted);
@@ -287,23 +288,100 @@ a {
   flex-wrap: wrap;
 }
 
+.wiki-template-bars-wrap {
+  background: transparent;
+  border: none;
+  border-radius: 10px;
+  box-shadow: none;
+  overflow: hidden;
+}
+
+.wiki-template-bars-head {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr) minmax(120px, 0.6fr);
+  gap: 0.6rem;
+  padding: 0.75rem 1rem;
+  background: rgba(15, 23, 42, 0.35);
+  color: var(--color-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.wiki-template-bars-head span:last-child {
+  justify-self: end;
+}
+
+:root[data-theme='light'] .wiki-template-bars-head {
+  background: var(--color-surface-2);
+}
+
 .wiki-template-bars {
   list-style: none;
   padding: 0;
   margin: 0;
   display: grid;
-  gap: 0.4rem;
+  gap: 0;
 }
 
 .wiki-template-bars li {
   display: grid;
-  grid-template-columns: 200px minmax(120px, 1.6fr) auto;
+  grid-template-columns: 56px minmax(0, 1fr) minmax(120px, 0.6fr);
+  grid-template-areas:
+    'rank player value'
+    'bar bar bar';
   align-items: center;
   gap: 0.6rem;
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.wiki-template-bars li:last-child {
+  border-bottom: none;
+}
+
+.wiki-template-bars li:hover {
+  background: rgba(15, 23, 42, 0.3);
+}
+
+:root[data-theme='light'] .wiki-template-bars li:hover {
+  background: var(--color-surface-2);
+}
+
+.wiki-template-rank {
+  grid-area: rank;
+  color: var(--color-muted);
+  font-weight: 700;
+}
+
+.wiki-template-user {
+  grid-area: player;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.wiki-template-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid var(--color-border);
+  flex: 0 0 auto;
+  display: block;
+}
+
+.wiki-template-avatar.placeholder {
+  background: var(--color-surface-2);
 }
 
 .wiki-template-bar {
-  height: 12px;
+  grid-area: bar;
+  height: 10px;
+  margin-top: 0.25rem;
   background: linear-gradient(90deg, var(--primary), var(--primary-strong));
   border-radius: 6px;
 }
@@ -315,11 +393,12 @@ a {
 
 .wiki-template-label {
   display: block;
-  width: 200px;
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   color: var(--color-text);
   text-decoration: none;
+  font-weight: 700;
 }
 
 .wiki-template-label:hover {
@@ -327,14 +406,78 @@ a {
 }
 
 .wiki-template-value {
+  grid-area: value;
   font-weight: 700;
-  color: var(--color-text);
+  color: var(--primary-strong);
+  justify-self: end;
 }
 
 @media (max-width: 640px) {
   .rank-table:not(.rank-table-keep-third) th:nth-child(3),
   .rank-table:not(.rank-table-keep-third) td:nth-child(3) {
     display: none;
+  }
+
+  .rank-table thead {
+    display: none;
+  }
+
+  .rank-table tbody tr {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "player value"
+      "stats stats";
+    gap: 0.35rem 0.75rem;
+    padding: 0.75rem 0.9rem;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .rank-table tbody tr:last-child {
+    border-bottom: none;
+  }
+
+  .rank-table tbody td {
+    padding: 0;
+    border-bottom: none;
+  }
+
+  .rank-table tbody td:nth-child(1) {
+    display: none;
+  }
+
+  .rank-table tbody td:nth-child(2) {
+    grid-area: player;
+  }
+
+  .rank-table tbody td:nth-child(3) {
+    grid-area: value;
+    text-align: right;
+  }
+
+  .rank-table tbody td:nth-child(4) {
+    grid-area: stats;
+  }
+
+  .rank-table tbody td.empty {
+    display: block;
+    padding: 1rem 0;
+    grid-column: 1 / -1;
+  }
+
+  .rank-table .player-cell {
+    position: relative;
+    padding-left: 2.1rem;
+    min-width: 0;
+  }
+
+  .rank-table .player-cell::before {
+    content: attr(data-rank);
+    position: absolute;
+    left: 0;
+    top: 0;
+    color: var(--color-muted);
+    font-weight: 700;
   }
 }
 
@@ -706,18 +849,16 @@ a {
 }
 
 @media (max-width: 767px) {
+  .wiki-template-bars-head {
+    display: none;
+  }
+
   .wiki-template-bars li {
-    grid-template-columns: minmax(0, 1fr) auto;
-    grid-template-rows: auto auto;
+    grid-template-columns: 36px minmax(0, 1fr) auto;
     align-items: start;
   }
 
-  .wiki-template-bar {
-    grid-column: 1 / -1;
-  }
-
   .wiki-template-label {
-    width: auto;
     white-space: normal;
   }
 }

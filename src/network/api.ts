@@ -890,6 +890,22 @@ export const likeChart = (payload: { cid: number; state: number; hash?: string; 
 export const fetchRankingList = (params: { cid: number; pro?: number; order?: number; hash?: string; ver?: number; bver?: number }) =>
   getJson<RespRanking>('/ranking/list', { params })
 
+export type RespRankingFirst5Item = {
+  uid: number
+  username: string
+  time: number
+}
+
+export type RespRankingFirst5 = {
+  code: number
+  first3?: RespRankingFirst5Item
+  first4?: RespRankingFirst5Item
+  first5?: RespRankingFirst5Item
+}
+
+export const fetchRankingFirst5 = (params: { cid: number }) =>
+  getJson<RespRankingFirst5>('/ranking/first5', { params })
+
 export const fetchEventRanking = (params: { eid: number }) =>
   getJson<RespRankingEvent>('/ranking/event', { params })
 
@@ -912,6 +928,7 @@ export const fetchWiki = (params: {
   sid?: number
   cid?: number
   pid?: number
+  prefix?: string
   raw?: number
 }) =>
   getJson<RespWiki>('/community/wiki', { params })
@@ -926,6 +943,7 @@ export const saveWiki = (payload: {
   sid?: number
   cid?: number
   pid?: number
+  prefix?: string
   uid: number
 }) =>
   postForm<RespSaveWiki>('/community/wiki', {
@@ -937,6 +955,7 @@ export const saveWiki = (payload: {
       sid: payload.sid,
       cid: payload.cid,
       pid: payload.pid,
+      prefix: payload.prefix,
     },
   })
 

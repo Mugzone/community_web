@@ -39,6 +39,7 @@ export const renderTemplateHtml = (
       cover?: string;
       mode?: number;
       finish?: boolean;
+      condition?: string;
     };
   const asUser = (payload?: unknown) =>
     payload as { uid?: number; username?: string; avatar?: string };
@@ -52,9 +53,12 @@ export const renderTemplateHtml = (
   if (name === "_user") {
     const u = asUser(data);
     if (!u) return "";
-    return `<div class="wiki-template-card wiki-template-user"><p class="wiki-template-title">${escapeHtml(
+    const avatar = u.uid
+      ? `<img class="wiki-template-avatar" src="${escapeHtml(avatarUidUrl(u.uid))}" alt="${escapeHtml(u.username ?? "")}">`
+      : `<span class="wiki-template-avatar placeholder" aria-hidden="true"></span>`;
+    return `<a class="wiki-template-card wiki-template-user" href="/player/${u.uid ?? ""}">${avatar}<p class="wiki-template-title">${escapeHtml(
       u.username ?? ""
-    )}</p><p class="wiki-template-meta">UID: ${u.uid ?? ""}</p></div>`;
+    )}</p></a>`;
   }
 
   if (name === "_chart" || name === "_activity" || name === "_event") {
@@ -63,16 +67,22 @@ export const renderTemplateHtml = (
     const finish = c.finish
       ? `<span class="pill ghost">${t("wiki.template.finish")}</span>`
       : "";
+    const condition = tmpl.params.condition
+      ? `<p class="wiki-template-condition">${escapeHtml(tmpl.params.condition)}</p>`
+      : "";
     const cover = coverUrl(c.cover ? String(c.cover) : undefined);
     const coverStyle = cover
       ? `style="background-image:url('${escapeHtml(cover)}')"`
       : "";
     const link = c.id ? `href="/chart/${c.id}"` : "";
-    return `<a class="wiki-template-card wiki-template-chart" ${link}><div class="wiki-template-cover" ${coverStyle}></div><div class="wiki-template-body"><p class="wiki-template-title">${escapeHtml(
+    const bodyClass = condition
+      ? "wiki-template-body wiki-template-body-compact"
+      : "wiki-template-body";
+    return `<a class="wiki-template-card wiki-template-chart" ${link}><div class="wiki-template-cover" ${coverStyle}></div><div class="${bodyClass}"><p class="wiki-template-title">${escapeHtml(
       c.title ?? ""
     )}</p><p class="wiki-template-meta">${escapeHtml(
       c.artist ?? ""
-    )} · ${escapeHtml(c.version ?? "")}</p>${finish}</div></a>`;
+    )} · ${escapeHtml(c.version ?? "")}</p>${condition}${finish}</div></a>`;
   }
 
   if (name === "_grouplist") {

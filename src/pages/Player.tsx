@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import ChartCard from "../components/ChartCard";
+import AvatarImage from '../components/AvatarImage'
 import PageLayout from "../components/PageLayout";
 import { UseAuthModal } from "../components/UseAuthModal";
 import { useI18n } from "../i18n";
@@ -506,9 +507,11 @@ function PlayerPage() {
   return (
     <PageLayout className="player-page" topbarProps={auth.topbarProps}>
       <header className="player-hero content-container">
-        <div
+        <AvatarImage
           className="player-avatar"
-          style={{ backgroundImage: `url(${avatarUrl(info?.avatar)})` }}
+          src={avatarUrl(info?.avatar, playerId ?? info?.uid)}
+          alt={displayName}
+          seed={playerId ?? info?.uid}
         />
         <div className="player-identity">
           <p className="eyebrow">{getGroupLabel(info?.group) ?? t("player.eyebrow")}</p>

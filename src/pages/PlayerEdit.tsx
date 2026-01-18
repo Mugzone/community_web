@@ -1,4 +1,5 @@
 import { type ChangeEvent, useEffect, useMemo, useState } from 'react'
+import AvatarImage from '../components/AvatarImage'
 import PageLayout from '../components/PageLayout'
 import { UseAuthModal } from '../components/UseAuthModal'
 import { useI18n } from '../i18n'
@@ -355,9 +356,11 @@ function PlayerEditPage() {
               </div>
             </div>
             <div className="song-editor-card player-edit-avatar-card">
-              <div
+              <AvatarImage
                 className="player-edit-avatar"
-                style={{ backgroundImage: `url(${avatarUrl(info?.avatar)})` }}
+                src={avatarUrl(info?.avatar, info?.uid)}
+                alt={form.name || info?.name || t('topbar.profile')}
+                seed={info?.uid}
               />
               <p className="song-hint">{t('player.edit.avatar.hint')}</p>
               <label className="song-file-input">

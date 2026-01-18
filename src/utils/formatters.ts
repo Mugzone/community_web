@@ -3,8 +3,28 @@ export const coverUrl = (cover?: string) => {
   return cover.startsWith('http') ? cover : `//cni.mugzone.net/${cover}`
 }
 
-export const avatarUrl = (avatar?: string) => {
-  if (!avatar || avatar.length === 0) return '//cni.machart.top/static/img/empty.jpg'
+const avatarFallbacks = [
+  'https://cni.machart.top/static/img/avatar_0.jpg',
+  'https://cni.machart.top/static/img/avatar_1.jpg',
+  'https://cni.machart.top/static/img/avatar_2.jpg',
+  'https://cni.machart.top/static/img/avatar_3.jpg',
+  'https://cni.machart.top/static/img/avatar_4.jpg',
+  'https://cni.machart.top/static/img/avatar_5.jpg',
+]
+
+export const avatarFallbackUrl = (seed?: string | number) => {
+  if (seed === undefined || seed === null) return avatarFallbacks[0]
+  const value = String(seed)
+  let hash = 0
+  for (let i = 0; i < value.length; i += 1) {
+    hash = (hash * 31 + value.charCodeAt(i)) | 0
+  }
+  const index = Math.abs(hash) % avatarFallbacks.length
+  return avatarFallbacks[index]
+}
+
+export const avatarUrl = (avatar?: string, seed?: string | number) => {
+  if (!avatar || avatar.length === 0) return avatarFallbackUrl(seed)
   if (avatar.startsWith('http')) return avatar
   if (avatar.startsWith('/')) return `//cni.machart.top${avatar}`
   return `//cni.machart.top/avatar/${avatar}!avatar64`

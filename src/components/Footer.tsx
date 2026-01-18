@@ -95,7 +95,7 @@ function Footer({
             </div>
           )}
         </div>
-        <p className="footer-copy">{t("footer.copy")}</p>
+        <p className="footer-copy">Copyright © 2013 ~ 2026 Mugzone</p>
       </div>
     </footer>
   );

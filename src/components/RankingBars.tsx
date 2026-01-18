@@ -1,3 +1,4 @@
+import AvatarImage from './AvatarImage'
 import { avatarUidUrl } from '../utils/formatters'
 
 type RankingBarItem = {
@@ -54,10 +55,11 @@ function RankingBars({ items, columns }: RankingBarsProps) {
               <span className='wiki-template-rank'>{rank}</span>
               <div className='wiki-template-user'>
                 {item.uid ? (
-                  <img
+                  <AvatarImage
                     className='wiki-template-avatar'
                     src={avatarUidUrl(item.uid)}
                     alt={displayName}
+                    seed={item.uid}
                   />
                 ) : (
                   <span className='wiki-template-avatar placeholder' aria-hidden='true' />

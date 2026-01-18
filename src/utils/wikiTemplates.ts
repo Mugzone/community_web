@@ -1,4 +1,4 @@
-import { avatarUidUrl, coverUrl } from "./formatters";
+import { avatarFallbackUrl, avatarUidUrl, coverUrl } from "./formatters";
 import type { RespWikiTemplate } from "../network/api";
 import type { WikiTemplate } from "./wiki";
 
@@ -54,7 +54,11 @@ export const renderTemplateHtml = (
     const u = asUser(data);
     if (!u) return "";
     const avatar = u.uid
-      ? `<img class="wiki-template-avatar" src="${escapeHtml(avatarUidUrl(u.uid))}" alt="${escapeHtml(u.username ?? "")}">`
+      ? `<img class="wiki-template-avatar" src="${escapeHtml(
+          avatarUidUrl(u.uid)
+        )}" alt="${escapeHtml(
+          u.username ?? ""
+        )}" onerror="this.onerror=null;this.src='${avatarFallbackUrl(u.uid)}'">`
       : `<span class="wiki-template-avatar placeholder" aria-hidden="true"></span>`;
     return `<a class="wiki-template-card wiki-template-user" href="/player/${u.uid ?? ""}">${avatar}<p class="wiki-template-title">${escapeHtml(
       u.username ?? ""
@@ -125,7 +129,9 @@ export const renderTemplateHtml = (
         const avatar = item.uid
           ? `<img class="wiki-template-avatar" src="${escapeHtml(
               avatarUidUrl(item.uid)
-            )}" alt="${name}">`
+            )}" alt="${name}" onerror="this.onerror=null;this.src='${avatarFallbackUrl(
+              item.uid
+            )}'">`
           : `<span class="wiki-template-avatar placeholder" aria-hidden="true"></span>`;
         const label = item.uid
           ? `<a class="wiki-template-label" href="/player/${item.uid}">${name}</a>`

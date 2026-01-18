@@ -12,9 +12,9 @@
 
 .player-avatar {
   width: 100%;
-  padding-top: 100%;
-  background-size: cover;
-  background-position: center;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  display: block;
   border-radius: 16px;
   border: 1px solid var(--color-border);
   box-shadow: 0 12px 32px rgba(15, 23, 42, 0.12);

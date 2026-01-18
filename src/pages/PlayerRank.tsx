@@ -3,7 +3,8 @@ import PageLayout from "../components/PageLayout";
 import { UseAuthModal } from "../components/UseAuthModal";
 import { fetchGlobalRank } from "../network/api";
 import type { RespGlobalRankItem } from "../network/api";
-import { avatarUidUrl } from "../utils/formatters";
+import AvatarImage from '../components/AvatarImage'
+import { avatarUidUrl } from '../utils/formatters'
 import { useI18n } from "../i18n";
 import "../styles/player-rank.css";
 
@@ -143,10 +144,11 @@ function PlayerRankPage() {
               <tr key={`${row.rank}-${row.uid}`}>
                 <td>{row.rank}</td>
                 <td className="player-cell" data-rank={row.rank}>
-                  <img
+                  <AvatarImage
                     className="rank-avatar"
                     src={avatarUidUrl(row.uid)}
                     alt={row.username ?? t("rank.table.player")}
+                    seed={row.uid}
                   />
                   <a className="rank-name" href={`/player/${row.uid}`}>
                     {row.username || `${t("rank.table.player")} ${row.uid}`}

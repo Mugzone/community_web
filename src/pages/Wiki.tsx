@@ -17,6 +17,7 @@ import {
 import { bindHiddenToggles, renderWiki, type WikiTemplate } from "../utils/wiki";
 import { applyTemplateHtml, renderTemplateHtml } from "../utils/wikiTemplates";
 import { isOrgMember } from "../utils/auth";
+import { getOrgParam } from "../utils/locale";
 import "../styles/wiki.css";
 
 type WikiContext = "page" | "song" | "chart" | "user" | "skin";
@@ -133,6 +134,7 @@ function WikiPage() {
   });
   const [templateError, setTemplateError] = useState("");
   const contentRef = useRef<HTMLDivElement>(null);
+  const orgParam = getOrgParam(lang);
 
   const isSkinKey = Boolean(params.prefix?.startsWith("skin_"));
   const context: WikiContext = params.cid
@@ -257,7 +259,10 @@ function WikiPage() {
       const blocks = await Promise.all(
         tmplList.map(async (tmpl) => {
           try {
-            const params = { ...tmpl.params };
+            const params: Record<string, string | number | undefined> = { ...tmpl.params };
+            if (tmpl.name === "_chart" || tmpl.name === "_activity" || tmpl.name === "_event") {
+              params.org = orgParam;
+            }
             if (tmpl.name === "_eventsum" && params.uid) {
               params._uid = params.uid;
               delete params.uid;

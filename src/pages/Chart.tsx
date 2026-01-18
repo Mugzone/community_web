@@ -21,8 +21,10 @@ import {
   type RespRanking,
   type RespRankingFirst5,
 } from "../network/api";
+import AvatarImage from '../components/AvatarImage'
 import { avatarUidUrl, chartTypeBadge, coverUrl, modeLabel } from "../utils/formatters";
 import { isPublisher } from "../utils/auth";
+import { getOrgParam } from "../utils/locale";
 import { applyTemplateHtml, renderTemplateHtml } from "../utils/wikiTemplates";
 import { bindHiddenToggles, renderWiki, type WikiTemplate } from "../utils/wiki";
 import "../styles/chart.css";
@@ -92,7 +94,8 @@ function ChartPage() {
   const chartId = useMemo(() => parseChartId(), []);
   const copyHintTimer = useRef<number | null>(null);
   const [showCopyHint, setShowCopyHint] = useState(false);
-  const prefersOrgTitle = lang === "zh-CN" || lang === "ja";
+  const orgParam = getOrgParam(lang);
+  const prefersOrgTitle = orgParam === 1;
 
   const [info, setInfo] = useState<RespChartInfo>();
   const [infoError, setInfoError] = useState("");
@@ -142,7 +145,7 @@ function ChartPage() {
       try {
         const resp = await fetchChartInfo({
           cid: chartId,
-          org: prefersOrgTitle ? 1 : undefined,
+          org: orgParam,
         });
         if (cancelled) return;
         if (resp.code !== 0) {
@@ -548,10 +551,11 @@ function ChartPage() {
             >
               <span className="chart-rank-pos">{item.ranking ?? "-"}</span>
               <a className="chart-rank-player" href={`/player/${item.uid}`}>
-                <img
+                <AvatarImage
                   className="chart-rank-avatar"
                   src={avatarUidUrl(item.uid)}
                   alt={item.username || t("chart.ranking.unknown")}
+                  seed={item.uid}
                 />
                 <span>{item.username || t("chart.ranking.unknown")}</span>
               </a>
@@ -738,7 +742,11 @@ function ChartPage() {
                       href={`/player/${creatorUid}`}
                       aria-label={creatorName}
                     >
-                      <img src={avatarUidUrl(creatorUid)} alt={creatorName} />
+                      <AvatarImage
+                        src={avatarUidUrl(creatorUid)}
+                        alt={creatorName}
+                        seed={creatorUid}
+                      />
                     </a>
                   ) : (
                     <div className="chart-score-avatar placeholder" aria-hidden="true" />
@@ -764,7 +772,11 @@ function ChartPage() {
                         href={`/player/${publisherUid}`}
                         aria-label={publisherName}
                       >
-                        <img src={avatarUidUrl(publisherUid)} alt={publisherName} />
+                        <AvatarImage
+                          src={avatarUidUrl(publisherUid)}
+                          alt={publisherName}
+                          seed={publisherUid}
+                        />
                       </a>
                     ) : (
                       <div className="chart-score-avatar placeholder" aria-hidden="true" />
@@ -810,10 +822,11 @@ function ChartPage() {
                         className="chart-first5-link"
                         href={`/player/${data.uid}`}
                       >
-                        <img
+                        <AvatarImage
                           className="chart-first5-avatar"
                           src={avatarUidUrl(data.uid)}
                           alt={data.username}
+                          seed={data.uid}
                         />
                         <span className="chart-first5-name">{data.username}</span>
                         <span className="chart-first5-time">

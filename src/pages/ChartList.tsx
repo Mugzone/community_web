@@ -8,6 +8,7 @@ import { fetchStoreListV2 } from "../network/api";
 import type { RespStoreListItem } from "../network/api";
 import { coverUrl, modeLabelsFromMask } from "../utils/formatters";
 import { useI18n } from "../i18n";
+import { getOrgParam } from "../utils/locale";
 import "../styles/chart-list.css";
 
 type FilterState = {
@@ -86,6 +87,7 @@ const defaultFilters: FilterState = {
 function ChartListPage() {
   const { t, lang } = useI18n();
   const auth = UseAuthModal();
+  const orgParam = getOrgParam(lang);
   const initialFilters = useMemo(() => parseInitialFilters(), []);
   const [filters, setFilters] = useState<FilterState>(initialFilters);
   const [charts, setCharts] = useState<ChartCardItem[]>([]);
@@ -155,7 +157,7 @@ function ChartListPage() {
       from,
       sort: current.sort,
       order: current.order,
-      org: lang === "en-US" ? 0 : 1,
+      org: orgParam,
     };
 
     if (current.mode !== -1) {

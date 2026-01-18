@@ -1,7 +1,8 @@
 import { useState, useEffect, useMemo, useRef, type FormEvent } from "react";
 import { useI18n } from "../i18n";
 import { getSession } from "../network/api";
-import { avatarUidUrl } from "../utils/formatters";
+import AvatarImage from './AvatarImage'
+import { avatarUidUrl } from '../utils/formatters'
 import logo from "../assets/logo.png";
 
 type TopbarProps = {
@@ -183,7 +184,11 @@ function Topbar({
                   title={displayName}
                   aria-label={avatarLabel}
                 >
-                  <img src={avatarUidUrl(uid)} alt={avatarLabel} />
+                  <AvatarImage
+                    src={avatarUidUrl(uid)}
+                    alt={avatarLabel}
+                    seed={uid}
+                  />
                 </a>
               ) : (
                 <span className="user-avatar" title={displayName}>

@@ -206,11 +206,31 @@ const getJson = async <T>(path: string, options?: FetchOptions): Promise<T> => {
   }
 
   const url = buildUrl(path, params)
-  const res = await fetch(url, { credentials: 'include', headers: options?.headers })
+  const res = await fetch(url, { headers: options?.headers })
   if (!res.ok) {
     throw new Error(`Request failed: ${res.status}`)
   }
   return (await res.json()) as T
+}
+
+const getText = async (path: string, options?: FetchOptions): Promise<string> => {
+  const requiresAuth = options?.auth ?? true
+  const params = { ...(options?.params ?? {}) }
+
+  if (requiresAuth) {
+    const session = await ensureSession()
+    const isStorePath = path.includes('/store/') || path.includes('/skin/')
+    const keyToUse = isStorePath ? session.storeKey ?? session.key : session.key
+    params.key ??= keyToUse
+    params.uid ??= session.uid
+  }
+
+  const url = buildUrl(path, params)
+  const res = await fetch(url, { credentials: 'include', headers: options?.headers })
+  if (!res.ok) {
+    throw new Error(`Request failed: ${res.status}`)
+  }
+  return res.text()
 }
 
 export type RespBasicInfoNews = {
@@ -1026,3 +1046,6 @@ export const register = (payload: {
       bver: payload.bver,
     },
   })
+
+export const fetchRoomHistoryLog = (params: { mid: string | number }) =>
+  getText(`/history/${params.mid}`)

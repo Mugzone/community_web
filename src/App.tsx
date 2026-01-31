@@ -16,6 +16,7 @@ import PlayerPage from './pages/Player'
 import PlayerEditPage from './pages/PlayerEdit'
 import ActivationCodePage from './pages/ActivationCode'
 import SearchPage from './pages/Search'
+import HistoryPage from './pages/History'
 
 const isPlayerRankPath = (path: string) => {
   return (
@@ -92,6 +93,10 @@ const isSearchPath = (path: string) => {
   return path.startsWith('/search')
 }
 
+const isHistoryPath = (path: string) => {
+  return path === '/history' || path === '/history/'
+}
+
 function App() {
   const path = window.location.pathname
   if (isPlayerEditPath(path)) {
@@ -102,6 +107,9 @@ function App() {
   }
   if (isSearchPath(path)) {
     return <SearchPage />
+  }
+  if (isHistoryPath(path)) {
+    return <HistoryPage />
   }
   if (isPlayerPath(path)) {
     return <PlayerPage />

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import ChartCard from "../components/ChartCard";
+import LoadMoreButton from "../components/LoadMoreButton";
 import MultiSelect from "../components/MultiSelect";
 import PageLayout from "../components/PageLayout";
 import RangeSlider from "../components/RangeSlider";
@@ -477,14 +478,12 @@ function ChartListPage() {
         )}
         <div className="chart-actions">
           {hasMore && (
-            <button
-              className="load-more"
-              type="button"
+            <LoadMoreButton
+              label={t("charts.loadMore")}
+              loadingLabel={t("charts.loading")}
+              loading={loading}
               onClick={() => loadCharts()}
-              disabled={loading}
-            >
-              {loading ? t("charts.loading") : t("charts.loadMore")}
-            </button>
+            />
           )}
         </div>
       </section>

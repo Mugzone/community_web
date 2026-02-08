@@ -637,6 +637,8 @@ export type RespWikiSearchItem = {
 export type RespWikiSearch = {
   code: number
   data?: RespWikiSearchItem[]
+  next?: number
+  hasMore?: boolean
 }
 
 export type RespSaveWiki = {
@@ -668,6 +670,8 @@ export type RespPlayerSearchItem = {
 export type RespPlayerSearch = {
   code: number
   data?: RespPlayerSearchItem[]
+  next?: number
+  hasMore?: boolean
 }
 
 export const fetchBasicInfo = () => getJson<RespBasicInfo>('/push/info/wt', { auth: false })
@@ -953,7 +957,7 @@ export const fetchWiki = (params: {
 }) =>
   getJson<RespWiki>('/community/wiki', { params })
 
-export const searchWiki = (params: { keyword: string }) =>
+export const searchWiki = (params: { keyword: string; from?: number; limit?: number }) =>
   getJson<RespWikiSearch>('/community/wiki/search', { params })
 
 export const saveWiki = (payload: {
@@ -1012,7 +1016,7 @@ export const toggleWikiNews = (payload: { pid: number; uid: number }) =>
     body: { pid: payload.pid },
   })
 
-export const searchPlayer = (params: { keyword: string; ver?: number; bver?: number }) =>
+export const searchPlayer = (params: { keyword: string; from?: number; limit?: number; ver?: number; bver?: number }) =>
   getJson<RespPlayerSearch>('/player/search', { params })
 
 export const login = (payload: { name: string; psw: string; ver?: number; h?: string; bver?: number }) =>

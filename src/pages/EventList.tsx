@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import LoadMoreButton from "../components/LoadMoreButton";
 import PageLayout from "../components/PageLayout";
 import { UseAuthModal } from "../components/UseAuthModal";
 import { fetchStoreEvents, getSession } from "../network/api";
@@ -163,14 +164,12 @@ function EventListPage() {
 
         <div className="chart-actions">
           {hasMore && (
-            <button
-              className="load-more"
-              type="button"
+            <LoadMoreButton
+              label={t("events.loadMore")}
+              loadingLabel={t("events.loading")}
+              loading={loading}
               onClick={() => loadEvents()}
-              disabled={loading}
-            >
-              {loading ? t("events.loading") : t("events.loadMore")}
-            </button>
+            />
           )}
         </div>
       </section>

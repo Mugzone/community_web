@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import ChartCard from "../components/ChartCard";
+import LoadMoreButton from "../components/LoadMoreButton";
 import PageLayout from "../components/PageLayout";
 import { UseAuthModal } from "../components/UseAuthModal";
 import { fetchSkinList } from "../network/api";
@@ -256,14 +257,12 @@ function SkinListPage() {
         )}
         <div className="chart-actions">
           {hasMore && (
-            <button
-              className="load-more"
-              type="button"
+            <LoadMoreButton
+              label={t("skins.loadMore")}
+              loadingLabel={t("skins.loading")}
+              loading={loading}
               onClick={() => loadSkins()}
-              disabled={loading}
-            >
-              {loading ? t("skins.loading") : t("skins.loadMore")}
-            </button>
+            />
           )}
         </div>
       </section>

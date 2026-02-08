@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import LoadMoreButton from "../components/LoadMoreButton";
 import PageLayout from "../components/PageLayout";
 import { UseAuthModal } from "../components/UseAuthModal";
 import { fetchGlobalRank } from "../network/api";
@@ -187,13 +188,12 @@ function PlayerRankPage() {
             {error ? error : t("rank.table.showing", { count: rows.length })}
           </span>
           {hasMore && (
-            <button
-              className="load-more"
+            <LoadMoreButton
+              label={t("rank.table.loadMore")}
+              loadingLabel={t("rank.table.loading")}
+              loading={loading}
               onClick={() => loadRank()}
-              disabled={loading}
-            >
-              {loading ? t("rank.table.loading") : t("rank.table.loadMore")}
-            </button>
+            />
           )}
         </div>
       </div>

@@ -2,6 +2,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import { getSession } from "../network/api";
 import { useI18n } from "../i18n";
 import type { PackBase } from "../network/api";
+import LoadMoreButton from "./LoadMoreButton";
 
 export type CommentItem = {
   tid: number;
@@ -245,14 +246,12 @@ function CommentThread({
 
       {hasMore && (
         <div className="comment-actions">
-          <button
-            className="btn ghost small"
-            type="button"
+          <LoadMoreButton
+            label={t("comment.loadMore")}
+            loadingLabel={t("comment.loading")}
+            loading={loadingMore}
             onClick={() => loadComments(false)}
-            disabled={loadingMore}
-          >
-            {loadingMore ? t("comment.loading") : t("comment.loadMore")}
-          </button>
+          />
         </div>
       )}
     </div>

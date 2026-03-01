@@ -301,6 +301,7 @@ function ChartPage() {
           } else {
             const parsed = renderWiki(resp.wiki, {
               hiddenLabel: t("wiki.hiddenLabel"),
+              tocLabel: t("wiki.tocLabel"),
               templateLabel: t("wiki.templateLabel"),
               templateLoading: t("wiki.template.loading"),
             });
@@ -761,6 +762,10 @@ function ChartPage() {
                     )}
                   </div>
                 </div>
+              </div>
+              <div className="chart-score-person">
+                <p className="chart-score-label">{t("chart.meta.hot")}</p>
+                <p className="chart-score-value">{(info?.hot ?? 0).toLocaleString()}</p>
               </div>
               {hasPublisher && (
                 <div className="chart-score-person">

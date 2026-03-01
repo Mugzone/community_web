@@ -546,6 +546,7 @@ export type RespChartInfo = {
   tagOptions?: RespTagMeta[]
   like?: number
   dislike?: number
+  hot?: number
   likeState?: number
 }
 
@@ -773,6 +774,9 @@ export const submitActivationCode = (payload: { code: string }) =>
 
 export const fetchPlayerImageUpload = (params: { type: number; touid?: number }) =>
   getJson<RespImageUpload>('/player/image', { params })
+
+export const finishImageUpload = (payload: { path: string }) =>
+  postForm<PackBase>('/upload/finish', { body: { path: payload.path } })
 
 export const fetchGlobalRank = (params: { mm?: number; mode?: number; from?: number; ver?: number; bver?: number }) =>
   getJson<RespGlobalRank>('/ranking/global', { params })

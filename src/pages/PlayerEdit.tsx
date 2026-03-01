@@ -6,6 +6,7 @@ import { useI18n } from '../i18n'
 import {
   fetchPlayerImageUpload,
   fetchPlayerInfo,
+  finishImageUpload,
   getSession,
   savePlayerInfo,
   setSession,
@@ -251,20 +252,31 @@ function PlayerEditPage() {
         return
       }
 
+      let saveKey: string | undefined
       const policy = sign.meta.policy
       if (policy) {
         try {
           const decoded = atob(policy)
           const parsed = JSON.parse(decoded) as { 'save-key'?: string }
-          const saveKey = parsed['save-key']
-          if (saveKey) {
-            const cleanKey = saveKey.startsWith('/') ? saveKey.slice(1) : saveKey
-            setInfo((prev) => (prev ? { ...prev, avatar: cleanKey } : prev))
-          }
+          saveKey = parsed['save-key']
         } catch (err) {
           console.error(err)
         }
       }
+
+      if (!saveKey) {
+        setAvatarError(t('player.edit.avatar.error'))
+        return
+      }
+
+      const finishResp = await finishImageUpload({ path: saveKey })
+      if (finishResp.code !== 0) {
+        setAvatarError(t('player.edit.avatar.error'))
+        return
+      }
+
+      const cleanKey = saveKey.startsWith('/') ? saveKey.slice(1) : saveKey
+      setInfo((prev) => (prev ? { ...prev, avatar: cleanKey } : prev))
 
       setAvatarSuccess(t('player.edit.avatar.success'))
       setAvatarFile(undefined)

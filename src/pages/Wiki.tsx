@@ -155,6 +155,7 @@ function WikiPage() {
   const renderOptions = useMemo(
     () => ({
       hiddenLabel: t("wiki.hiddenLabel"),
+      tocLabel: t("wiki.tocLabel"),
       templateLabel: t("wiki.templateLabel"),
       templateLoading: t("wiki.template.loading"),
     }),
@@ -287,7 +288,6 @@ function WikiPage() {
       console.error(err);
       setTemplateError(t("wiki.template.error"));
       setWikiHtml(html);
-    } finally {
     }
   };
 

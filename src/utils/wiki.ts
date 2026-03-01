@@ -21,17 +21,34 @@ export type WikiRenderResult = {
 
 export type WikiRenderOptions = {
   hiddenLabel: string
+  tocLabel: string
   templateLabel: string
   templateLoading: string
+}
+
+type WikiHeading = {
+  id: string
+  level: number
+  text: string
 }
 
 export const bindHiddenToggles = (container: HTMLElement | null) => {
   if (!container) return () => {}
   const handleClick = (event: Event) => {
     const target = event.target as HTMLElement | null
-    const trigger = target?.closest?.('.hide-top')
-    if (!trigger || !container.contains(trigger)) return
-    const wrapper = trigger.closest('.hidden')
+    const tocTrigger = target?.closest?.('.wiki-toc-title')
+    if (tocTrigger && container.contains(tocTrigger)) {
+      const toc = tocTrigger.closest('.wiki-toc')
+      if (toc) {
+        const collapsed = toc.classList.toggle('collapsed')
+        tocTrigger.setAttribute('aria-expanded', String(!collapsed))
+      }
+      return
+    }
+
+    const hiddenTrigger = target?.closest?.('.hide-top')
+    if (!hiddenTrigger || !container.contains(hiddenTrigger)) return
+    const wrapper = hiddenTrigger.closest('.hidden')
     wrapper?.classList.toggle('open')
   }
   container.addEventListener('click', handleClick)
@@ -306,15 +323,36 @@ const buildTemplatePlaceholder = (tmpl: WikiTemplate, idx: number, options: Wiki
   return `<div class="wiki-template-placeholder" data-template="${escapeHtml(tmpl.name)}" data-template-idx="${idx}"><p class="wiki-template-name">${options.templateLabel} ${escapeHtml(tmpl.name)}</p><p class="wiki-template-todo">${options.templateLoading}</p></div>`
 }
 
+const buildToc = (headings: WikiHeading[], options: WikiRenderOptions) => {
+  const counters = [0, 0, 0, 0]
+  const items = headings
+    .map(({ id, level, text }) => {
+      const normalizedLevel = Math.min(Math.max(level, 1), 4)
+      for (let i = 0; i < normalizedLevel - 1; i += 1) {
+        if (counters[i] === 0) counters[i] = 1
+      }
+      counters[normalizedLevel - 1] += 1
+      for (let i = normalizedLevel; i < counters.length; i += 1) {
+        counters[i] = 0
+      }
+      const index = counters.slice(0, normalizedLevel).join('.')
+      return `<li class="wiki-toc-item level-${normalizedLevel}"><a href="#${id}"><span class="wiki-toc-index">${index}</span><span class="wiki-toc-text">${escapeHtml(text)}</span></a></li>`
+    })
+    .join('')
+  return `<nav class="wiki-toc" aria-label="${escapeHtml(options.tocLabel)}"><button type="button" class="wiki-toc-title" aria-expanded="true">${escapeHtml(options.tocLabel)}</button><ol class="wiki-toc-list">${items}</ol></nav>`
+}
+
 export const renderWiki = (content: string, options: WikiRenderOptions): WikiRenderResult => {
   const lines = content.split(/\r?\n/)
   const output: string[] = []
   const templates: WikiTemplate[] = []
+  const headings: WikiHeading[] = []
   let mode: BlockMode = BlockMode.None
   let inHidden = false
   let inTemplate = false
   let templateLines: string[] = []
   let tableMode: 'default' | 'right' | 'floatRight' = 'default'
+  let headingIndex = 0
 
   const openMode = (next: BlockMode, line?: string) => {
     mode = next
@@ -427,7 +465,12 @@ export const renderWiki = (content: string, options: WikiRenderOptions): WikiRen
         const prefix = line.match(/^(=*)/)?.[1] ?? ''
         const level = Math.min(prefix.length, 4)
         const text = line.replace(/^[=\s]*|[=\s]*$/g, '')
-        output.push(`<h${level}>${escapeHtml(text)}</h${level}>`)
+        headingIndex += 1
+        const headingId = `wiki-heading-${headingIndex}`
+        output.push(`<h${level} id="${headingId}">${escapeHtml(text)}</h${level}>`)
+        if (text) {
+          headings.push({ id: headingId, level, text })
+        }
         return
       }
 
@@ -485,6 +528,9 @@ export const renderWiki = (content: string, options: WikiRenderOptions): WikiRen
   }
   if (inHidden) {
     output.push('</div></div>')
+  }
+  if (headings.length > 3) {
+    output.unshift(buildToc(headings, options))
   }
 
   return { html: output.join(''), templates }

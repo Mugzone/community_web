@@ -5,6 +5,7 @@ import { useI18n } from "../i18n";
 import {
   createEvent,
   fetchEventCoverUpload,
+  finishImageUpload,
   fetchEventCharts,
   fetchStoreEvents,
   fetchWikiTemplate,
@@ -183,22 +184,31 @@ function EventEditPage() {
         return;
       }
 
+      let saveKey: string | undefined;
       const policy = sign.meta.policy;
       if (policy) {
         try {
           const decoded = atob(policy);
           const parsed = JSON.parse(decoded) as { "save-key"?: string };
-          const saveKey = parsed["save-key"];
-          if (saveKey) {
-            const cleanKey = saveKey.startsWith("/")
-              ? saveKey.slice(1)
-              : saveKey;
-            updateField("cover", cleanKey);
-          }
+          saveKey = parsed["save-key"];
         } catch (err) {
           console.error(err);
         }
       }
+
+      if (!saveKey) {
+        setCoverError(t("events.edit.cover.error"));
+        return;
+      }
+
+      const finishResp = await finishImageUpload({ path: saveKey });
+      if (finishResp.code !== 0) {
+        setCoverError(t("events.edit.cover.error"));
+        return;
+      }
+
+      const cleanKey = saveKey.startsWith("/") ? saveKey.slice(1) : saveKey;
+      updateField("cover", cleanKey);
 
       setCoverSuccess(t("events.edit.cover.success"));
       setCoverFile(undefined);

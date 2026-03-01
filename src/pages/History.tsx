@@ -95,18 +95,26 @@ const isNumeric = (value?: string) => {
   return /^[0-9]+$/.test(value)
 }
 
-const buildScoreTooltip = (fields: Record<string, string>) => {
-  const ignoredKeys = new Set(['uid', 'room', 'match'])
-  const primaryKeys = new Set(['score', 'acc', 'combo'])
-  const entries = Object.entries(fields).filter(([key, value]) => {
-    if (!value) return false
-    if (ignoredKeys.has(key)) return false
-    if (primaryKeys.has(key)) return false
-    return true
-  })
-  if (!entries.length) return ''
-  return entries.map(([key, value]) => `${key}: ${value}`).join('\n')
+const isTruthyFlag = (value?: string) => {
+  if (!value) return false
+  const normalized = value.trim().toLowerCase()
+  return normalized === '1' || normalized === 'true' || normalized === 'yes' || normalized === 'on'
 }
+
+const scoreHiddenKeys = new Set([
+  'uid',
+  'room',
+  'match',
+  'name',
+  'username',
+  'uname',
+  'score',
+  'acc',
+  'combo',
+  'fullcombo',
+  'full_combo',
+  'fc',
+])
 
 const renderUserChip = (uid: string, displayName?: string, teamLabel?: string) => {
   if (!isNumeric(uid)) {
@@ -120,6 +128,21 @@ const renderUserChip = (uid: string, displayName?: string, teamLabel?: string) =
       <span>{displayName || uid}</span>
       {displayName && <span className="history-user-uid">{uid}</span>}
       {teamLabel && <span className="history-user-team">{teamLabel}</span>}
+    </a>
+  )
+}
+
+const renderScoreUser = (uid?: string, displayName?: string) => {
+  const userName = displayName || uid || '-'
+  if (!uid || !isNumeric(uid)) {
+    return <span className="history-score-uid">{userName}</span>
+  }
+  return (
+    <a className="history-score-user-link" href={`/player/${uid}`}>
+      <span className="history-user-avatar">
+        <AvatarImage seed={uid} src={avatarUidUrl(Number(uid))} alt={uid} />
+      </span>
+      <span>{userName}</span>
     </a>
   )
 }
@@ -531,27 +554,48 @@ function HistoryPage() {
                       {group.scores.length ? (
                         <div className="history-score-grid">
                           {group.scores.map((score) => {
-                            const tooltip = buildScoreTooltip(score.fields)
+                            const isFullCombo =
+                              isTruthyFlag(score.fields.fullcombo) ||
+                              isTruthyFlag(score.fields.full_combo) ||
+                              isTruthyFlag(score.fields.fc)
+                            const extraEntries = Object.entries(score.fields).filter(([key, value]) => {
+                              if (!value) return false
+                              return !scoreHiddenKeys.has(key)
+                            })
+                            const extraInfo = extraEntries.length
+                              ? extraEntries
+                                .map(([key, value]) => `${fieldLabels[key as keyof typeof fieldLabels] ?? key}: ${value}`)
+                                .join(' · ')
+                              : t('history.field.unknown')
                             return (
-                              <div
-                                className={`history-score-card${tooltip ? ' has-tooltip' : ''}`}
-                                key={score.raw}
-                                title={tooltip}
-                              >
-                              <div className="history-score-user">
-                                {score.fields.uid
-                                  ? renderUserChip(
-                                      score.fields.uid,
-                                      score.fields.name || score.fields.username || score.fields.uname
-                                    )
-                                  : <span className="history-score-uid">-</span>}
+                              <div className="history-score-card" key={score.raw}>
+                                <div className="history-score-user">
+                                  {renderScoreUser(
+                                    score.fields.uid,
+                                    score.fields.name || score.fields.username || score.fields.uname
+                                  )}
+                                </div>
+                                <div className="history-score-main">
+                                  <div className="history-score-primary">
+                                    <span className="history-score-item">
+                                      <span className="history-score-key">{fieldLabels.score}</span>
+                                      <span className="history-score-value">{score.fields.score ?? '-'}</span>
+                                    </span>
+                                    <span className="history-score-item">
+                                      <span className="history-score-key">{fieldLabels.acc}</span>
+                                      <span className="history-score-value">
+                                        {score.fields.acc ? `${score.fields.acc}%` : '-'}
+                                      </span>
+                                    </span>
+                                    <span className="history-score-item">
+                                      <span className="history-score-key">{fieldLabels.combo}</span>
+                                      <span className="history-score-value">{score.fields.combo ?? '-'}</span>
+                                    </span>
+                                    {isFullCombo && <span className="history-score-fc">FC</span>}
+                                  </div>
+                                  <div className="history-score-extra">{extraInfo}</div>
+                                </div>
                               </div>
-                              <div className="history-score-meta">
-                                <span>{score.fields.score ?? '-'}</span>
-                                <span>{score.fields.acc ? `${score.fields.acc}%` : '-'}</span>
-                                <span>{score.fields.combo ?? '-'}</span>
-                              </div>
-                            </div>
                             )
                           })}
                         </div>

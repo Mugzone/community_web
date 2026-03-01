@@ -246,6 +246,7 @@ function PlayerPage() {
   const renderOptions = useMemo(
     () => ({
       hiddenLabel: t("wiki.hiddenLabel"),
+      tocLabel: t("wiki.tocLabel"),
       templateLabel: t("wiki.templateLabel"),
       templateLoading: t("wiki.template.loading"),
     }),

@@ -132,6 +132,7 @@ function EventEditPage() {
       { value: "1", label: t("events.edit.type.section") },
       { value: "2", label: t("events.edit.type.newDefault") },
       { value: "3", label: t("events.edit.type.newSection") },
+      { value: "4", label: t("events.edit.type.combo") },
     ],
     [t]
   );
@@ -400,7 +401,7 @@ function EventEditPage() {
       setSaveError(t("events.edit.error.required"));
       return;
     }
-    if (typeValue < 0 || typeValue > 3) {
+    if (typeValue < 0 || typeValue > 4) {
       setSaveError(t("events.edit.error.type"));
       return;
     }

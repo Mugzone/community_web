@@ -57,6 +57,23 @@ function EventDetailPage() {
     return parsed.toLocaleDateString();
   };
 
+  const eventTypeLabel = useMemo(() => {
+    const rawType = info?.type;
+    const typeValue =
+      typeof rawType === "number"
+        ? rawType
+        : typeof rawType === "string"
+          ? Number(rawType)
+          : Number.NaN;
+    if (!Number.isFinite(typeValue)) return t("events.type.unknown");
+    if (typeValue === 0) return t("events.type.default");
+    if (typeValue === 1) return t("events.type.section");
+    if (typeValue === 2) return t("events.type.newDefault");
+    if (typeValue === 3) return t("events.type.newSection");
+    if (typeValue === 4) return t("events.type.combo");
+    return t("events.type.unknown");
+  }, [info?.type, t]);
+
   useEffect(() => {
     if (!eventId || Number.isNaN(eventId)) {
       const message = t("events.detail.error.missing");
@@ -193,6 +210,9 @@ function EventDetailPage() {
           <div className="event-detail-meta">
             <span className="pill ghost">{statusLabel[status]}</span>
             <span className="pill ghost">{rangeLabel}</span>
+            <span className="pill ghost">
+              {t("events.detail.meta.type", { value: eventTypeLabel })}
+            </span>
             {eventId && !Number.isNaN(eventId) && (
               <span className="pill ghost">
                 {t("events.detail.meta.id", { id: eventId })}

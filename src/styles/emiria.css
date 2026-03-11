@@ -55,6 +55,7 @@
 .emiria-actions {
   display: flex;
   justify-content: flex-start;
+  gap: 0.5rem;
 }
 
 .emiria-success {

@@ -809,6 +809,22 @@ export const grantPlayerRings = (payload: { uids: string; item: number }) =>
     },
   })
 
+export const revokePlayerLabels = (payload: { uids: string; item: number }) =>
+  postForm<RespEmiriaGrantLabel>('/emiria/player/label/revoke', {
+    body: {
+      uids: payload.uids,
+      item: payload.item,
+    },
+  })
+
+export const revokePlayerRings = (payload: { uids: string; item: number }) =>
+  postForm<RespEmiriaGrantLabel>('/emiria/player/ring/revoke', {
+    body: {
+      uids: payload.uids,
+      item: payload.item,
+    },
+  })
+
 export const finishImageUpload = (payload: { path: string }) =>
   postForm<PackBase>('/upload/finish', { body: { path: payload.path } })
 

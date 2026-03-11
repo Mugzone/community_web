@@ -1,11 +1,18 @@
 import { useState, type FormEvent } from "react";
 import PageLayout from "../components/PageLayout";
 import { UseAuthModal } from "../components/UseAuthModal";
-import { getSession, grantPlayerLabels, grantPlayerRings } from "../network/api";
+import {
+  getSession,
+  grantPlayerLabels,
+  grantPlayerRings,
+  revokePlayerLabels,
+  revokePlayerRings,
+} from "../network/api";
 import { isOrgMember } from "../utils/auth";
 import "../styles/emiria.css";
 
 type GrantType = "label" | "ring";
+type ActionType = "grant" | "revoke";
 
 const grantConfig: Record<
   GrantType,
@@ -57,24 +64,41 @@ function EmiriaPage() {
 
   const showNotFound = !canManage || serverDenied;
 
-  const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  const executeAction = async (action: ActionType) => {
     if (submitting) return;
+    const itemID = Number(item.trim());
+    if (
+      !uids.trim() ||
+      !Number.isFinite(itemID) ||
+      itemID < current.itemMin ||
+      itemID > current.itemMax
+    ) {
+      setError("参数错误或发放失败");
+      setMessage("");
+      return;
+    }
 
-    const labelID = Number(item.trim());
     setSubmitting(true);
     setMessage("");
     setError("");
 
     try {
-      const payload = { uids: uids.trim(), item: labelID };
+      const payload = { uids: uids.trim(), item: itemID };
       const resp =
         grantType === "label"
-          ? await grantPlayerLabels(payload)
-          : await grantPlayerRings(payload);
+          ? action === "grant"
+            ? await grantPlayerLabels(payload)
+            : await revokePlayerLabels(payload)
+          : action === "grant"
+            ? await grantPlayerRings(payload)
+            : await revokePlayerRings(payload);
       if (resp.code === 0) {
         const countText = resp.count ? `，共 ${resp.count} 个玩家` : "";
-        setMessage(`${current.successName}发放成功${countText}`);
+        if (action === "grant") {
+          setMessage(`${current.successName}发放成功${countText}`);
+        } else {
+          setMessage(`${current.successName}撤销成功${countText}`);
+        }
         return;
       }
       if (resp.code === -2) {
@@ -96,6 +120,17 @@ function EmiriaPage() {
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    await executeAction("grant");
+  };
+
+  const onRevoke = async () => {
+    const ok = window.confirm("确认撤销这些发放记录吗？");
+    if (!ok) return;
+    await executeAction("revoke");
   };
 
   if (showNotFound) {
@@ -161,6 +196,9 @@ function EmiriaPage() {
           <div className="emiria-actions">
             <button className="btn primary" type="submit" disabled={submitting}>
               {submitting ? "发放中..." : current.submitLabel}
+            </button>
+            <button className="btn ghost" type="button" disabled={submitting} onClick={onRevoke}>
+              {submitting ? "处理中..." : "撤销发放"}
             </button>
           </div>
         </form>

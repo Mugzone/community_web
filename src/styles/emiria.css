@@ -1,0 +1,81 @@
+.emiria-page .content-container {
+  max-width: 860px;
+}
+
+.emiria-panel {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  box-shadow: var(--shadow-sm);
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.emiria-panel h1 {
+  margin: 0;
+}
+
+.emiria-desc {
+  margin: 0;
+  color: var(--color-muted);
+}
+
+.emiria-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.emiria-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-weight: 700;
+}
+
+.emiria-field textarea,
+.emiria-field input {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  background: var(--color-surface-2);
+  color: var(--color-text);
+  padding: 0.6rem 0.65rem;
+  font: inherit;
+}
+
+.emiria-field textarea {
+  resize: vertical;
+}
+
+.emiria-actions {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.emiria-success {
+  margin: 0;
+  color: #16a34a;
+  font-weight: 700;
+}
+
+.emiria-error {
+  margin: 0;
+  color: #dc2626;
+  font-weight: 700;
+}
+
+.emiria-not-found {
+  min-height: 260px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.emiria-not-found h1 {
+  margin: 0;
+  font-size: clamp(2.25rem, 8vw, 4rem);
+}

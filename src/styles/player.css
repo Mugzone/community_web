@@ -131,6 +131,67 @@
   gap: 1rem;
 }
 
+.player-labels {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 0.9rem 1rem;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 20px;
+}
+
+.player-labels-viewport {
+  overflow: hidden;
+  width: 100%;
+}
+
+.player-labels-track {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: nowrap;
+  transition: transform 0.35s ease;
+  will-change: transform;
+}
+
+.player-labels-track.no-animate {
+  transition: none;
+}
+
+.player-label-card {
+  width: 258px;
+  min-width: 258px;
+  height: 120px;
+  position: relative;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-2);
+}
+
+.player-label-card img {
+  width: 258px;
+  height: 120px;
+  object-fit: cover;
+  display: block;
+}
+
+.player-label-count {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  padding: 0.12rem 0.35rem;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(148, 163, 184, 0.55);
+  color: #f8fafc;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
 .player-tabs {
   display: flex;
   gap: 0.6rem;

@@ -342,6 +342,21 @@ export type RespPlayerAllRank = {
   data?: RespPlayerAllRankItem[]
 }
 
+export type RespPlayerLabelItem = {
+  item: number
+  count: number
+}
+
+export type RespPlayerLabel = {
+  code: number
+  data?: RespPlayerLabelItem[]
+}
+
+export type RespEmiriaGrantLabel = {
+  code: number
+  count?: number
+}
+
 export type RespBasicInfo = {
   code: number
   news?: RespBasicInfoNews[]
@@ -754,6 +769,9 @@ export const fetchPlayerCharts = (params: { uid: number; from?: number; order?: 
 export const fetchPlayerAllRank = (params: { uid: number }) =>
   getJson<RespPlayerAllRank>('/ranking/player/all', { params: { touid: params.uid } })
 
+export const fetchPlayerLabels = (params: { uid: number }) =>
+  getJson<RespPlayerLabel>('/player/label', { params: { touid: params.uid } })
+
 export const savePlayerInfo = (payload: {
   name?: string
   birth?: string
@@ -774,6 +792,14 @@ export const submitActivationCode = (payload: { code: string }) =>
 
 export const fetchPlayerImageUpload = (params: { type: number; touid?: number }) =>
   getJson<RespImageUpload>('/player/image', { params })
+
+export const grantPlayerLabels = (payload: { uids: string; item: number }) =>
+  postForm<RespEmiriaGrantLabel>('/emiria/player/label/grant', {
+    body: {
+      uids: payload.uids,
+      item: payload.item,
+    },
+  })
 
 export const finishImageUpload = (payload: { path: string }) =>
   postForm<PackBase>('/upload/finish', { body: { path: payload.path } })

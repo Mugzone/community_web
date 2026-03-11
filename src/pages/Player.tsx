@@ -9,6 +9,7 @@ import {
   fetchPlayerAllRank,
   fetchPlayerCharts,
   fetchPlayerInfo,
+  fetchPlayerLabels,
   getSession,
   fetchWiki,
   fetchWikiTemplate,
@@ -16,6 +17,7 @@ import {
   type RespPlayerAllRankItem,
   type RespPlayerChartItem,
   type RespPlayerInfoData,
+  type RespPlayerLabelItem,
 } from "../network/api";
 import { avatarUrl, coverUrl, modeLabel } from "../utils/formatters";
 import { regionMap } from "../utils/profile";
@@ -74,6 +76,11 @@ const getGroupLabel = (group?: number[]): string | null => {
   return null;
 };
 
+const PLAYER_LABEL_WIDTH = 258;
+const PLAYER_LABEL_HEIGHT = 120;
+const PLAYER_LABEL_GAP = 12;
+const PLAYER_LABEL_STEP = PLAYER_LABEL_WIDTH + PLAYER_LABEL_GAP;
+const PLAYER_LABEL_IMG_BASE = "//cni.machart.top/static/img/plabel/";
 
 function PlayerPage() {
   const { t, lang } = useI18n();
@@ -96,6 +103,9 @@ function PlayerPage() {
   const [ranks, setRanks] = useState<RespPlayerAllRankItem[]>([]);
   const [rankError, setRankError] = useState("");
   const [rankLoading, setRankLoading] = useState(false);
+  const [labels, setLabels] = useState<RespPlayerLabelItem[]>([]);
+  const [labelOffset, setLabelOffset] = useState(0);
+  const [labelAnimate, setLabelAnimate] = useState(true);
   const [wikiHtml, setWikiHtml] = useState("");
   const [wikiBase, setWikiBase] = useState("");
   const [wikiTemplates, setWikiTemplates] = useState<WikiTemplate[]>([]);
@@ -108,6 +118,7 @@ function PlayerPage() {
   const activityLoadedRef = useRef<number | undefined>(undefined);
   const chartsLoadedRef = useRef<number | undefined>(undefined);
   const rankLoadedRef = useRef<number | undefined>(undefined);
+  const labelsLoadedRef = useRef<number | undefined>(undefined);
   const [activeTab, setActiveTab] = useState<
     "activity" | "charts" | "rank" | "wiki"
   >("activity");
@@ -155,6 +166,62 @@ function PlayerPage() {
     };
     loadInfo();
   }, [playerId, t]);
+
+  useEffect(() => {
+    if (!playerId || Number.isNaN(playerId)) {
+      setLabels([]);
+      return;
+    }
+    if (labelsLoadedRef.current === playerId) return;
+    labelsLoadedRef.current = playerId;
+    const loadLabels = async () => {
+      try {
+        const resp = await fetchPlayerLabels({ uid: playerId });
+        if (resp.code !== 0) {
+          setLabels([]);
+          return;
+        }
+        setLabels(resp.data ?? []);
+      } catch (err) {
+        console.error(err);
+        setLabels([]);
+      }
+    };
+    loadLabels();
+  }, [playerId]);
+
+  useEffect(() => {
+    setLabelOffset(0);
+    setLabelAnimate(true);
+  }, [labels.length]);
+
+  useEffect(() => {
+    if (labels.length <= 1) return;
+    const timer = window.setInterval(() => {
+      setLabelOffset((prev) => {
+        const next = prev + 1;
+        if (next >= labels.length) {
+          setLabelAnimate(false);
+          return 0;
+        }
+        setLabelAnimate(true);
+        return next;
+      });
+    }, 2000);
+    return () => {
+      window.clearInterval(timer);
+    };
+  }, [labels.length]);
+
+  useEffect(() => {
+    if (labelAnimate) return;
+    const timer = window.setTimeout(() => {
+      setLabelAnimate(true);
+    }, 40);
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [labelAnimate]);
 
   useEffect(() => {
     if (!playerId || Number.isNaN(playerId)) {
@@ -547,6 +614,30 @@ function PlayerPage() {
           )}
         </div>
       </header>
+
+      {labels.length > 0 && (
+        <section className="content-container player-labels">
+          <div className="player-labels-viewport">
+            <div
+              className={`player-labels-track${labelAnimate ? "" : " no-animate"}`}
+              style={{ transform: `translateX(-${labelOffset * PLAYER_LABEL_STEP}px)` }}
+            >
+              {labels.map((item, index) => (
+                <div className="player-label-card" key={`${item.item}-${index}`}>
+                  <img
+                    src={`${PLAYER_LABEL_IMG_BASE}${item.item}`}
+                    alt={`label-${item.item}`}
+                    width={PLAYER_LABEL_WIDTH}
+                    height={PLAYER_LABEL_HEIGHT}
+                    loading="lazy"
+                  />
+                  {item.count > 1 && <span className="player-label-count">x{item.count}</span>}
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       <div className="content-container player-body">
         <div className="player-tabs">

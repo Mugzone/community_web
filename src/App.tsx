@@ -17,6 +17,7 @@ import PlayerEditPage from './pages/PlayerEdit'
 import ActivationCodePage from './pages/ActivationCode'
 import SearchPage from './pages/Search'
 import HistoryPage from './pages/History'
+import EmiriaPage from './pages/Emiria'
 
 const isPlayerRankPath = (path: string) => {
   return (
@@ -97,8 +98,15 @@ const isHistoryPath = (path: string) => {
   return path === '/history' || path === '/history/'
 }
 
+const isEmiriaPath = (path: string) => {
+  return path === '/emiria' || path === '/emiria/'
+}
+
 function App() {
   const path = window.location.pathname
+  if (isEmiriaPath(path)) {
+    return <EmiriaPage />
+  }
   if (isPlayerEditPath(path)) {
     return <PlayerEditPage />
   }

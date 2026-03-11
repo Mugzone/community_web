@@ -1,20 +1,59 @@
 import { useState, type FormEvent } from "react";
 import PageLayout from "../components/PageLayout";
 import { UseAuthModal } from "../components/UseAuthModal";
-import { getSession, grantPlayerLabels } from "../network/api";
+import { getSession, grantPlayerLabels, grantPlayerRings } from "../network/api";
 import { isOrgMember } from "../utils/auth";
 import "../styles/emiria.css";
+
+type GrantType = "label" | "ring";
+
+const grantConfig: Record<
+  GrantType,
+  {
+    title: string;
+    desc: string;
+    itemLabel: string;
+    submitLabel: string;
+    itemMin: number;
+    itemMax: number;
+    placeholder: string;
+    successName: string;
+  }
+> = {
+  label: {
+    title: "奖状管理",
+    desc: "给玩家发放奖状（item: 1000 - 3000）。",
+    itemLabel: "奖状 ID（item）",
+    submitLabel: "发放奖状",
+    itemMin: 1000,
+    itemMax: 3000,
+    placeholder: "1000",
+    successName: "奖状",
+  },
+  ring: {
+    title: "头像框管理",
+    desc: "给玩家发放头像框（item: 0 - 1000）。",
+    itemLabel: "头像框 ID（item）",
+    submitLabel: "发放头像框",
+    itemMin: 0,
+    itemMax: 1000,
+    placeholder: "0",
+    successName: "头像框",
+  },
+};
 
 function EmiriaPage() {
   const auth = UseAuthModal();
   const session = getSession();
   const canManage = isOrgMember(session?.groups ?? []);
   const [serverDenied, setServerDenied] = useState(false);
+  const [grantType, setGrantType] = useState<GrantType>("label");
   const [uids, setUids] = useState("");
   const [item, setItem] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const current = grantConfig[grantType];
 
   const showNotFound = !canManage || serverDenied;
 
@@ -28,13 +67,14 @@ function EmiriaPage() {
     setError("");
 
     try {
-      const resp = await grantPlayerLabels({
-        uids: uids.trim(),
-        item: labelID,
-      });
+      const payload = { uids: uids.trim(), item: labelID };
+      const resp =
+        grantType === "label"
+          ? await grantPlayerLabels(payload)
+          : await grantPlayerRings(payload);
       if (resp.code === 0) {
         const countText = resp.count ? `，共 ${resp.count} 个玩家` : "";
-        setMessage(`发放成功${countText}`);
+        setMessage(`${current.successName}发放成功${countText}`);
         return;
       }
       if (resp.code === -2) {
@@ -73,10 +113,27 @@ function EmiriaPage() {
     <PageLayout className="emiria-page" topbarProps={auth.topbarProps}>
       <section className="content-container emiria-panel">
         <p className="eyebrow">Emiria</p>
-        <h1>奖状管理</h1>
-        <p className="emiria-desc">给玩家发放奖状（item: 1000 - 3000）。</p>
+        <h1>{current.title}</h1>
+        <p className="emiria-desc">{current.desc}</p>
 
         <form className="emiria-form" onSubmit={onSubmit}>
+          <label className="emiria-field">
+            <span>发放内容</span>
+            <select
+              value={grantType}
+              onChange={(event) => {
+                const nextType = event.target.value as GrantType;
+                setGrantType(nextType);
+                setItem("");
+                setMessage("");
+                setError("");
+              }}
+            >
+              <option value="label">奖状</option>
+              <option value="ring">头像框（Avatar Ring）</option>
+            </select>
+          </label>
+
           <label className="emiria-field">
             <span>玩家 UID（可多个，用逗号分隔）</span>
             <textarea
@@ -89,21 +146,21 @@ function EmiriaPage() {
           </label>
 
           <label className="emiria-field">
-            <span>奖状 ID（item）</span>
+            <span>{current.itemLabel}</span>
             <input
               type="number"
-              min={1000}
-              max={3000}
+              min={current.itemMin}
+              max={current.itemMax}
               value={item}
               onChange={(event) => setItem(event.target.value)}
-              placeholder="1000"
+              placeholder={current.placeholder}
               required
             />
           </label>
 
           <div className="emiria-actions">
             <button className="btn primary" type="submit" disabled={submitting}>
-              {submitting ? "发放中..." : "发放奖状"}
+              {submitting ? "发放中..." : current.submitLabel}
             </button>
           </div>
         </form>

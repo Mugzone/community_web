@@ -801,6 +801,14 @@ export const grantPlayerLabels = (payload: { uids: string; item: number }) =>
     },
   })
 
+export const grantPlayerRings = (payload: { uids: string; item: number }) =>
+  postForm<RespEmiriaGrantLabel>('/emiria/player/ring/grant', {
+    body: {
+      uids: payload.uids,
+      item: payload.item,
+    },
+  })
+
 export const finishImageUpload = (payload: { path: string }) =>
   postForm<PackBase>('/upload/finish', { body: { path: payload.path } })
 

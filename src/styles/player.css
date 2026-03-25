@@ -148,13 +148,27 @@
   width: 100%;
 }
 
+.player-labels-viewport.expandable {
+  cursor: pointer;
+}
+
+.player-labels-viewport.expanded {
+  overflow: visible;
+}
+
 .player-labels-track {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 11.3333px;
   flex-wrap: nowrap;
   transition: transform 0.35s ease;
   will-change: transform;
+}
+
+.player-labels-track.expanded {
+  flex-wrap: wrap;
+  align-items: flex-start;
+  transform: none !important;
 }
 
 .player-labels-track.no-animate {

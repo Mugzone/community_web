@@ -78,7 +78,7 @@ const getGroupLabel = (group?: number[]): string | null => {
 
 const PLAYER_LABEL_WIDTH = 258;
 const PLAYER_LABEL_HEIGHT = 120;
-const PLAYER_LABEL_GAP = 12;
+const PLAYER_LABEL_GAP = 34 / 3;
 const PLAYER_LABEL_STEP = PLAYER_LABEL_WIDTH + PLAYER_LABEL_GAP;
 const PLAYER_LABEL_IMG_BASE = "//cni.machart.top/static/img/plabel/";
 
@@ -106,6 +106,7 @@ function PlayerPage() {
   const [labels, setLabels] = useState<RespPlayerLabelItem[]>([]);
   const [labelOffset, setLabelOffset] = useState(0);
   const [labelAnimate, setLabelAnimate] = useState(true);
+  const [labelExpanded, setLabelExpanded] = useState(false);
   const [wikiHtml, setWikiHtml] = useState("");
   const [wikiBase, setWikiBase] = useState("");
   const [wikiTemplates, setWikiTemplates] = useState<WikiTemplate[]>([]);
@@ -193,10 +194,13 @@ function PlayerPage() {
   useEffect(() => {
     setLabelOffset(0);
     setLabelAnimate(true);
+    setLabelExpanded(false);
   }, [labels.length]);
 
+  const labelExpandable = labels.length > 4;
+
   useEffect(() => {
-    if (labels.length <= 1) return;
+    if (!labelExpandable || labelExpanded) return;
     const timer = window.setInterval(() => {
       setLabelOffset((prev) => {
         const next = prev + 1;
@@ -211,7 +215,7 @@ function PlayerPage() {
     return () => {
       window.clearInterval(timer);
     };
-  }, [labels.length]);
+  }, [labelExpandable, labelExpanded, labels.length]);
 
   useEffect(() => {
     if (labelAnimate) return;
@@ -222,6 +226,18 @@ function PlayerPage() {
       window.clearTimeout(timer);
     };
   }, [labelAnimate]);
+
+  const handleLabelAreaClick = () => {
+    if (!labelExpandable) return;
+    setLabelExpanded((prev) => {
+      const next = !prev;
+      if (!next) {
+        setLabelOffset(0);
+        setLabelAnimate(false);
+      }
+      return next;
+    });
+  };
 
   useEffect(() => {
     if (!playerId || Number.isNaN(playerId)) {
@@ -617,10 +633,18 @@ function PlayerPage() {
 
       {labels.length > 0 && (
         <section className="content-container player-labels">
-          <div className="player-labels-viewport">
+          <div
+            className={`player-labels-viewport${labelExpanded ? " expanded" : ""}${labelExpandable ? " expandable" : ""}`}
+            onClick={handleLabelAreaClick}
+            aria-expanded={labelExpanded}
+          >
             <div
-              className={`player-labels-track${labelAnimate ? "" : " no-animate"}`}
-              style={{ transform: `translateX(-${labelOffset * PLAYER_LABEL_STEP}px)` }}
+              className={`player-labels-track${labelAnimate ? "" : " no-animate"}${labelExpanded ? " expanded" : ""}`}
+              style={{
+                transform: !labelExpandable || labelExpanded
+                  ? "translateX(0)"
+                  : `translateX(-${labelOffset * PLAYER_LABEL_STEP}px)`,
+              }}
             >
               {labels.map((item, index) => (
                 <div className="player-label-card" key={`${item.item}-${index}`}>

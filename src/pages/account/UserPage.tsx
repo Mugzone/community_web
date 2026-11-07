@@ -15,7 +15,7 @@ import { fetchAchieveList, fetchUserPageWiki } from '../../network/legacy'
 import { avatarUrl, coverUrl } from '../../utils/formatters'
 import { regionMap } from '../../utils/profile'
 import { t as i18nT } from '../../i18n'
-import { useWikiHtml } from '../wiki/WikiPage'
+import { useWikiHtml } from '../../utils/wikiRender'
 
 /* profile/index.html：extended base_width.html（wide），交互对应 module/user/src/init.js */
 type Rec = Record<string, any>
@@ -390,7 +390,11 @@ export default function UserPage() {
                   </div>
                 )
               })}
-              <div className="more g_rblock"><a href={`${URLS.chart}?uid=${uid}`}>{i18nT('Show All')}</a></div>
+              {/* 老站 all_chart(uid) 会把 uid 换成用户名预填 Creator 筛选框；
+                  v3 用 keyword=<用户名> 把作者名带到谱面列表页（AllChart 会按作者筛选）。 */}
+              <div className="more g_rblock">
+                <a href={`${URLS.chart}?keyword=${encodeURIComponent(username || String(uid))}`}>{i18nT('Show All')}</a>
+              </div>
             </div>
           )}
         </div>

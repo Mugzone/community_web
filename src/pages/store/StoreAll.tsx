@@ -67,7 +67,7 @@ export default function StoreAll() {
         <>
           <DefaultSidebar />
           <a href="/store/my">My items</a>
-          <a href="/store/promotion">Chart Promotion</a>
+          {/* Chart Promotion 在老站线上早已下线，不再保留入口 */}
         </>
       }
     >

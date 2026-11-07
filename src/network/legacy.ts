@@ -61,8 +61,8 @@ export const fetchCaptcha = (key?: string) => get<WebResp>('/web/captcha/wt', { 
 
 export const fetchWikiSearch = (keyword: string, type?: string) =>
   get<WebResp>('/community/wiki/search', { keyword, type, web: 1 })
-export const fetchWikiPreview = (text: string) =>
-  post<WebResp>('/community/wiki/preview', { text })
+// wiki 预览已改由前端渲染器（utils/wikiRender.tsx）本地生成，
+// /community/wiki/preview 端点及其服务端精简渲染器已下线。
 export const fetchWikiChange = (pageId: number | string) =>
   get<WebResp>('/community/wiki/change', { pid: pageId })
 export const fetchWikiLatest = (page = 1) => get<WebResp>('/community/wiki/latest', { page })
@@ -159,8 +159,6 @@ export const fetchEventRank = (eventId: number | string, page = 1) =>
 export const fetchMyItems = () => get<WebResp>('/store/items')
 export const useStoreItem = (id: number | string) => post<WebResp>('/store/use', { id })
 export const buyStoreItem = (id: number | string) => post<WebResp>('/store/buy', { id })
-export const fetchPromotion = () => get<WebResp>('/store/promotion')
-export const submitBid = (payload: Params) => post<WebResp>('/store/bid', payload)
 export const submitSkin = (payload: Params) => post<WebResp>('/store/skin/submit', payload)
 export const setSkinStatus = (payload: Params) => post<WebResp>('/store/skin/status', payload)
 export const deleteSkin = (sid: number | string) => post<WebResp>('/store/skin/delete', { sid })

@@ -8,6 +8,7 @@ import {
 } from '../../network/legacy'
 import { t as i18nT } from '../../i18n'
 import { avatarUrl, coverUrl } from '../../utils/formatters'
+import { renderTalkHtml } from '../../utils/wikiRender'
 
 const MODE_LABELS = ['Key', 'Step', 'DJ', 'Catch', 'Pad', 'Taiko', 'Ring', 'Slide', 'Live', 'Cube']
 const PLATFORM_LABELS = ['PC', i18nT('Pad Horizontal'), i18nT('Pad Portrait'), i18nT('Phone Horizontal'), i18nT('Phone Portrait')]
@@ -17,7 +18,9 @@ type TalkItem = {
   uid?: number | string
   name?: string
   time?: number | string
+  /** 服务端返回的 raw 文本，由前端 renderTalkHtml 现算 HTML */
   content?: string
+  renderer?: string
   num?: number | string
   type?: number
   avatar?: string
@@ -152,7 +155,8 @@ export default function SkinDetail() {
     const uid = t.uid ?? ''
     const showName = String(t.name ?? '')
     const showTime = formatTime(t.time)
-    const body = String(t.content ?? '')
+    const bodyRaw = String(t.content ?? '')
+    const bodyHtml = renderTalkHtml(bodyRaw, t.renderer)
     if (t.type === 1) {
       // talk/like.tmpl.html
       return (
@@ -160,7 +164,7 @@ export default function SkinDetail() {
           <div className="bg right">
             <div className="g_wiki meta">
               <a href={URLS.user(uid)} className="name">{showName}</a>
-              {body}
+              <div dangerouslySetInnerHTML={{ __html: bodyHtml }} />
               <span className="time">{showTime}</span>
               <span className="clear"></span>
             </div>
@@ -185,13 +189,13 @@ export default function SkinDetail() {
                 <a href="#" data-type="reply" title={i18nT('Reply')} className="tool" onClick={(e) => { e.preventDefault(); openEditor(`@${showName} `) }}>{i18nT('Reply')}</a>
               )}
               {t.canEdit && (
-                <a href="#" data-type="edit" title={i18nT('Edit')} className="tool" onClick={(e) => { e.preventDefault(); openEditor(body) }}>{i18nT('Edit')}</a>
+                <a href="#" data-type="edit" title={i18nT('Edit')} className="tool" onClick={(e) => { e.preventDefault(); openEditor(bodyRaw) }}>{i18nT('Edit')}</a>
               )}
               {t.canDel && (
                 <a href="#" data-type="del" title={i18nT('Delete')} className="tool" onClick={(e) => { e.preventDefault(); showNotify('Delete success!', 'succ') }}>{i18nT('Delete')}</a>
               )}
             </p>
-            {body}
+            <div dangerouslySetInnerHTML={{ __html: bodyHtml }} />
             <span className="clear"></span>
             <p className="tool"></p>
           </div>

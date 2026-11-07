@@ -12,6 +12,7 @@ import {
 } from '../../network/legacy'
 import { t as i18nT } from '../../i18n'
 import { avatarUrl } from '../../utils/formatters'
+import { renderTalkHtml } from '../../utils/wikiRender'
 
 /** talk/usermsg.html + widget/talk.html + widget/edittool_simple.html + module/talk/src/init.js */
 type TalkMessageItem = {
@@ -20,7 +21,9 @@ type TalkMessageItem = {
   name?: string
   avatar?: string
   time?: number | string
+  /** 服务端返回的 raw 文本，由前端 renderTalkHtml 现算 HTML */
   content?: string
+  renderer?: string
   num?: number | string
   isOwn?: boolean
   canEdit?: boolean
@@ -55,11 +58,12 @@ const normalize = (msgRes: any, listRes: any): UserMsgState => {
   }
 }
 
-/** 后端返回的是老站 translate() 渲染好的 wiki HTML，做最小脚本过滤后注入 */
-const safeHtml = (raw: string): string => String(raw ?? '')
-  .replace(/<\s*script[^>]*>[\s\S]*?<\s*\/\s*script\s*>/gi, '')
-  .replace(/\son\w+\s*=\s*("[^"]*"|'[^']*'|[^\s>]+)/gi, '')
-  .replace(/javascript\s*:/gi, '')
+/**
+ * 讨论正文一律从 raw 经前端渲染器生成（老站 translate() / w2b_chat.translate()）。
+ * 渲染器先整体 escape 再生成可信标签，不再注入服务端 html，也无需正则过滤脚本。
+ */
+const talkBodyHtml = (item: TalkMessageItem): string =>
+  renderTalkHtml(String(item.content ?? ''), item.renderer)
 
 const INSERTS: Record<string, string> = {
   bold: '** content **',
@@ -110,7 +114,7 @@ function TalkItemView({
         <div className="bg right">
           <div className="g_wiki meta">
             <a href={href} className="name">{item.name ?? ''}</a>
-            <div dangerouslySetInnerHTML={{ __html: safeHtml(item.content ?? '') }} />
+            <div dangerouslySetInnerHTML={{ __html: talkBodyHtml(item) }} />
             <span className="time">{time}</span>
             <span className="clear"></span>
           </div>
@@ -141,7 +145,7 @@ function TalkItemView({
               <a href="#" data-type="del" title={i18nT('Delete')} className="tool" onClick={(e) => { e.preventDefault(); onDelete(item.tid) }}>{i18nT('Delete')}</a>
             ) : null}
           </p>
-          <div dangerouslySetInnerHTML={{ __html: safeHtml(item.content ?? '') }} />
+          <div dangerouslySetInnerHTML={{ __html: talkBodyHtml(item) }} />
           <span className="clear"></span>
           <p className="tool"></p>
         </div>
@@ -230,7 +234,8 @@ export default function UserMsg() {
         uid: d.uid,
         name: (d.name ?? d.username ?? '') as string,
         time: d.time ?? Math.floor(Date.now() / 1000),
-        content: (d.content ?? d.html ?? content) as string,
+        // 保存响应返回 raw 文本，前端统一渲染
+        content: String(d.content ?? content),
         isOwn: true,
         canEdit: true,
         canDel: true,
@@ -262,7 +267,7 @@ export default function UserMsg() {
     try {
       const res = await fetchTalkRaw(tid)
       const d: any = unwrap(res) || {}
-      setText(String(d.raw ?? d.content ?? ''))
+      setText(String(d.raw ?? ''))
       setEditId(tid)
       setReplyId(0)
       openEditor(true)

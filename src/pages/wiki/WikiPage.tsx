@@ -1,116 +1,24 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { Shell } from '../../components/Layout'
 import { useLoad, asArray, num, formatTime, showNotify, LoadingBlock } from '../../lib/legacy'
 import { URLS } from '../../lib/urls'
 import {
-  fetchWiki, fetchWikiTemplate, getSession,
+  fetchWiki, getSession,
   lockWikiPage, updateWikiTitle, deleteWikiPage,
 } from '../../network/api'
 import {
   fetchWikiLang, fetchTalkList, saveTalk, operateTalk, fetchTalkRaw, submitVote,
 } from '../../network/legacy'
-import {
-  renderWiki, bindHiddenToggles, type WikiTemplate, type WikiRenderOptions,
-} from '../../utils/wiki'
-import { renderTemplateHtml, applyTemplateHtml } from '../../utils/wikiTemplates'
+import { bindHiddenToggles } from '../../utils/wiki'
+import { wikiToHtml, useWikiHtml, renderTalkHtml } from '../../utils/wikiRender'
 import { t as i18nT } from '../../i18n'
 import { avatarUrl } from '../../utils/formatters'
 
 /* ------------------------------------------------------------------ *
  * wiki/wiki_page.html（base_width.html 宽版）+ module/wiki + module/plugin
+ * 正文渲染器已抽到 utils/wikiRender.tsx：服务端只返回 raw，前端现算 HTML。
  * ------------------------------------------------------------------ */
-
-/** {% trans %} 一律取英文原文；渲染器所需的英文标签 */
-const RENDER_OPTIONS: WikiRenderOptions = {
-  hiddenLabel: 'Click to display',
-  templateLabel: i18nT('Template'),
-  templateLoading: 'Loading template...',
-}
-
-const FEISHU_PREFIX = '<p>https://cbo17ty22x.feishu.cn/wiki/'
-
-/**
- * 模板正文里的业务参数 uid/key 与 MaApi-go 全局鉴权参数同名，
- * 直接透传会让 token 校验失败（-1000），发请求前先改名，后端按新名读取。
- */
-const TEMPLATE_PARAM_ALIAS: Record<string, string> = { uid: 'touid', key: 'tmplKey' }
-const templateQuery = (params: Record<string, string>): Record<string, string> => {
-  const q: Record<string, string> = {}
-  Object.entries(params).forEach(([k, v]) => {
-    if (k === 'name') return
-    q[TEMPLATE_PARAM_ALIAS[k] ?? k] = v
-  })
-  return q
-}
-
-/** 复刻 views.page_wiki：正文若是一个飞书文档链接，则整体换成 iframe */
-export function wikiToHtml(raw: string): { html: string; templates: WikiTemplate[] } {
-  const r = renderWiki(raw ?? '', RENDER_OPTIONS)
-  if (r.html.startsWith(FEISHU_PREFIX)) {
-    const url = r.html.replace(/<\/?p>/g, '').trim()
-    return {
-      html: `<iframe width="100%" height="1145px" frameborder="0" seamless src="${url}"></iframe>`,
-      templates: [],
-    }
-  }
-  return { html: r.html, templates: r.templates }
-}
-
-const TMPL_TEXT: Record<string, string> = {
-  'wiki.template.login': 'Please sign in to view this block.',
-  'wiki.template.finish': 'Finished',
-  'wiki.template.empty': 'No entries yet.',
-  'wiki.template.group': 'Group {{id}}',
-  'wiki.template.eventsum': 'Event summary',
-  'wiki.template.table.rank': '#',
-  'wiki.template.table.player': i18nT('Player'),
-  'wiki.template.table.value': 'Total',
-  'wiki.template.unsupported': 'Template coming soon.',
-  'wiki.template.unknown': 'Unknown template.',
-}
-export const tr = (key: string, vars?: Record<string, string | number>): string => {
-  // 模板块文案同样走全站字典；字典缺条目时 i18nT 原样返回英文
-  let s = i18nT(TMPL_TEXT[key] ?? key)
-  if (vars) Object.keys(vars).forEach((k) => { s = s.replace(`{{${k}}}`, String(vars[k])) })
-  return s
-}
-
-/** 用渲染器输出正文，并把 {{...}} 模板占位异步补成真实内容块 */
-export function useWikiHtml(raw: string, alreadyHtml = false): string {
-  const result = useMemo(
-    () => (alreadyHtml ? { html: raw, templates: [] as WikiTemplate[] } : wikiToHtml(raw)),
-    [raw, alreadyHtml],
-  )
-  const [html, setHtml] = useState<string>(result.html)
-  useEffect(() => {
-    let alive = true
-    if (!result.templates.length) {
-      setHtml(result.html)
-      return
-    }
-    void (async () => {
-      const emptyResp = { code: 0, data: {} }
-      const blocks = await Promise.all(result.templates.map(async (tmpl) => {
-        const n = tmpl.name.replace(/^_/, '')
-        // action 数据全在 params，本地合成，不发网络请求
-        if (n === 'action') {
-          return renderTemplateHtml(tr, tmpl, emptyResp)
-        }
-        try {
-          const resp = await fetchWikiTemplate({ name: n, ...templateQuery(tmpl.params) })
-          return renderTemplateHtml(tr, tmpl, resp)
-        } catch {
-          // 请求失败：用 params 渲染骨架兜底，绝不留下 undefined
-          return renderTemplateHtml(tr, tmpl, emptyResp)
-        }
-      }))
-      if (alive) setHtml(applyTemplateHtml(result.html, blocks))
-    })()
-    return () => { alive = false }
-  }, [result])
-  return html
-}
 
 export const LANGS: { code: string; label: string }[] = [
   { code: 'en', label: 'English' },
@@ -172,7 +80,10 @@ export type TalkItem = {
   uid?: number | string
   name?: string
   time?: number | string
+  /** 服务端返回的 raw 文本，由前端 renderTalkHtml 现算 HTML */
   content?: string
+  /** 'chat' 走老站 w2b_chat 精简渲染器；缺省走完整 woc2baka */
+  renderer?: string
   num?: number | string
   type?: number
   avatar?: string
@@ -262,14 +173,14 @@ export function TalkWidget({ talkKey, hasOwner }: { talkKey: string; hasOwner: b
     const uid = t.uid ?? ''
     const showName = String(t.name ?? '')
     const showTime = formatTime(t.time)
-    const body = String(t.content ?? '')
+    const bodyHtml = renderTalkHtml(String(t.content ?? ''), t.renderer)
     if (t.type === 1) {
       return (
         <li className="item small" data-id={tid} data-time={t.time} key={`${tid}-${idx}`}>
           <div className="bg right">
             <div className="g_wiki meta">
               <a href={URLS.user(uid)} className="name">{showName}</a>
-              {body}
+              <div dangerouslySetInnerHTML={{ __html: bodyHtml }} />
               <span className="time">{showTime}</span>
               <span className="clear"></span>
             </div>
@@ -299,7 +210,7 @@ export function TalkWidget({ talkKey, hasOwner }: { talkKey: string; hasOwner: b
                 <a href="#" data-type="del" title={i18nT('Delete')} className="tool" onClick={(e) => { e.preventDefault(); void onDelete(tid) }}>{i18nT('Delete')}</a>
               )}
             </p>
-            {body}
+            <div dangerouslySetInnerHTML={{ __html: bodyHtml }} />
             <span className="clear"></span>
             <p className="tool"></p>
           </div>
@@ -348,7 +259,7 @@ export default function WikiPage() {
 
   const { data: page, loading } = useLoad<Record<string, any>>(
     async () => {
-      const resp = await fetchWiki({ pid: Number(id) || undefined, lang: 0, raw: 1 })
+      const resp = await fetchWiki({ pid: Number(id) || undefined, lang: 0 })
       return (resp ?? {}) as Record<string, any>
     },
     [id],
@@ -356,9 +267,9 @@ export default function WikiPage() {
   )
 
   const uid = getSession()?.uid ?? 1
+  // 服务端只返回 raw；无论旧接口的 raw 标志是什么，都不再消费服务端 html
   const baseRaw = String(page.wiki ?? page.content ?? '')
-  const alreadyHtml = page.raw === false
-  const wikiHtml = useWikiHtml(baseRaw, alreadyHtml)
+  const wikiHtml = useWikiHtml(baseRaw)
 
   const [lang, setLang] = useState<string>('en')
   const [langHtml, setLangHtml] = useState<string | null>(null)

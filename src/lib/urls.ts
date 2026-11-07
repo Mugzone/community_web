@@ -66,7 +66,6 @@ export function installWindowUrls() {
     skinRemovePreview: buildUrl('/store/skin/preview/delete'),
     skinPurchase: buildUrl('/store/skin/purchase'),
     chartFilter: buildUrl('/community/chart/filter'),
-    wikiPreview: buildUrl('/community/wiki/preview'),
     wikiOperate: buildUrl('/community/wiki/page/operate'),
     wikiBackup: buildUrl('/community/wiki/backup'),
     talkSave: buildUrl('/plugin/talk/save'),

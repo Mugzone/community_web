@@ -4,6 +4,7 @@ import { Shell, DefaultSidebar } from '../../components/Layout'
 import { useLoad, showNotify } from '../../lib/legacy'
 import { URLS } from '../../lib/urls'
 import { fetchUserPageWiki, saveUserPageWiki } from '../../network/legacy'
+import { wikiToHtml } from '../../utils/wikiRender'
 import { t as i18nT } from '../../i18n'
 
 type Model = { title: string; content: string }
@@ -34,7 +35,7 @@ export default function UserpageEdit() {
       const p: any = resp?.data ?? resp
       return {
         title: String(p?.title ?? ''),
-        content: String(p?.content ?? p?.raw ?? ''),
+        content: String(p?.content ?? p?.wiki ?? ''),
       }
     },
     [id],
@@ -42,6 +43,9 @@ export default function UserpageEdit() {
   )
 
   useEffect(() => setContent(data.content ?? ''), [data.content])
+
+  // 老站预览由服务端 translate() 生成，现在按 raw 在前端现算（不解析业务模板）
+  const previewHtml = wikiToHtml(content, { ignoreTemplates: true }).html
 
   const save = async () => {
     try {
@@ -124,7 +128,7 @@ export default function UserpageEdit() {
         </div>
         <div className="preview" id="J_preview">
           <h1 className="msg">{i18nT('Preview')}</h1>
-          <div className="g_wiki"></div>
+          <div className="g_wiki" dangerouslySetInnerHTML={{ __html: previewHtml }}></div>
         </div>
       </div>
     </Shell>

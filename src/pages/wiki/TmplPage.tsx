@@ -3,10 +3,11 @@ import { Shell, DefaultSidebar } from '../../components/Layout'
 import { useLoad, showNotify } from '../../lib/legacy'
 import { URLS } from '../../lib/urls'
 import { operateWikiPage, fetchWikiTmplPage } from '../../network/legacy'
+import { wikiToHtml } from '../../utils/wikiRender'
 import { t as i18nT } from '../../i18n'
 
-type Model = { name: string; id: number | string; key: string; raw: string; html: string }
-const FALLBACK: Model = { name: '', id: '', key: '', raw: '', html: '' }
+type Model = { name: string; id: number | string; key: string; raw: string }
+const FALLBACK: Model = { name: '', id: '', key: '', raw: '' }
 
 /** /page/tmpl/<name> —— 老站 wiki/wiki_tmpl.html + module/wikiTmpl（Usage/Preview/Delete） */
 export default function TmplPage() {
@@ -21,8 +22,8 @@ export default function TmplPage() {
         name: String(p?.name ?? name),
         id: tmpl?.id ?? name,
         key: String(tmpl?.key ?? ''),
-        raw: String(tmpl?.raw ?? ''),
-        html: String(tmpl?.html ?? ''),
+        // 只取 raw；服务端 html 字段不再作为渲染源
+        raw: String(tmpl?.raw ?? p?.raw ?? ''),
       }
     },
     [name],
@@ -36,6 +37,10 @@ export default function TmplPage() {
   while ((m = reg.exec(data.raw)) !== null) {
     params.push(m[1])
   }
+
+  // 老站 wiki_tmpl.html 的 Preview 用 {% autoescape off %}{{ tmpl.html }}；
+  // 现在由前端按 raw 现算（模板块按 preview 的 ignore_tmpl 语义跳过）
+  const previewHtml = wikiToHtml(data.raw, { ignoreTemplates: true }).html
 
   const del = async () => {
     if (!window.confirm('Are you sure to delete the page?')) return
@@ -64,7 +69,7 @@ export default function TmplPage() {
           <p>{'}}'}</p>
         </div>
         <h1>Preview:</h1>
-        <div className="g_wiki" dangerouslySetInnerHTML={{ __html: `${data.html}<span class="clear"></span>` }}></div>
+        <div className="g_wiki" dangerouslySetInnerHTML={{ __html: `${previewHtml}<span class="clear"></span>` }}></div>
       </div>
     </Shell>
   )

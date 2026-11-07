@@ -3,7 +3,8 @@ import { useSearchParams } from 'react-router-dom'
 import { Shell, DefaultSidebar } from '../../components/Layout'
 import { useLoad, showNotify } from '../../lib/legacy'
 import { URLS } from '../../lib/urls'
-import { fetchWikiTmplPage, saveWikiTemplate, fetchWikiPreview } from '../../network/legacy'
+import { fetchWikiTmplPage, saveWikiTemplate } from '../../network/legacy'
+import { wikiToHtml } from '../../utils/wikiRender'
 import { t as i18nT } from '../../i18n'
 
 type Model = { id: number | string; key: string; name: string; raw: string }
@@ -60,11 +61,9 @@ export default function TmplEdit() {
     }
   }
 
-  const preview = async () => {
-    try {
-      const resp: any = await fetchWikiPreview(content)
-      setPreviewHtml(String(resp?.data ?? resp ?? ''))
-    } catch { /* ignore */ }
+  /** 老站 edit_tmpl 预览走 translate(..., ignore_tmpl=True)，现由前端按 raw 现算 */
+  const preview = () => {
+    setPreviewHtml(wikiToHtml(content, { ignoreTemplates: true }).html)
   }
 
   const perform = (type: string) => {
@@ -125,7 +124,7 @@ export default function TmplEdit() {
         </div>
         <div className="button">
           <div className="g_btn btn" id="J_save" onClick={() => void save()}>{i18nT('Save')}</div>
-          <a href="#" id="J_pre" onClick={(e) => { e.preventDefault(); void preview() }}>{i18nT('Preview')}</a>
+          <a href="#" id="J_pre" onClick={(e) => { e.preventDefault(); preview() }}>{i18nT('Preview')}</a>
           <a href={`/page/tmpl/${data.id || tid}`}>{i18nT('Cancel')}</a>
         </div>
         <div className="g_tip">

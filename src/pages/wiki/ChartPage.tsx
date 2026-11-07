@@ -7,7 +7,8 @@ import { fetchChartInfo, fetchRankingList, fetchChartDonateList, fetchWiki } fro
 import { fetchChartPage, fetchWikiLang, operateWikiPage, operateScore } from '../../network/legacy'
 import { bindHiddenToggles } from '../../utils/wiki'
 import { avatarUidUrl, coverUrl } from '../../utils/formatters'
-import { wikiToHtml, useWikiHtml, LangTabs, TalkWidget } from './WikiPage'
+import { wikiToHtml, useWikiHtml } from '../../utils/wikiRender'
+import { LangTabs, TalkWidget } from './WikiPage'
 import { t as i18nT } from '../../i18n'
 
 /* ------------------------------------------------------------------ *
@@ -169,7 +170,7 @@ export default function ChartPage() {
         fetchChartPage(String(id)).catch(() => ({})),
         fetchChartInfo({ cid }).catch(() => ({})),
         fetchChartDonateList({ cid }).catch(() => ({})),
-        fetchWiki({ cid, lang: 0, raw: 1 }).catch(() => ({})),
+        fetchWiki({ cid, lang: 0 }).catch(() => ({})),
       ])
       const p: any = (pageR as any)?.data ?? pageR ?? {}
       const info: any = infoR ?? {}
@@ -217,8 +218,24 @@ export default function ChartPage() {
         cid: Number(id) || 0,
         pro: platform === 0 ? 1 : 0,
         judge,
+        // 网页层没有排序选项，必须恒定按 score 排。Go 的 order 是排序位掩码
+        // (Combo=1/Acc=2/NoMod=4/NoSpeed=8)，一旦被传成 judge 的值就会切成
+        // acc/combo 排序，导致「总分」列看起来乱序。显式锁 0 = score DESC。
+        order: 0,
       })
-      return asArray<ScoreRow>(resp?.data ?? resp?.items ?? resp)
+      const rows = asArray<ScoreRow>(resp?.data ?? resp?.items ?? resp)
+      // 老站 score/views.py:49-50 filter(judge=judge)。后端正常时已按 judge 过滤，
+      // 这里幂等再筛一次：旧版 Go 忽略 judge 参数、或缓存键未带 judge 维度时
+      // 会返回同一批数据，前端兜底保证 #g_judge 筛选器一定生效。
+      const filtered = judge < 0
+        ? rows
+        : rows.filter((row) => num(row.judge, -1) === judge)
+      // 老站 score/views.py:51 order_by("-score", "-combo", "-time")。
+      // 前端再做一次按 score 的稳定降序，兜住服务端缓存 / 旧版本返回的非 score 顺序。
+      return filtered
+        .map((row, i) => ({ row, i }))
+        .sort((a, b) => num(b.row.score, 0) - num(a.row.score, 0) || a.i - b.i)
+        .map((x) => x.row)
     },
     [id, judge, platform],
     [] as ScoreRow[],

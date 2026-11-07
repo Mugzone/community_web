@@ -23,16 +23,30 @@ const FREE_OPTIONS: SelectOption[] = [
   { id: 0, label: 'Exclude' }, { id: 1, label: 'Include' },
 ]
 
+/**
+ * 老站 list.py:all_chart(uid) 把 uid 换成 username 放进 conf["creator"]，
+ * all_chart.html 再预填到 #cl_creator。个人主页「显示全部」用 ?keyword=<用户名>
+ * 把作者名带过来，这里按同样语义转成「作者筛选」——Go 的 keyword 参数是按
+ * version / 曲名 / artist 模糊搜，直接当 keyword 用会搜不到该用户创作的谱面。
+ */
+const initialCreatorFromUrl = (): string => {
+  const q = new URLSearchParams(window.location.search)
+  return q.get('creator') ?? q.get('keyword') ?? ''
+}
+/** 显式的关键词搜索仍可用 ?key= 预填（与老站 #cl_key 对应） */
+const initialKeywordFromUrl = (): string =>
+  new URLSearchParams(window.location.search).get('key') ?? ''
+
 /** /page/all/chart —— 老站 all_chart.html + module/chartlist（筛选 + 分页） */
 export default function AllChart() {
   const [mode, setMode] = useState(0)
   const [status, setStatus] = useState(2)
   const [free, setFree] = useState(0)
   const [page, setPage] = useState(0)
-  const [creatorInput, setCreatorInput] = useState('')
-  const [keywordInput, setKeywordInput] = useState('')
-  const [creator, setCreator] = useState('')
-  const [keyword, setKeyword] = useState('')
+  const [creatorInput, setCreatorInput] = useState(initialCreatorFromUrl)
+  const [keywordInput, setKeywordInput] = useState(initialKeywordFromUrl)
+  const [creator, setCreator] = useState(initialCreatorFromUrl)
+  const [keyword, setKeyword] = useState(initialKeywordFromUrl)
   const [tag] = useState(() => {
     const raw = new URLSearchParams(window.location.search).get('tag')
     const n = raw === null ? 0 : Number(raw)

@@ -55,7 +55,6 @@ import MyItems from './pages/store/MyItems'
 import SkinList from './pages/store/SkinList'
 import SkinEntry from './pages/store/SkinEntry'
 import SkinDetail from './pages/store/SkinDetail'
-import Promotion from './pages/store/Promotion'
 import SubmitAll from './pages/store/SubmitAll'
 
 import UploadCover from './pages/upload/UploadCover'
@@ -144,7 +143,7 @@ export default function App() {
       <Route path="/store/skin" element={<SkinList />} />
       <Route path="/store/skin/entry" element={<SkinEntry />} />
       <Route path="/store/skin/detail/:sid" element={<SkinDetail />} />
-      <Route path="/store/promotion" element={<Promotion />} />
+      {/* /store/promotion（Chart Promotion System）在老站线上早已下线，不再挂载 */}
       <Route path="/submit/all" element={<SubmitAll />} />
 
       {/* 上传组 */}

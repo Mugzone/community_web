@@ -670,10 +670,10 @@ export type RespChartDonateList = {
   data?: RespChartDonate[]
 }
 
+/** /community/wiki 恒定返回 raw 正文，不再有 raw/html 双模式标记 */
 export type RespWiki = {
   code: number
   wiki?: string
-  raw?: boolean
   title?: string
   locked?: boolean
 }
@@ -1040,7 +1040,6 @@ export const fetchWiki = (params: {
   cid?: number
   pid?: number
   prefix?: string
-  raw?: number
 }) =>
   getJson<RespWiki>('/community/wiki', { params })
 

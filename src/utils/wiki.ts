@@ -23,6 +23,17 @@ export type WikiRenderOptions = {
   hiddenLabel: string
   templateLabel: string
   templateLoading: string
+  /** 老站 preview 的 conf={"ignore_tmpl": True}：{{ }} 模板块整段不输出 */
+  ignoreTemplates?: boolean
+  /** 讨论/私信不解析业务模板：{{ ... }} 按老站 translate() 原样转义成文本 */
+  literalTemplates?: boolean
+}
+
+/** 老站 lib/woc2baka.py translate() 的默认标签文案；页面侧可覆盖成 i18n 文案 */
+export const DEFAULT_WIKI_OPTIONS: WikiRenderOptions = {
+  hiddenLabel: 'Click to display',
+  templateLabel: 'Template',
+  templateLoading: 'Loading template...',
 }
 
 export const bindHiddenToggles = (container: HTMLElement | null) => {
@@ -40,7 +51,8 @@ export const bindHiddenToggles = (container: HTMLElement | null) => {
   }
 }
 
-const escapeHtml = (input: string) =>
+/** 老站 cgi.escape(line, quote=True) 后再把 ' 换成 &#039; */
+export const escapeHtml = (input: string) =>
   input
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
@@ -50,13 +62,34 @@ const escapeHtml = (input: string) =>
 
 const clamp = (value: number, max = 700, min = 0) => Math.min(Math.max(value, min), max)
 
+/* 按需求只移植 translate(raw, False)：任何 wiki 文本（含 """ 原文块）一律
+ * 先 escape 再由标记语法生成可信标签，不保留老站 is_admin 的原文 HTML 特权。 */
+
+/** 老站 lib/w2b_chat.py translate()：私信/自动消息用的精简行内渲染器 */
+export const renderChat = (raw: string): string => {
+  let line = escapeHtml(String(raw ?? ''))
+  line = line.replace(/\[img:([^\s\]]+)\]/gi, (_m, url: string) =>
+    `<img src="${url.replace(/&amp;/g, '&')}" style="width:300px"/>`)
+  line = line.replace(/\[((?:https?):\/\/[^\s\]]+)\s+([^\]]+)\]/gi, (_m, href: string, label: string) =>
+    `<a href="${href.replace(/&amp;/g, '&')}">${label}</a>`)
+  // 同 w2b_chat.py:8-12，字符类允许内容含标记字符本身
+  line = line.replace(/\*\*\s*([\s\S]+?)\s*\*\*/g, '<b>$1</b>')
+  line = line.replace(/http:\/\//g, '____http____').replace(/https:\/\//g, '____https____')
+  line = line.replace(/\/\/\s*([\s\S]+?)\s*\/\//g, '<i>$1</i>')
+  line = line.replace(/____http____/g, 'http://').replace(/____https____/g, 'https://')
+  line = line.replace(/__\s*([\s\S]+?)\s*__/g, '<u>$1</u>')
+  line = line.replace(/--\s*([\s\S]+?)\s*--/g, '<s>$1</s>')
+  return `<p>${line}</p>`
+}
+
 const parseInnerMark = (rawLine: string, { newLine = false, autoFloat = true } = {}) => {
   let line = escapeHtml(rawLine)
 
   const imageRegex = /\[img:([^@\s\]]+)(@(left|right|center))?(@(\d{1,3}))?\]/i
   let imageMatch = line.match(imageRegex)
   while (imageMatch) {
-    const url = imageMatch[1].replace('&amp;', '&')
+    // 老站 Python str.replace 替换全部；JS 传字符串只替换首个，URL 多 & 时会残留 &amp;
+    const url = imageMatch[1].replace(/&amp;/g, '&')
     let align = imageMatch[3] ?? ''
     let size = imageMatch[5]
     if (align && /^\d+$/.test(align)) {
@@ -83,7 +116,7 @@ const parseInnerMark = (rawLine: string, { newLine = false, autoFloat = true } =
   const videoRegex = /\[video:([^@\s\]]+)(@(left|right|center))?(@(\d{1,3}))?(@(\d{1,3}))?\]/i
   let videoMatch = line.match(videoRegex)
   while (videoMatch) {
-    const url = videoMatch[1].replace('&amp;', '&')
+    const url = videoMatch[1].replace(/&amp;/g, '&')
     let align = videoMatch[3] ?? ''
     let width = videoMatch[5]
     let height = videoMatch[7]
@@ -133,7 +166,7 @@ const parseInnerMark = (rawLine: string, { newLine = false, autoFloat = true } =
   const linkRegex = /\[((?:https?):\/\/[^\s]+)\s+([^\]]+)\]/i
   let linkMatch = line.match(linkRegex)
   while (linkMatch) {
-    const href = linkMatch[1].replace('&amp;', '&')
+    const href = linkMatch[1].replace(/&amp;/g, '&')
     const label = linkMatch[2] || href
     const replacement = `<a href="${href}" target="_blank" rel="noreferrer">${label}</a>`
     line = line.replace(linkRegex, replacement)
@@ -177,16 +210,19 @@ const parseInnerMark = (rawLine: string, { newLine = false, autoFloat = true } =
     emojiMatch = line.match(emojiRegex)
   }
 
-  const boldRegex = /\*\*\s*([^*]+?)\s*\*\*/g
+  // 老站 woc2baka.py:26-29 的字符类是 ([^\1]+?)（\1 在字符类里是 0x01 控制符），
+  // 实际含义是「允许内容里出现标记字符本身」。用 [^*]/[^/]/[^_]/[^-] 会让
+  // //**粗体**//、__[链接]__（target="_blank" 含 _）、----文字---- 解析失败。
+  const boldRegex = /\*\*\s*([\s\S]+?)\s*\*\*/g
   line = line.replace(boldRegex, '<b>$1</b>')
 
   line = line.replace(/http:\/\//g, '____http____').replace(/https:\/\//g, '____https____')
-  const italicRegex = /\/\/\s*([^/]+?)\s*\/\//g
+  const italicRegex = /\/\/\s*([\s\S]+?)\s*\/\//g
   line = line.replace(italicRegex, '<i>$1</i>')
   line = line.replace(/____http____/g, 'http://').replace(/____https____/g, 'https://')
 
-  const underlineRegex = /__\s*([^_]+?)\s*__/g
-  const strikeRegex = /--\s*([^-]+?)\s*--/g
+  const underlineRegex = /__\s*([\s\S]+?)\s*__/g
+  const strikeRegex = /--\s*([\s\S]+?)\s*--/g
   line = line.replace(underlineRegex, '<u>$1</u>')
   line = line.replace(strikeRegex, '<s>$1</s>')
 
@@ -386,6 +422,8 @@ export const renderWiki = (content: string, options: WikiRenderOptions): WikiRen
       }
       inTemplate = true
       templateLines = []
+      // 老站 translate() 默认把 {{ 本身 escape 后写进 ret（讨论里就是字面文本）
+      if (options.literalTemplates) output.push(escapeHtml(line))
       return
     }
 
@@ -403,13 +441,20 @@ export const renderWiki = (content: string, options: WikiRenderOptions): WikiRen
     }
 
     if (inTemplate) {
+      if (options.literalTemplates) {
+        output.push(escapeHtml(line))
+        if (line === '}}') inTemplate = false
+        return
+      }
       if (line === '}}') {
         inTemplate = false
         const tmpl = parseTemplateBlock(templateLines)
         if (tmpl) {
-          const idx = templates.length
-          templates.push(tmpl)
-          output.push(buildTemplatePlaceholder(tmpl, idx, options))
+          // 老站 conf={"ignore_tmpl": True}：预览时模板块整段不输出
+          if (!options.ignoreTemplates) templates.push(tmpl)
+          if (!options.ignoreTemplates) {
+            output.push(buildTemplatePlaceholder(tmpl, templates.length - 1, options))
+          }
         }
       } else {
         templateLines.push(line)
@@ -452,6 +497,7 @@ export const renderWiki = (content: string, options: WikiRenderOptions): WikiRen
         mode = BlockMode.None
         return
       }
+      // 老站 MODE_ORG 的非管理员分支：只做 html escape，不做任何标记解析
       output.push(`<p>${escapeHtml(line)}</p>`)
       return
     }
@@ -476,7 +522,7 @@ export const renderWiki = (content: string, options: WikiRenderOptions): WikiRen
   if (mode !== BlockMode.None) {
     closeMode()
   }
-  if (inTemplate && templateLines.length) {
+  if (inTemplate && templateLines.length && !options.ignoreTemplates) {
     const tmpl = parseTemplateBlock(templateLines)
     if (tmpl) {
       const idx = templates.length
@@ -490,3 +536,12 @@ export const renderWiki = (content: string, options: WikiRenderOptions): WikiRen
 
   return { html: output.join(''), templates }
 }
+
+/** 全站统一入口：老站 translate() 保存时生成的 html 现在一律由前端按 raw 现算。 */
+export const wikiRenderOptions = (
+  options: Partial<WikiRenderOptions> = {},
+): WikiRenderOptions => ({ ...DEFAULT_WIKI_OPTIONS, ...options })
+
+/** 只取 HTML 的便捷入口（讨论、预览、编辑页等不需要异步模板块的场景） */
+export const renderWikiText = (raw: string, options: Partial<WikiRenderOptions> = {}): string =>
+  renderWiki(String(raw ?? ''), wikiRenderOptions(options)).html

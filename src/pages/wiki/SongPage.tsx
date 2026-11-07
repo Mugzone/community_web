@@ -6,7 +6,8 @@ import { URLS, staticUrl } from '../../lib/urls'
 import { fetchSongInfo, fetchSongCharts, fetchWiki } from '../../network/api'
 import { fetchSongPage, fetchWikiLang, operateWikiPage } from '../../network/legacy'
 import { bindHiddenToggles } from '../../utils/wiki'
-import { wikiToHtml, useWikiHtml, LangTabs, TalkWidget } from './WikiPage'
+import { wikiToHtml, useWikiHtml } from '../../utils/wikiRender'
+import { LangTabs, TalkWidget } from './WikiPage'
 import { t as i18nT } from '../../i18n'
 import { coverUrl } from '../../utils/formatters'
 
@@ -120,7 +121,7 @@ export default function SongPage() {
         fetchSongPage(String(id)).catch(() => ({})),
         fetchSongInfo({ sid }).catch(() => ({})),
         fetchSongCharts({ sid }).catch(() => ({})),
-        fetchWiki({ sid, lang: 0, raw: 1 }).catch(() => ({})),
+        fetchWiki({ sid, lang: 0 }).catch(() => ({})),
       ])
       const p: any = (pageR as any)?.data ?? pageR ?? {}
       const info: any = infoR ?? {}

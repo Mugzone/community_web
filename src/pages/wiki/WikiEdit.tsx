@@ -3,8 +3,8 @@ import { Shell, DefaultSidebar } from '../../components/Layout'
 import { useLoad, showNotify, LoadingBlock } from '../../lib/legacy'
 import { URLS } from '../../lib/urls'
 import { fetchWiki, saveWiki, getSession } from '../../network/api'
-import { fetchWikiPreview } from '../../network/legacy'
-import { EditTool, wikiToHtml } from './WikiPage'
+import { EditTool } from './WikiPage'
+import { wikiToHtml } from '../../utils/wikiRender'
 import { t as i18nT } from '../../i18n'
 
 /* ------------------------------------------------------------------ *
@@ -20,7 +20,7 @@ export default function WikiEdit() {
 
   const { data, loading } = useLoad<Record<string, any>>(
     async () => {
-      const resp = await fetchWiki({ pid, lang: 0, raw: 1 })
+      const resp = await fetchWiki({ pid, lang: 0 })
       return (resp ?? {}) as Record<string, any>
     },
     [key],
@@ -51,15 +51,11 @@ export default function WikiEdit() {
     setContent((c) => c + (inserts[type] ?? ''))
   }
 
-  const onPreview = async (): Promise<void> => {
+  /** 老站 preview() 用 translate(content, conf={"ignore_tmpl": True})；
+   *  渲染器已搬到前端，且按需求不走 is_admin 原文 HTML 特权分支。 */
+  const onPreview = (): void => {
     setMode('preview')
-    try {
-      const resp: any = await fetchWikiPreview(content)
-      const html = String(resp?.data ?? resp ?? '')
-      setPreviewHtml(html || wikiToHtml(content).html)
-    } catch {
-      setPreviewHtml(wikiToHtml(content).html)
-    }
+    setPreviewHtml(wikiToHtml(content, { ignoreTemplates: true }).html)
   }
 
   const onSave = async (): Promise<void> => {
@@ -101,7 +97,7 @@ export default function WikiEdit() {
         {/* module/wiki_edit —— 编辑/预览切换 */}
         <div className="button">
           <a href="#" className="g_btn btn" data-type="edit" onClick={(e) => { e.preventDefault(); setMode('edit') }}>{i18nT('Edit')}</a>
-          <a href="#" className="g_btn btn" data-type="preview" onClick={(e) => { e.preventDefault(); void onPreview() }}>{i18nT('Preview')}</a>
+          <a href="#" className="g_btn btn" data-type="preview" onClick={(e) => { e.preventDefault(); onPreview() }}>{i18nT('Preview')}</a>
         </div>
 
         <div style={{ display: mode === 'edit' ? 'block' : 'none' }}>

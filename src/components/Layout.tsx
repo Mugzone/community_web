@@ -1,0 +1,133 @@
+import { isValidElement, useEffect, useLayoutEffect, useState, type ReactNode } from 'react'
+import { Header } from './Header'
+import { Footer } from './Footer'
+import { useLegacyCss, setNotifyListener, setGlobalLoadingListener } from '../lib/legacy'
+
+export type ShellProps = {
+  /** base.html 两栏 / base_width.html 宽版 / base_simple.html 极简 */
+  variant?: 'two-col' | 'wide' | 'simple'
+  title?: string
+  /** 页面级 CSS 文件名，对应老站 static/css/xxx.css */
+  css?: string[]
+  contCls?: string
+  chead?: ReactNode
+  sidebar?: ReactNode
+  ad?: ReactNode
+  footerExtra?: ReactNode
+  /** base_simple.html 的 #center > #content 骨架；挂载期间禁用全局 main.css */
+  simpleFrame?: boolean
+  children: ReactNode
+}
+
+const SITE_TITLE = 'Malody - Cross-platform music game community'
+
+/** 老站三套骨架的统一实现 */
+export function Shell({
+  variant = 'two-col',
+  title,
+  css = [],
+  contCls = '',
+  chead,
+  sidebar,
+  ad,
+  footerExtra,
+  simpleFrame = false,
+  children,
+}: ShellProps) {
+  useLegacyCss(variant === 'simple' ? [...css, 'simple.css'] : css)
+
+  useEffect(() => {
+    document.title = title ? `Malody - ${title}` : SITE_TITLE
+  }, [title])
+
+  const [notice, setNotice] = useState<{ msg: string; type: string } | null>(null)
+  const [busy, setBusy] = useState(false)
+
+  useEffect(() => setNotifyListener((msg, type) => {
+    setNotice({ msg, type })
+    window.setTimeout(() => setNotice(null), 2000)
+  }), [])
+  useEffect(() => setGlobalLoadingListener(setBusy), [])
+
+  // 老站 base.html:58-66 / base_width.html:54-62 的 window.onresize
+  useEffect(() => {
+    const onResize = () => {
+      const footer = document.getElementById('footer')
+      if (!footer) return
+      footer.style.position = window.innerHeight > document.body.clientHeight ? 'fixed' : 'absolute'
+    }
+    window.addEventListener('resize', onResize)
+    onResize()
+    return () => window.removeEventListener('resize', onResize)
+  }, [variant])
+
+  // base_simple.html 不引 main.css；挂载期间禁用全局 main.css，卸载恢复。
+  // useLayoutEffect 在绘制前同步生效，link.disabled 即时切换、不重新请求，避免闪烁。
+  useLayoutEffect(() => {
+    if (!simpleFrame) return
+    const link = document.querySelector<HTMLLinkElement>('link[data-global-main]')
+    if (!link) return
+    link.disabled = true
+    return () => {
+      link.disabled = false
+    }
+  }, [simpleFrame])
+
+  if (variant === 'simple') {
+    // children 已自带 #center 骨架（如 DDoS 沿用旧写法）时不再重复包裹，避免同名 id 嵌套。
+    const framed = simpleFrame && !(isValidElement(children) && (children.props as { id?: string })?.id === 'center')
+    const content = framed
+      ? <div id="center"><div id="content">{children}</div></div>
+      : children
+    return (
+      <>
+        {content}
+        <NotifyLayer notice={notice} />
+      </>
+    )
+  }
+
+  return (
+    <>
+      <Header />
+      {variant === 'wide' && <div id="chead">{chead}</div>}
+      <div id="center">
+        <div id="content" className={contCls} style={variant === 'wide' ? { width: '100%' } : undefined}>
+          {children}
+        </div>
+        {variant === 'two-col' && <div id="sidebar">{sidebar}</div>}
+        {variant === 'two-col' && <div id="ad">{ad}</div>}
+        <span className="clear"></span>
+      </div>
+      <Footer extra={footerExtra} />
+      <NotifyLayer notice={notice} />
+      <div id="g_loading" style={{ display: busy ? 'block' : 'none' }}>
+        <div className="loading"></div>
+        <span>Wait...</span>
+      </div>
+    </>
+  )
+}
+
+function NotifyLayer({ notice }: { notice: { msg: string; type: string } | null }) {
+  // 老站 main.css:1523 #notify 默认 bottom:-32px;display:none，
+  // util.js:211 showAlert 用 animate 把 bottom 滑到 0；这里用 inline style 直接置 0。
+  return (
+    <div id="notify" style={{ display: notice ? 'block' : 'none', bottom: notice ? 0 : undefined }}>
+      <div className={`msg ${notice?.type ?? 'succ'}`}><p>{notice?.msg}</p></div>
+    </div>
+  )
+}
+
+/** 老站 widget/default_side.html */
+export function DefaultSidebar() {
+  return (
+    <>
+      <a href="/">Home</a>
+      <a href="/page/latest">Recent Changes</a>
+      <a href="/page/all/cate">Categories</a>
+      <a href="/page/all">Contents</a>
+      <a href="/page/create">New Article</a>
+    </>
+  )
+}

@@ -1,0 +1,68 @@
+import { useState, type ChangeEvent, type FormEvent } from 'react'
+import { Shell } from '../../components/Layout'
+import { num, showNotify, useLoad } from '../../lib/legacy'
+import { URLS } from '../../lib/urls'
+import { fetchUploadPage, fetchUploadSign } from '../../network/legacy'
+import { coverUrl } from '../../utils/formatters'
+
+const IMG_HOST = 'http://v0.api.upyun.com/ma-img'
+
+export default function UploadCover() {
+  const sid = new URLSearchParams(window.location.search).get('sid') ?? ''
+  const [file, setFile] = useState<File | null>(null)
+
+  const { data } = useLoad<Record<string, any>>(
+    async () => {
+      const resp = await fetchUploadPage('cover')
+      return (resp?.data ?? resp ?? {}) as Record<string, any>
+    },
+    [],
+    {} as Record<string, any>,
+  )
+
+  const song: any = data.song ?? {}
+  const songId = song.id ?? sid
+  const cover = String(song.cover_url ?? song.cover ?? '')
+  const policy = String(data.policy ?? '')
+  const signature = String(data.signature ?? '')
+
+  const onFile = (e: ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0]
+    if (!f) return
+    setFile(f)
+  }
+
+  const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    if (!file) {
+      return
+    }
+    try {
+      await fetchUploadSign({ type: 2, sid: num(songId, 0) })
+    } catch {
+      showNotify('Upload failed', 'err')
+    }
+  }
+
+  return (
+    <Shell variant="two-col" title="Change Cover" css={['upload.css']}>
+      <div className="g_title">Change Cover</div>
+      <div className="g_cont">
+        <div className="g_actbar">
+          <a href={URLS.song(songId)} className="g_btn">Cancel</a>
+        </div>
+        {cover ? (
+          <h1><label htmlFor="">Current</label><img src={coverUrl(cover)} alt="" /></h1>
+        ) : (
+          <h1><label htmlFor="">Current</label><span>No cover</span></h1>
+        )}
+        <form action={IMG_HOST} method="post" encType="multipart/form-data" onSubmit={(e) => void onSubmit(e)}>
+          <h1><label htmlFor="file">New cover</label><input type="file" name="file" accept="image/png, image/jpeg" onChange={onFile} /></h1>
+          <input name="policy" type="hidden" value={policy} readOnly />
+          <input name="signature" type="hidden" value={signature} readOnly />
+          <input type="submit" className="g_btn btn" value="Save" />
+        </form>
+      </div>
+    </Shell>
+  )
+}

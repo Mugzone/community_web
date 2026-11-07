@@ -3,11 +3,12 @@ import { Shell } from '../../components/Layout'
 import { asArray, EmptyBlock, LoadingBlock, num, useLoad } from '../../lib/legacy'
 import { staticUrl, URLS } from '../../lib/urls'
 import { fetchSkinList } from '../../network/legacy'
-import { avatarUrl } from '../../utils/formatters'
+import { avatarUidUrl } from '../../utils/formatters'
+import { t as i18nT } from '../../i18n'
 
 /** const_json.MODE_BITS / PLATFORM_BITS 的英文原文（lib/enum.py） */
 const MODE_LABELS = ['Key', 'Step', 'DJ', 'Catch', 'Pad', 'Taiko', 'Ring', 'Slide', 'Live', 'Cube']
-const PLATFORM_LABELS = ['PC', 'Pad Horizontal', 'Pad Portrait', 'Phone Horizontal', 'Phone Portrait']
+const PLATFORM_LABELS = ['PC', i18nT('Pad Horizontal'), i18nT('Pad Portrait'), i18nT('Phone Horizontal'), i18nT('Phone Portrait')]
 
 /** all_skins.html #mode_list：data-id 为位值，图片为 mode-<index>.png */
 const MODE_OPTIONS: { bit: number; img: number }[] = [
@@ -17,10 +18,10 @@ const MODE_OPTIONS: { bit: number; img: number }[] = [
 /** all_skins.html #plat_list：PLATFORM_BITS 顺序，图片为 plat-<forloop.counter0>.png */
 const PLATFORM_OPTIONS: { bit: number; img: number; label: string }[] = [
   { bit: 1, img: 0, label: 'PC' },
-  { bit: 2, img: 1, label: 'Pad Horizontal' },
-  { bit: 4, img: 2, label: 'Pad Portrait' },
-  { bit: 8, img: 3, label: 'Phone Horizontal' },
-  { bit: 16, img: 4, label: 'Phone Portrait' },
+  { bit: 2, img: 1, label: i18nT('Pad Horizontal') },
+  { bit: 4, img: 2, label: i18nT('Pad Portrait') },
+  { bit: 8, img: 3, label: i18nT('Phone Horizontal') },
+  { bit: 16, img: 4, label: i18nT('Phone Portrait') },
 ]
 
 type SkinRow = {
@@ -113,7 +114,7 @@ export default function SkinList() {
       <div className="g_cont2">
         <div id="option" style={showBuy ? { display: 'none' } : undefined}>
           <div>
-            <span className="g_round">Mode</span>
+            <span className="g_round">{i18nT('Mode')}</span>
             <div className="g_select icon-list icon-list1" id="mode_list">
               {MODE_OPTIONS.map((o) => (
                 <span
@@ -128,7 +129,7 @@ export default function SkinList() {
             </div>
           </div>
           <div>
-            <span className="g_round">Platform</span>
+            <span className="g_round">{i18nT('Platform')}</span>
             <div className="g_select icon-list" id="plat_list">
               {PLATFORM_OPTIONS.map((o) => (
                 <span
@@ -143,25 +144,25 @@ export default function SkinList() {
             </div>
           </div>
           <div>
-            <span className="g_round">Status</span>
+            <span className="g_round">{i18nT('Status')}</span>
             <div className="g_select icon-list" id="status_list">
               <span className={`radio${status === 2 ? ' curr' : ''}`} data-id="2" onClick={() => { setStatus(2) }}>Stable</span>
               <span className={`radio${status === 1 ? ' curr' : ''}`} data-id="1" onClick={() => { setStatus(1) }}>Beta</span>
-              <span className={`radio${status === 0 ? ' curr' : ''}`} data-id="0" onClick={() => { setStatus(0) }}>All</span>
+              <span className={`radio${status === 0 ? ' curr' : ''}`} data-id="0" onClick={() => { setStatus(0) }}>{i18nT('All')}</span>
             </div>
           </div>
           <div style={{ display: 'none' }}>
-            <span className="g_round">Creator</span>
+            <span className="g_round">{i18nT('Creator')}</span>
             <input id="cl_creator" className="g_round filter-input" value={creator} onChange={(e) => setCreator(e.target.value)} />
           </div>
           <div style={{ display: 'none' }}>
-            <span className="g_round">Keywords</span>
+            <span className="g_round">{i18nT('Keywords')}</span>
             <input id="cl_key" className="g_round filter-input" value={keyword} onChange={(e) => setKeyword(e.target.value)} />
           </div>
           <div id="head_btns">
-            <a id="cl_search" className="g_btn fl" onClick={onSearch}><i></i>Search</a>
-            <a id="cl_submit" href="/store/skin/entry" className="g_btn fr"><i></i>Submit my skin</a>
-            <a id="cl_help" href="/wiki/1936" className="g_btn fr"><i></i>How to use</a>
+            <a id="cl_search" className="g_btn fl" onClick={onSearch}><i></i>{i18nT('Search')}</a>
+            <a id="cl_submit" href="/store/skin/entry" className="g_btn fr"><i></i>{i18nT('Submit my skin')}</a>
+            <a id="cl_help" href="/wiki/1936" className="g_btn fr"><i></i>{i18nT('How to use')}</a>
           </div>
         </div>
         {showBuy && <p id="buy_hint" style={{ textAlign: 'left' }}>You have bought these skins:</p>}
@@ -179,7 +180,14 @@ export default function SkinList() {
                 </a>
                 <div className="name">
                   <div id={`avatar_${item.id}`}>
-                    <img src={avatarUrl(undefined, item.author_id)} alt="" />
+                    {/* 老站 skinstore.py:155 format_avatar(item.author, 36, "avatar")：36px 上限 + !avatar64 缩略图；
+                        skinlist.css 里 #skins span 行高只有 48px，不能塞原始尺寸大图 */}
+                    <img
+                      className="avatar"
+                      src={item.author_id ? avatarUidUrl(num(item.author_id, 0), 36) : '/static/img/avatar.png'}
+                      style={{ maxWidth: 36, maxHeight: 36 }}
+                      alt=""
+                    />
                   </div>
                   <a className="textfix" href={URLS.user(item.author_id ?? '')}>{item.author_name ?? ''}</a>
                 </div>

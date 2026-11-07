@@ -1,0 +1,98 @@
+@media (max-width: 1100px) {
+  #center {
+    width: 780px;
+  }
+  #center .chartlist .col1 {
+    width: 200px;
+  }
+  #center .chartlist .col2 {
+    width: 50px;
+  }
+  #center .chartlist .col3 {
+    width: 60px;
+  }
+  #center .chartlist .col4 {
+    width: 60px;
+  }
+  #center .chartlist .col5 {
+    width: 100px;
+  }
+  #center .chartlist .col6 {
+    width: 130px;
+  }
+  #center .chartlist .col7 {
+    width: 70px;
+  }
+  #center .score_area span.name {
+    width: 80px;
+  }
+  #center .score_area span.score {
+    width: 80px;
+  }
+  #center .score_area span.combo {
+    width: 60px;
+  }
+  #center .score_area span.acc {
+    width: 100px;
+  }
+  #center .score_area span.mod {
+    width: 200px;
+  }
+  #center .score_area span.time {
+    width: 140px;
+  }
+  #center .g_cont .song_title .right .title .artist {
+    max-width: 200px;
+  }
+  #header {
+    min-width: 800px;
+  }
+  #header .center {
+    width: 780px;
+  }
+  #header .center .search {
+    visibility: hidden;
+  }
+  #footer {
+    min-width: 800px;
+  }
+  #footer .line {
+    width: 780px;
+  }
+  .g_tmpl_first {
+    width: 250px;
+    height: 60px;
+  }
+  .g_tmpl_first .empty {
+    line-height: 60px;
+  }
+  .g_tmpl_first .avatar {
+    top: -12px;
+  }
+  .g_tmpl_first .right {
+    padding-left: 78px;
+  }
+  .g_tmpl_first .logo {
+    width: 50px;
+    top: 11px;
+    right: 7px;
+  }
+  .g_tmpl_first img {
+    width: 66px;
+  }
+  .g_tmpl_first a {
+    line-height: 35px;
+  }
+  .g_tmpl_user {
+    width: 170px;
+  }
+  .g_tmpl_user a {
+    width: 116px;
+  }
+  .g_actbar select#g_platform {
+    width: 84px;
+  }
+}
+#chead .cover {
+  min-width: 800px;
+}

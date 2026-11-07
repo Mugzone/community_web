@@ -3,6 +3,7 @@ import { Shell, DefaultSidebar } from '../../components/Layout'
 import { useLoad, asArray, num, LoadingBlock, EmptyBlock, JustifyRow } from '../../lib/legacy'
 import { URLS } from '../../lib/urls'
 import { fetchSpecialList } from '../../network/legacy'
+import { t as i18nT } from '../../i18n'
 
 type CateItem = { id: number | string; name?: string }
 type Model = { items: CateItem[]; total: number }
@@ -37,11 +38,11 @@ export default function AllCate() {
   return (
     <Shell
       variant="two-col"
-      title="Category"
+      title={i18nT('Category')}
       css={['akari.css']}
       sidebar={<DefaultSidebar />}
     >
-      <div className="g_title">Category</div>
+      <div className="g_title">{i18nT('Category')}</div>
       <div className="g_cont">
         <div className="wiki_cate">
           <JustifyRow>
@@ -56,13 +57,13 @@ export default function AllCate() {
         {total > 1 && (
           <div className="g_more">
             {page > 1 ? (
-              <a href={`${URLS.allCate}?page=${page - 1}`} className="g_round" data-type="back" onClick={(e) => { e.preventDefault(); goPage(page - 1) }}>Prev</a>
+              <a href={`${URLS.allCate}?page=${page - 1}`} className="g_round" data-type="back" onClick={(e) => { e.preventDefault(); goPage(page - 1) }}>{i18nT('Prev')}</a>
             ) : (
               <a className="fake" href="#"></a>
             )}
             <span>{page}/{total}</span>
             {page < total ? (
-              <a href={`${URLS.allCate}?page=${page + 1}`} className="g_round" data-type="back" onClick={(e) => { e.preventDefault(); goPage(page + 1) }}>Next</a>
+              <a href={`${URLS.allCate}?page=${page + 1}`} className="g_round" data-type="back" onClick={(e) => { e.preventDefault(); goPage(page + 1) }}>{i18nT('Next')}</a>
             ) : (
               <a className="fake" href="#"></a>
             )}

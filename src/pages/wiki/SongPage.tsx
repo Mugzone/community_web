@@ -7,6 +7,8 @@ import { fetchSongInfo, fetchSongCharts, fetchWiki } from '../../network/api'
 import { fetchSongPage, fetchWikiLang, operateWikiPage } from '../../network/legacy'
 import { bindHiddenToggles } from '../../utils/wiki'
 import { wikiToHtml, useWikiHtml, LangTabs, TalkWidget } from './WikiPage'
+import { t as i18nT } from '../../i18n'
+import { coverUrl } from '../../utils/formatters'
 
 /* ------------------------------------------------------------------ *
  * wiki/wiki_page_song.html（base_width.html 宽版）+ module/wiki
@@ -59,15 +61,15 @@ const TYPE_LABELS = ['Alpha', 'Beta', 'Stable']
 function ChartList({ charts, songId }: { charts: ChartRow[]; songId: number | string }) {
   return (
     <div className="g_block chartlist">
-      <div className="tip">Search<span>s{songId}</span>from client to download</div>
+      <div className="tip">{i18nT('Search')}<span>s{songId}</span>from client to download</div>
       <div className="bg">
         <h2>
-          <i className="col1">Version</i>
-          <i className="col2">Length</i>
-          <i className="col3">Status</i>
-          <i className="col4">Hot</i>
-          <i className="col5">Creator</i>
-          <i className="col6">Updated</i>
+          <i className="col1">{i18nT('Version')}</i>
+          <i className="col2">{i18nT('Length')}</i>
+          <i className="col3">{i18nT('Status')}</i>
+          <i className="col4">{i18nT('Hot')}</i>
+          <i className="col5">{i18nT('Creator')}</i>
+          <i className="col6">{i18nT('Updated')}</i>
         </h2>
         {charts.map((c, i) => (
           <h2 className="item" key={`${c.id ?? 'c'}-${i}`}>
@@ -179,7 +181,8 @@ export default function SongPage() {
   }
 
   const song = data.song
-  const cover = String(song.cover_url ?? song.cover ?? '') || staticUrl('img/cover.png')
+  const rawCover = String(song.cover_url ?? song.cover ?? '')
+  const cover = rawCover ? coverUrl(rawCover) : staticUrl('img/cover.png')
   const songId = song.id ?? id
   const title = String(song.title ?? '')
   const artist = String(song.artist ?? '')
@@ -208,9 +211,9 @@ export default function SongPage() {
           <h2 className="textfix title"><span className="textfix artist">{data.songEx.artist}</span> - {data.songEx.title}</h2>
           <h2 className="sub">
             <label>ID</label>:s<span>{songId}</span>&nbsp;&nbsp;
-            <label>Length</label>:<span>{song.length ?? ''}s</span>&nbsp;&nbsp;
-            <label>BPM</label>:<span>{floatFormat(song.bpm)}</span>
-            <label>Last updated</label>:<span className="textfix">{song.lastedit_str ?? ''}</span>
+            <label>{i18nT('Length')}</label>:<span>{song.length ?? ''}s</span>&nbsp;&nbsp;
+            <label>{i18nT('BPM')}</label>:<span>{floatFormat(song.bpm)}</span>
+            <label>{i18nT('Last updated')}</label>:<span className="textfix">{song.lastedit_str ?? ''}</span>
           </h2>
           <h2 className="tags">
             {data.tags.length > 0 && (
@@ -227,7 +230,7 @@ export default function SongPage() {
         <div className="tool">
           <a href="#" className="btn g_toolbtn e" data-type="edit_meta" title="Edit meta" onClick={(e) => { e.preventDefault(); void onTool('edit_meta') }}><i></i></a>
           <a href={`${URLS.change}?key=${key}`} className="g_toolbtn log" title="Change History"><i></i></a>
-          {data.canDel && <a href="#" className="btn g_toolbtn d" data-type="del" title="Delete" onClick={(e) => { e.preventDefault(); void onTool('del') }}><i></i></a>}
+          {data.canDel && <a href="#" className="btn g_toolbtn d" data-type="del" title={i18nT('Delete')} onClick={(e) => { e.preventDefault(); void onTool('del') }}><i></i></a>}
           {data.canMerge && <a href="#" className="btn g_toolbtn m" data-type="merge" title="Merge to another song" onClick={(e) => { e.preventDefault(); void onTool('merge') }}><i></i></a>}
         </div>
       </div>
@@ -238,15 +241,15 @@ export default function SongPage() {
         </div>
       ) : (
         <div className="g_cont2 g_rblock nochart">
-          <span>You can add new charts to the song</span>
-          <a href={`${URLS.create}?type=3&parent=${songId}`} className="g_btn">Add</a>
+          <span>{i18nT('You can add new charts to the song')}</span>
+          <a href={`${URLS.create}?type=3&parent=${songId}`} className="g_btn">{i18nT('Add')}</a>
         </div>
       )}
 
       <div className="g_cont2 g_rblock">
         <div className="tool">
           <LangTabs value={lang} onChange={(c, l) => { void onChangeLang(c, l) }} />
-          {data.canEdit && <a href="#" className="btn g_toolbtn e" data-type="edit" title="Edit" onClick={(e) => { e.preventDefault(); onEdit() }}><i></i></a>}
+          {data.canEdit && <a href="#" className="btn g_toolbtn e" data-type="edit" title={i18nT('Edit')} onClick={(e) => { e.preventDefault(); onEdit() }}><i></i></a>}
         </div>
         <div
           className="g_wiki"

@@ -14,6 +14,8 @@ import {
   renderWiki, bindHiddenToggles, type WikiTemplate, type WikiRenderOptions,
 } from '../../utils/wiki'
 import { renderTemplateHtml, applyTemplateHtml } from '../../utils/wikiTemplates'
+import { t as i18nT } from '../../i18n'
+import { avatarUrl } from '../../utils/formatters'
 
 /* ------------------------------------------------------------------ *
  * wiki/wiki_page.html（base_width.html 宽版）+ module/wiki + module/plugin
@@ -22,8 +24,7 @@ import { renderTemplateHtml, applyTemplateHtml } from '../../utils/wikiTemplates
 /** {% trans %} 一律取英文原文；渲染器所需的英文标签 */
 const RENDER_OPTIONS: WikiRenderOptions = {
   hiddenLabel: 'Click to display',
-  tocLabel: 'Contents',
-  templateLabel: 'Template',
+  templateLabel: i18nT('Template'),
   templateLoading: 'Loading template...',
 }
 
@@ -63,13 +64,14 @@ const TMPL_TEXT: Record<string, string> = {
   'wiki.template.group': 'Group {{id}}',
   'wiki.template.eventsum': 'Event summary',
   'wiki.template.table.rank': '#',
-  'wiki.template.table.player': 'Player',
+  'wiki.template.table.player': i18nT('Player'),
   'wiki.template.table.value': 'Total',
   'wiki.template.unsupported': 'Template coming soon.',
   'wiki.template.unknown': 'Unknown template.',
 }
 export const tr = (key: string, vars?: Record<string, string | number>): string => {
-  let s = TMPL_TEXT[key] ?? key
+  // 模板块文案同样走全站字典；字典缺条目时 i18nT 原样返回英文
+  let s = i18nT(TMPL_TEXT[key] ?? key)
   if (vars) Object.keys(vars).forEach((k) => { s = s.replace(`{{${k}}}`, String(vars[k])) })
   return s
 }
@@ -142,15 +144,15 @@ export function LangTabs({ value, onChange }: { value: string; onChange: (code: 
 
 /** widget/edittool.html —— 完整标记工具条 */
 const EDIT_TOOLS: { type: string; cls: string; title: string }[] = [
-  { type: 'bold', cls: 'tool-B', title: 'Bold' },
-  { type: 'italic', cls: 'tool-I', title: 'Italic' },
-  { type: 'h1', cls: 'tool-H1', title: '1st level Heading' },
-  { type: 'h2', cls: 'tool-H2', title: '2nd level Heading' },
-  { type: 'h3', cls: 'tool-H3', title: '3rd level Heading' },
-  { type: 'list', cls: 'tool-list', title: 'List' },
-  { type: 'img', cls: 'tool-img', title: 'Image' },
-  { type: 'link', cls: 'tool-link', title: 'Link' },
-  { type: 'table', cls: 'tool-table', title: 'Table' },
+  { type: 'bold', cls: 'tool-B', title: i18nT('Bold') },
+  { type: 'italic', cls: 'tool-I', title: i18nT('Italic') },
+  { type: 'h1', cls: 'tool-H1', title: i18nT('1st level Heading') },
+  { type: 'h2', cls: 'tool-H2', title: i18nT('2nd level Heading') },
+  { type: 'h3', cls: 'tool-H3', title: i18nT('3rd level Heading') },
+  { type: 'list', cls: 'tool-list', title: i18nT('List') },
+  { type: 'img', cls: 'tool-img', title: i18nT('Image') },
+  { type: 'link', cls: 'tool-link', title: i18nT('Link') },
+  { type: 'table', cls: 'tool-table', title: i18nT('Table') },
 ]
 export function EditTool({ onPerform }: { onPerform: (type: string) => void }) {
   return (
@@ -278,9 +280,8 @@ export function TalkWidget({ talkKey, hasOwner }: { talkKey: string; hasOwner: b
     return (
       <li className="item" data-id={tid} data-time={t.time} key={`${tid}-${idx}`}>
         <a className="bg left" href={URLS.user(uid)}>
-          {t.avatar
-            ? <img src={`http://cni.mugzone.net/avatar/${t.avatar}`} style={{ background: 'none' }} alt="" />
-            : <img alt="" />}
+          {/* 老站 widget/discuss_item.html:5 {% avatar item.user 64 small=True %} */}
+          <img src={avatarUrl(t.avatar, uid, 64)} style={{ background: 'none' }} alt="" />
         </a>
         <div className="bg right">
           <div className="g_wiki">
@@ -289,13 +290,13 @@ export function TalkWidget({ talkKey, hasOwner }: { talkKey: string; hasOwner: b
               <a href={URLS.user(uid)} className="name">{showName}</a>
               <span className="time">{showTime}</span>
               {!t.isOwn && (
-                <a href="#" data-type="reply" title="Reply" className="tool" onClick={(e) => { e.preventDefault(); openEditor(`@${showName} `, tid) }}>Reply</a>
+                <a href="#" data-type="reply" title={i18nT('Reply')} className="tool" onClick={(e) => { e.preventDefault(); openEditor(`@${showName} `, tid) }}>{i18nT('Reply')}</a>
               )}
               {t.canEdit && (
-                <a href="#" data-type="edit" title="Edit" className="tool" onClick={(e) => { e.preventDefault(); void onEditItem(tid) }}>Edit</a>
+                <a href="#" data-type="edit" title={i18nT('Edit')} className="tool" onClick={(e) => { e.preventDefault(); void onEditItem(tid) }}>{i18nT('Edit')}</a>
               )}
               {t.canDel && (
-                <a href="#" data-type="del" title="Delete" className="tool" onClick={(e) => { e.preventDefault(); void onDelete(tid) }}>Delete</a>
+                <a href="#" data-type="del" title={i18nT('Delete')} className="tool" onClick={(e) => { e.preventDefault(); void onDelete(tid) }}>{i18nT('Delete')}</a>
               )}
             </p>
             {body}
@@ -318,19 +319,19 @@ export function TalkWidget({ talkKey, hasOwner }: { talkKey: string; hasOwner: b
           </div>
           <textarea cols={80} rows={30} dir="ltr" value={content} onChange={(e) => setContent(e.target.value)}></textarea>
           <p>
-            <a className="g_btn btn g_talk_new" data-type="save" id="g_talk_save" href="#" onClick={(e) => { e.preventDefault(); void onSave() }}>Reply</a>
+            <a className="g_btn btn g_talk_new" data-type="save" id="g_talk_save" href="#" onClick={(e) => { e.preventDefault(); void onSave() }}>{i18nT('Reply')}</a>
           </p>
         </div>
       </div>
 
       <div className="g_talk_tool">
-        <div className="g_btn btn g_talk_new" data-type="new" onClick={() => openEditor()}><i></i>Reply</div>
+        <div className="g_btn btn g_talk_new" data-type="new" onClick={() => openEditor()}><i></i>{i18nT('Reply')}</div>
       </div>
       <ul id="g_talk_list">{talkItems.map(renderItem)}</ul>
-      <div id="g_talk_next" data-type="next" className="talk_btn btn" onClick={() => setTalkPage((p) => p + 1)}>Show more</div>
+      <div id="g_talk_next" data-type="next" className="talk_btn btn" onClick={() => setTalkPage((p) => p + 1)}>{i18nT('Show more')}</div>
       <div className="g_talk_new_rep" id="g_talk_new2">
-        <p>Want to say something?</p>
-        <div className="g_btn btn g_talk_new" data-type="new" onClick={() => openEditor()}><i></i>Reply</div>
+        <p>{i18nT('Want to say something?')}</p>
+        <div className="g_btn btn g_talk_new" data-type="new" onClick={() => openEditor()}><i></i>{i18nT('Reply')}</div>
       </div>
     </div>
   )
@@ -363,17 +364,39 @@ export default function WikiPage() {
   const [langHtml, setLangHtml] = useState<string | null>(null)
   const [titleOverride, setTitleOverride] = useState<string>('')
   const [lockedOverride, setLockedOverride] = useState<boolean | null>(null)
-  const [voted, setVoted] = useState(false)
   const bodyRef = useRef<HTMLDivElement>(null)
 
   const title = titleOverride || String(page.title ?? '') || `Wiki #${id}`
   const locked = lockedOverride ?? Boolean(page.locked)
   const limit = num(page.limit, 0)
   const isorg = page.isorg !== false
-  const voteEid = num(page.eid ?? (page.vote as any)?.eid, 0)
-  const voteChoice = num(page.choice ?? (page.vote as any)?.choice, 1)
 
   useEffect(() => bindHiddenToggles(bodyRef.current), [wikiHtml, langHtml])
+
+  /* module/plugin/src/init.js:8-43：正文里的 .g_tmpl_vote 用事件委托处理，
+     eid / choice 取自元素自身 data 属性，成功就地改成 Voted。 */
+  useEffect(() => {
+    const root = bodyRef.current
+    if (!root) return
+    const onClick = (e: MouseEvent): void => {
+      const node = (e.target as HTMLElement).closest('.g_tmpl_vote') as HTMLElement | null
+      if (!node || !root.contains(node)) return
+      e.preventDefault()
+      if (node.classList.contains('g_tmpl_voted')) return
+      if (!window.confirm('Are you sure to vote this one?')) return
+      void (async () => {
+        try {
+          await submitVote({ eid: node.dataset.eid ?? '', choice: node.dataset.choice ?? '' })
+          node.classList.add('g_tmpl_voted')
+          node.textContent = i18nT('Voted')
+        } catch {
+          showNotify('Can not vote', 'err')
+        }
+      })()
+    }
+    root.addEventListener('click', onClick)
+    return () => root.removeEventListener('click', onClick)
+  }, [])
 
   const onChangeLang = async (code: string, label: string): Promise<void> => {
     setLang(code)
@@ -397,7 +420,7 @@ export default function WikiPage() {
       setLockedOverride(lockIt)
       showNotify('Success', 'succ')
     } catch {
-      showNotify('Operation failed', 'err')
+      showNotify(i18nT('Operation failed'), 'err')
     }
   }
 
@@ -424,35 +447,24 @@ export default function WikiPage() {
     }
   }
 
-  const onVote = async (): Promise<void> => {
-    if (voted) return
-    if (!window.confirm('Are you sure to vote this one?')) return
-    try {
-      await submitVote({ eid: voteEid, choice: voteChoice })
-      setVoted(true)
-    } catch {
-      showNotify('Can not vote', 'err')
-    }
-  }
-
   const finalHtml = langHtml !== null ? langHtml : wikiHtml
-  const gWikiInner = finalHtml || '<div class="g_wiki_new btn" data-type="edit">Click to create</div>'
+  const gWikiInner = finalHtml || `<div class="g_wiki_new btn" data-type="edit">${i18nT('Click to create')}</div>`
 
   return (
     <Shell variant="wide" title={title} css={['wiki.css', 'tmpl.css']}>
       <div className="wiki_title g_rblock">
         <div className="tail">
           <a href={URLS.intro}>Home</a>
-          <a href={URLS.latest}>Recent Changes</a>
+          <a href={URLS.latest}>{i18nT('Recent Changes')}</a>
         </div>
         <div className="title">{title}</div>
         <div className="tool">
           {isorg && (locked
-            ? <a href="#" className="btn g_toolbtn ul" data-type="unlock" title="Unlock Page" onClick={(e) => { e.preventDefault(); void onLock(false) }}><i></i></a>
-            : <a href="#" className="btn g_toolbtn l" data-type="lock" title="Lock Page" onClick={(e) => { e.preventDefault(); void onLock(true) }}><i></i></a>
+            ? <a href="#" className="btn g_toolbtn ul" data-type="unlock" title={i18nT('Unlock Page')} onClick={(e) => { e.preventDefault(); void onLock(false) }}><i></i></a>
+            : <a href="#" className="btn g_toolbtn l" data-type="lock" title={i18nT('Lock Page')} onClick={(e) => { e.preventDefault(); void onLock(true) }}><i></i></a>
           )}
-          <a href="#" className="btn g_toolbtn e" data-type="title" title="Change title" onClick={(e) => { e.preventDefault(); void onChangeTitle() }}><i></i></a>
-          <a href="#" className="btn g_toolbtn d" data-type="del" title="Delete" onClick={(e) => { e.preventDefault(); void onDelete() }}><i></i></a>
+          <a href="#" className="btn g_toolbtn e" data-type="title" title={i18nT('Change title')} onClick={(e) => { e.preventDefault(); void onChangeTitle() }}><i></i></a>
+          <a href="#" className="btn g_toolbtn d" data-type="del" title={i18nT('Delete')} onClick={(e) => { e.preventDefault(); void onDelete() }}><i></i></a>
         </div>
       </div>
 
@@ -465,7 +477,7 @@ export default function WikiPage() {
       <div className="g_cont2 g_rblock">
         <div className="tool">
           <LangTabs value={lang} onChange={(c, l) => { void onChangeLang(c, l) }} />
-          <a href="#" className="btn g_toolbtn e" data-type="edit" title="Edit" onClick={(e) => { e.preventDefault(); onEdit() }}><i></i></a>
+          <a href="#" className="btn g_toolbtn e" data-type="edit" title={i18nT('Edit')} onClick={(e) => { e.preventDefault(); onEdit() }}><i></i></a>
         </div>
         <div
           className="g_wiki"
@@ -480,22 +492,8 @@ export default function WikiPage() {
         {loading && <LoadingBlock />}
       </div>
 
-      {/* module/plugin —— widget/tmpl_vote.html 投票 */}
-      <div className="g_cont2 g_rblock">
-        <a
-          href="#"
-          className={`g_round g_tmpl_vote${voted ? ' g_tmpl_voted' : ''}`}
-          data-eid={voteEid}
-          data-choice={voteChoice}
-          onClick={(e) => { e.preventDefault(); void onVote() }}
-        >{voted ? 'Voted' : 'Vote'}</a>
-        {voted && (
-          <div className="g_tmpl_votedlist">
-            <div><span>{voteChoice}</span><i style={{ width: '300px' }}></i>1</div>
-          </div>
-        )}
-      </div>
-
+      {/* 老站 wiki_page.html 没有固定投票按钮；投票只由正文 {{ name:_vote }} 模板块渲染，
+          由 module/plugin/src/init.js 在 #content 上做事件委托处理（见下方 useEffect）。 */}
       <TalkWidget talkKey={key} hasOwner={false} />
     </Shell>
   )

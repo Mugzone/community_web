@@ -4,6 +4,8 @@ import { URLS, staticUrl } from '../lib/urls'
 import { useSession } from './SessionProvider'
 import { LoginModal } from './LoginModal'
 import { fetchUnreadMsg } from '../network/legacy'
+import { buildUrl } from '../network/api'
+import { t as i18nT } from '../i18n'
 
 /** 复刻老站 templates/widget/header.html 的 DOM 与 class */
 export function Header() {
@@ -40,24 +42,24 @@ export function Header() {
         <div className="center">
           <span><img src={staticUrl('img/icon-64.png')} alt="" /><a href="/index">Malody</a></span>
           <div className="menu">
-            <a href={URLS.talk}><i className="icon-ta"></i>Talk</a>
-            {isLogin && <a href={URLS.store}><i className="icon-st"></i>Store</a>}
-            <a href={URLS.skin}><i className="icon-sk"></i>Skin</a>
-            <a href={`${URLS.chart}?type=3`}><i className="icon-ch"></i>Chart</a>
-            <a href={URLS.player}><i className="icon-pl"></i>Player</a>
+            <a href={URLS.talk}><i className="icon-ta"></i>{i18nT('Talk')}</a>
+            {isLogin && <a href={URLS.store}><i className="icon-st"></i>{i18nT('Store')}</a>}
+            <a href={URLS.skin}><i className="icon-sk"></i>{i18nT('Skin')}</a>
+            <a href={`${URLS.chart}?type=3`}><i className="icon-ch"></i>{i18nT('Chart')}</a>
+            <a href={URLS.player}><i className="icon-pl"></i>{i18nT('Player')}</a>
           </div>
           {isLogin ? (
             <>
-              <a href={URLS.logout}>Logout</a>
+              <a href={URLS.logout}>{i18nT('Logout')}</a>
               <Link to={URLS.user(session?.uid ?? 0)}><b>{session?.username}</b></Link>
               <Link to={URLS.user(session?.uid ?? 0)} className="avatar">
-                <img src={`/api/player/image?uid=${session?.uid ?? 0}`} alt="" />
+                <img src={buildUrl('/player/image', { uid: session?.uid ?? 0 })} alt="" />
               </Link>
             </>
           ) : (
             <>
-              <Link to={URLS.register}>Register</Link>
-              <a style={{ fontWeight: 'bold' }} id="J_toplogin" href="#" onClick={(e) => { e.preventDefault(); setLoginOpen(true) }}>Sign in</a>
+              <Link to={URLS.register}>{i18nT('Register')}</Link>
+              <a style={{ fontWeight: 'bold' }} id="J_toplogin" href="#" onClick={(e) => { e.preventDefault(); setLoginOpen(true) }}>{i18nT('Sign in')}</a>
             </>
           )}
           <form
@@ -73,7 +75,7 @@ export function Header() {
             <input type="submit" value="" id="J_search_submit" />
           </form>
           <div className="notify g_round" style={{ display: unread ? 'block' : 'none' }}>
-            <Link to={URLS.notify}>You have new message(s)</Link>
+            <Link to={URLS.notify}>{i18nT('You have new message(s)')}</Link>
           </div>
         </div>
       </header>

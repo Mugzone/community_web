@@ -4,6 +4,8 @@ import { useLoad, asArray, JustifyRow } from '../../lib/legacy'
 import { URLS, staticUrl } from '../../lib/urls'
 import { fetchHomeData } from '../../network/legacy'
 import { fetchBasicInfo } from '../../network/api'
+import { t as i18nT } from '../../i18n'
+import { coverUrl } from '../../utils/formatters'
 
 /* 老站 index.html 的数据结构（homepage.views.index） */
 type Banner = { img?: string; image?: string; url?: string; link?: string }
@@ -98,7 +100,7 @@ function MapCardView({ map, song, run }: { map: MapCard; song?: boolean; run?: b
     <div className="g_map">
       <a className="link" href={href}>
         {s.cover ? (
-          <div className="cover g_cover" style={{ backgroundImage: `url(${s.cover_url ?? ''})` }}></div>
+          <div className="cover g_cover" style={{ backgroundImage: `url(${coverUrl(s.cover_url ?? s.cover)})` }}></div>
         ) : (
           <div className="cover"></div>
         )}
@@ -153,7 +155,7 @@ function BannerSlider({ items }: { items: Banner[] }) {
 function FooterExtra() {
   return (
     <div className="line top">
-      <span>External link</span>
+      <span>{i18nT('External link')}</span>
       <a href="https://discord.gg/unk9hgF" target="_blank">Discord</a>
       <i></i>
       <a href="https://www.facebook.com/MalodyHome" target="_blank">Facebook</a>
@@ -182,17 +184,17 @@ export default function Index() {
 
       <div id="top">
         <div className="g_rblock" id="top_left">
-          <p>index_intro<a href={URLS.wikiLearnMore}>Learn more&gt;&gt;</a></p>
+          <p>{i18nT('index_intro')}<a href={URLS.wikiLearnMore}>Learn more&gt;&gt;</a></p>
         </div>
         <div className="g_rblock" id="top_right">
           <div className="item">
-            <a href={URLS.allPage}>{data.info.pages ?? ''}</a><span>Pages</span>
+            <a href={URLS.allPage}>{data.info.pages ?? ''}</a><span>{i18nT('Pages')}</span>
           </div>
           <div className="item">
-            <a href={`${URLS.chart}?type=3`}>{data.info.songs ?? ''}</a><span>Songs</span>
+            <a href={`${URLS.chart}?type=3`}>{data.info.songs ?? ''}</a><span>{i18nT('Songs')}</span>
           </div>
           <div className="item">
-            <a href={URLS.player}>{data.info.players ?? ''}</a><span>Players</span>
+            <a href={URLS.player}>{data.info.players ?? ''}</a><span>{i18nT('Players')}</span>
           </div>
           <div className="item justfix"></div>
         </div>
@@ -210,7 +212,7 @@ export default function Index() {
       </div>
 
       <div id="newMap" className="g_rblock">
-        <p className="label">New Arrival <a href={`${URLS.chart}?type=2`} className="more">More</a></p>
+        <p className="label">New Arrival <a href={`${URLS.chart}?type=2`} className="more">{i18nT('More')}</a></p>
         <JustifyRow>
           {data.newMap.map((map, i) => (
             <MapCardView key={`nm${i}`} map={map} song />
@@ -221,7 +223,7 @@ export default function Index() {
           <span className="justfix"></span>
         </JustifyRow>
 
-        <p className="label">Weekly Show</p>
+        <p className="label">{i18nT('Weekly Show')}</p>
         <JustifyRow>
           {data.hotMap.map((map, i) => (
             <MapCardView key={`hm${i}`} map={map} run />

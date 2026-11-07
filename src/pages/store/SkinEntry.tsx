@@ -2,6 +2,7 @@ import { useEffect, useState, type ChangeEvent } from 'react'
 import { Shell } from '../../components/Layout'
 import { asArray, num, showNotify, useLoad } from '../../lib/legacy'
 import { fetchUploadSign, removeSkinPreview, setSkinStatus, submitSkin } from '../../network/legacy'
+import { t as i18nT } from '../../i18n'
 
 /** const.MODE_BITS，老站 skin_submit.html 排除位值 2 / 4 */
 const MODE_BITS: { bit: number; label: string }[] = [
@@ -11,8 +12,8 @@ const MODE_BITS: { bit: number; label: string }[] = [
 ]
 /** const.PLATFORM_BITS */
 const PLATFORM_BITS: { bit: number; label: string }[] = [
-  { bit: 1, label: 'PC' }, { bit: 2, label: 'Pad Horizontal' }, { bit: 4, label: 'Pad Portrait' },
-  { bit: 8, label: 'Phone Horizontal' }, { bit: 16, label: 'Phone Portrait' },
+  { bit: 1, label: 'PC' }, { bit: 2, label: i18nT('Pad Horizontal') }, { bit: 4, label: i18nT('Pad Portrait') },
+  { bit: 8, label: i18nT('Phone Horizontal') }, { bit: 16, label: i18nT('Phone Portrait') },
 ]
 
 /** 老站 skin_submit.html 的 window.malody.tip，取 locale/en 的实际英文文案 */
@@ -24,7 +25,7 @@ const TIP = {
   SAVE_SUCCESS: 'Skin saved successfully',
   VALID_NAME: 'Required and should be less than 100 characters',
   VALID_NUM: 'Required and should be a number',
-  VALID_REQ: 'Required',
+  VALID_REQ: i18nT('Required'),
   SUCC_STATUS: 'Skin status changed successfully',
 }
 
@@ -111,7 +112,7 @@ export default function SkinEntry() {
       showNotify(TIP.SAVE_SUCCESS, 'succ')
       if (id > 0 && !skinId) setSkinId(String(id))
     } catch {
-      showNotify('Editing is available for active account', 'err')
+      showNotify(i18nT('Editing is available for active account'), 'err')
     } finally {
       setLock(false)
     }
@@ -124,7 +125,7 @@ export default function SkinEntry() {
       await setSkinStatus({ status: stat, id: skinId })
       showNotify(TIP.SUCC_STATUS, 'succ')
     } catch {
-      showNotify('Operation failed', 'err')
+      showNotify(i18nT('Operation failed'), 'err')
     }
   }
 
@@ -165,23 +166,23 @@ export default function SkinEntry() {
   const ossHost: string = ossParams.host ?? OSS_HOST
 
   return (
-    <Shell variant="two-col" title="Submit my skin" css={['skin_submit.css']}>
-      <div className="g_title">Submit my skin</div>
+    <Shell variant="two-col" title={i18nT('Submit my skin')} css={['skin_submit.css']}>
+      <div className="g_title">{i18nT('Submit my skin')}</div>
       <div className="g_cont">
         <div id="option">
           <form id="basic" onSubmit={(e) => e.preventDefault()}>
             {!skinId && <div className="hint">Please fill the basic info first before uploading images and skin file</div>}
             <input id="skin_id" type="hidden" value={skinId} readOnly />
             <div className="row">
-              <span className="g_round field">Skin name</span>
+              <span className="g_round field">{i18nT('Skin name')}</span>
               <input id="skin_name" name="skin_name" className="g_round input-box" value={name} onChange={(e) => setName(e.target.value)} />
             </div>
             <div className="row">
-              <span className="g_round field">Price</span>
+              <span className="g_round field">{i18nT('Price')}</span>
               <input id="price" name="price" className="g_round input-box" value={price} placeholder="from 100 to 1000" onChange={(e) => setPrice(e.target.value)} />
             </div>
             <div className="row">
-              <span className="g_round field">Mode</span>
+              <span className="g_round field">{i18nT('Mode')}</span>
               <input id="mode_val" value={modeValue} type="hidden" readOnly />
               <div className="cb-wrap" id="wrap_mode">
                 {MODE_BITS.map((b) => (
@@ -197,7 +198,7 @@ export default function SkinEntry() {
               </div>
             </div>
             <div className="row">
-              <span className="g_round field">Platform</span>
+              <span className="g_round field">{i18nT('Platform')}</span>
               <input id="platform_val" value={platValue} type="hidden" readOnly />
               <div className="cb-wrap" id="wrap_plat">
                 {PLATFORM_BITS.map((b) => (
@@ -213,18 +214,18 @@ export default function SkinEntry() {
               </div>
             </div>
             <div className="row">
-              <span className="g_round field">Required</span>
+              <span className="g_round field">{i18nT('Required')}</span>
               <input id="minv" name="minv" className="g_round input-box" value={minv} placeholder="minimum client version require" onChange={(e) => setMinv(e.target.value)} />
             </div>
             <div className="row">
-              <span className="g_round field">Required highest</span>
+              <span className="g_round field">{i18nT('Required highest')}</span>
               <input id="maxv" name="maxv" className="g_round input-box" value={maxv} placeholder="highest client version require" onChange={(e) => setMaxv(e.target.value)} />
             </div>
           </form>
           {skinId && (
             <>
               <div className="row">
-                <span className="g_round field vtop">Cover</span>
+                <span className="g_round field vtop">{i18nT('Cover')}</span>
                 <div className="vtop value">
                   <div className="img-wrap" id="img_cover">
                     <img src={coverSrc || '/static/img/cover.png'} alt="" />
@@ -233,7 +234,7 @@ export default function SkinEntry() {
                     <form id="form_cover" action={imgHost} method="post" encType="multipart/form-data" onSubmit={(e) => e.preventDefault()}>
                       <div className="upload-btn" id="upload_cover">
                         <div className="upload-icon"></div>
-                        <div className="upload-text">Change cover</div>
+                        <div className="upload-text">{i18nT('Change cover')}</div>
                         <input type="file" name="file" id="file_cover" accept="image/jpeg, image/png" onChange={(e) => void onFile('cover', e)} />
                         <input name="policy" type="hidden" value={String(pageData.policy_cover ?? '')} readOnly />
                         <input name="signature" type="hidden" value={String(pageData.signature_cover ?? '')} readOnly />
@@ -243,7 +244,7 @@ export default function SkinEntry() {
                 </div>
               </div>
               <div className="row">
-                <span className="g_round field vtop">Skin file</span>
+                <span className="g_round field vtop">{i18nT('Skin file')}</span>
                 <div className="vtop value">
                   {skinLink && (
                     <span id="skin_uploaded_hint"><a href={skinLink}>Click here to download</a> , or upload a new skin to replace this</span>
@@ -252,7 +253,7 @@ export default function SkinEntry() {
                     <form id="form_skin" action={ossHost} method="post" encType="multipart/form-data" onSubmit={(e) => e.preventDefault()}>
                       <div className="upload-btn" id="upload_cover">
                         <div className="upload-icon"></div>
-                        <div className="upload-text">Upload skin</div>
+                        <div className="upload-text">{i18nT('Upload skin')}</div>
                         {Object.entries(ossParams).map(([k, v]) => (
                           <input name={k} type="hidden" value={String(v)} key={k} readOnly />
                         ))}
@@ -263,7 +264,7 @@ export default function SkinEntry() {
                 </div>
               </div>
               <div className="row">
-                <span className="g_round field vtop">Preview image</span>
+                <span className="g_round field vtop">{i18nT('Preview image')}</span>
                 <div className="vtop value" id="preview_list">
                   {preview.map((img) => (
                     <div className="img-wrap" data-src={img} key={img}>
@@ -277,7 +278,7 @@ export default function SkinEntry() {
                     <form id="form_preview" action={imgHost} method="post" encType="multipart/form-data" onSubmit={(e) => e.preventDefault()}>
                       <div className="upload-btn" id="upload_preview">
                         <div className="upload-icon"></div>
-                        <div className="upload-text">Upload image</div>
+                        <div className="upload-text">{i18nT('Upload image')}</div>
                         <input type="file" name="file" id="file_preview" accept="image/jpeg, image/png" onChange={(e) => void onFile('preview', e)} />
                         <input name="policy" type="hidden" value={String(pageData.policy_preview ?? '')} readOnly />
                         <input name="signature" type="hidden" value={String(pageData.signature_preview ?? '')} readOnly />
@@ -290,10 +291,10 @@ export default function SkinEntry() {
           )}
         </div>
         <div id="btn_bottom">
-          <div className="g_btn btn" data-type="btn_save" onClick={() => void onSave()}>{skinId ? 'Save' : 'Next'}</div>
+          <div className="g_btn btn" data-type="btn_save" onClick={() => void onSave()}>{skinId ? i18nT('Save') : i18nT('Next')}</div>
           {skinId && <div className="g_btn btn" data-type="btn_stable" onClick={() => void onStatus(2)}>Stable</div>}
           {skinId && <div className="g_btn btn" data-type="btn_beta" onClick={() => void onStatus(1)}>Beta</div>}
-          <a href="#" className="btn" data-type="cancel" onClick={(e) => { e.preventDefault(); onCancel() }}>Cancel</a>
+          <a href="#" className="btn" data-type="cancel" onClick={(e) => { e.preventDefault(); onCancel() }}>{i18nT('Cancel')}</a>
         </div>
       </div>
     </Shell>

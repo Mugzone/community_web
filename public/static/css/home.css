@@ -1,0 +1,206 @@
+/*
+  1. 主背景 8d8d8d / 141 141 141
+2. 主字体 d5b9b9 / 255 221 221
+3. 链接字体 + 高亮效果 ff9d9d / 255 157 157
+4. 常规按钮 cc6666 / 204 102 102
+5. 主背景上用来加强的背景色块 535353 / 83 83 83
+6. 加强色块上用来更加加强的色块 474747 / 71 71 71
+7. 边框（现在使用了主题色）ef6666 / 239 102 102
+边框内线(二级?) 726464 / 114 100 100
+8.这东西，叫标题栏之类 ef6666 / 239 102 102
+*/
+.clear {
+  clear: both;
+  display: block;
+  height: 0;
+}
+.justfix {
+  display: inline-block;
+  width: 100%;
+  height: 0;
+  overflow: hidden;
+}
+.justfyHold {
+  visibility: hidden;
+  height: 0;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+}
+.textfix {
+  text-overflow: ellipsis;
+  overflow-x: hidden;
+  white-space: nowrap;
+}
+#content {
+  width: 1080px;
+  float: left;
+}
+#content #banner {
+  width: 1080px;
+  height: 125px;
+  text-align: center;
+  margin-bottom: 10px;
+  overflow: hidden;
+  position: relative;
+}
+#content #banner ul {
+  height: 125px;
+  width: 100%;
+  position: relative;
+}
+#content #banner ul li {
+  float: left;
+  width: 1080px;
+  height: 100%;
+}
+#content #banner ul li a {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 4px;
+  -moz-border-radius: 4px;
+  -webkit-border-radius: 4px;
+  background-size: contain;
+}
+#content #banner .dot {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  height: 20px;
+}
+#content #banner .dot i {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 100%;
+  -moz-border-radius: 100%;
+  -webkit-border-radius: 100%;
+  margin: 0 2px;
+  border: 1px solid #4190e7;
+  background-color: white;
+}
+#content #banner .dot i.curr {
+  background-color: #4190e7;
+}
+#content .g_cont {
+  margin-bottom: 20px;
+}
+#content p.label {
+  line-height: 32px;
+  font-size: 18px;
+}
+#content p.label a {
+  color: #4190e7;
+  font-size: 14px;
+}
+#content #top {
+  margin-top: 24px;
+}
+#content #top #top_left {
+  width: 784px;
+  height: 100px;
+  float: left;
+  min-height: 0;
+  padding: 10px;
+}
+#content #top #top_left p {
+  text-align: left;
+  font-size: 16px;
+}
+#content #top #top_left p a {
+  color: #4190e7;
+  padding-left: 10px;
+  font-weight: bold;
+}
+#content #top #top_right {
+  float: right;
+  width: 230px;
+  height: 100px;
+  min-height: 0;
+  text-align: justify;
+  padding: 10px;
+}
+#content #top #top_right div {
+  display: block;
+  width: 230px;
+  text-align: left;
+  line-height: 30px;
+}
+#content #top #top_right div a {
+  display: inline-block;
+  font-size: 26px;
+  color: #4190e7;
+  font-style: normal;
+  margin-left: 30px;
+}
+#content #top #top_right div span {
+  font-size: 16px;
+  margin-left: 5px;
+}
+#content #news {
+  min-height: 0 !important;
+  text-align: left;
+  padding: 10px;
+  margin-top: 24px;
+}
+#content #news a {
+  display: inline-block;
+  padding: 4px;
+  margin: 0 6px 10px 0;
+  background: #e3eefb;
+  color: #333;
+  border-radius: 4px;
+  -moz-border-radius: 4px;
+  -webkit-border-radius: 4px;
+}
+#content #news a:hover {
+  color: white;
+  background: #4190e7;
+}
+#content #newMap {
+  padding: 10px;
+  text-align: justify;
+  min-height: 10px !important;
+  margin-top: 24px;
+}
+#content #newMap .g_map {
+  width: 192px;
+  height: 240px;
+  margin: 0 0 30px 0;
+}
+#content #newMap .g_map .cover {
+  height: 192px;
+}
+#content #newMap .g_map .meta {
+  margin: 6px 0 0 39px;
+  width: 152px;
+}
+#content #recent {
+  min-height: 0 !important;
+  height: 50px;
+  float: right;
+  width: 556px;
+  border-radius: 4px;
+  -moz-border-radius: 4px;
+  -webkit-border-radius: 4px;
+  text-align: left;
+  position: relative;
+}
+#content #recent a {
+  display: block;
+}
+#content #recent a em {
+  color: #97c2f2;
+  font-style: normal;
+}
+#content #recent .more {
+  position: absolute;
+  right: 4px;
+  bottom: 4px;
+  color: #4190e7;
+}
+#footer .top img {
+  height: 40px;
+  vertical-align: bottom;
+}

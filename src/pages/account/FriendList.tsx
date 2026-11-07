@@ -5,6 +5,7 @@ import { asArray, JustifyRow, num, useLoad } from '../../lib/legacy'
 import { URLS } from '../../lib/urls'
 import { getJson } from '../../network/api'
 import { avatarUrl } from '../../utils/formatters'
+import { t as i18nT } from '../../i18n'
 
 /* all_friends.html：extended base.html（两栏），默认侧栏 widget/default_side.html */
 type Rec = Record<string, any>
@@ -37,10 +38,10 @@ export default function FriendList() {
 
   return (
     <Shell variant="two-col" title="My friends" css={['akari.css']} contCls="" sidebar={<DefaultSidebar />}>
-      <div className="g_title">My Friends</div>
+      <div className="g_title">{i18nT('My Friends')}</div>
       <div className="g_cont all_friends">
         <div className="g_actbar">
-          <a href={URLS.user(session?.uid ?? 0)} className="g_btn">Back</a>
+          <a href={URLS.user(session?.uid ?? 0)} className="g_btn">{i18nT('Back')}</a>
         </div>
         <JustifyRow>
           {data.items.map((item: Rec, i: number) => {
@@ -61,13 +62,13 @@ export default function FriendList() {
         {data.total > 1 && (
           <div className="g_more">
             {page > 1 ? (
-              <a href="#" className="g_round" data-type="back" onClick={(e) => { e.preventDefault(); go(page - 1) }}>Prev</a>
+              <a href="#" className="g_round" data-type="back" onClick={(e) => { e.preventDefault(); go(page - 1) }}>{i18nT('Prev')}</a>
             ) : (
               <a className="fake" href="#"></a>
             )}
             <span>{page}/{data.total}</span>
             {page < data.total ? (
-              <a href="#" className="g_round" data-type="back" onClick={(e) => { e.preventDefault(); go(page + 1) }}>Next</a>
+              <a href="#" className="g_round" data-type="back" onClick={(e) => { e.preventDefault(); go(page + 1) }}>{i18nT('Next')}</a>
             ) : (
               <a className="fake" href="#"></a>
             )}

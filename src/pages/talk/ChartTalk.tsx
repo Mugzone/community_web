@@ -4,6 +4,7 @@ import { Shell } from '../../components/Layout'
 import { useLoad, showNotify } from '../../lib/legacy'
 import { URLS } from '../../lib/urls'
 import { fetchChartTalk, saveTalk } from '../../network/legacy'
+import { t as i18nT } from '../../i18n'
 
 /** talk/chart.html —— 客户端谱面评价留言（独立整页，自带内联样式） */
 type ChartTalkState = {
@@ -69,7 +70,7 @@ export default function ChartTalk() {
     <Shell variant="simple" css={[]}>
       <style>{PAGE_STYLE}</style>
       <div className="edit">
-        <div className="btn" onClick={(e) => { e.preventDefault(); void onSubmit() }}>Submit</div>
+        <div className="btn" onClick={(e) => { e.preventDefault(); void onSubmit() }}>{i18nT('Submit')}</div>
         <textarea
           name=""
           id="text"

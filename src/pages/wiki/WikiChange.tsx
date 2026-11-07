@@ -4,6 +4,7 @@ import { Shell, DefaultSidebar } from '../../components/Layout'
 import { useLoad, asArray, showNotify, LoadingBlock, EmptyBlock } from '../../lib/legacy'
 import { URLS } from '../../lib/urls'
 import { fetchWikiChange, fetchWikiBackup, saveWikiBackup } from '../../network/legacy'
+import { t as i18nT } from '../../i18n'
 
 type ChangeItem = {
   user_id?: number | string
@@ -59,9 +60,9 @@ export default function WikiChange() {
       <div className="g_title">Changes</div>
       <div className="g_cont wiki_change">
         <div className="g_actbar">
-          <a href="#" className="g_btn" onClick={(e) => { e.preventDefault(); window.history.back() }}>Back</a>
+          <a href="#" className="g_btn" onClick={(e) => { e.preventDefault(); window.history.back() }}>{i18nT('Back')}</a>
           <a href="#" className={`g_btn${tab === 'changes' ? ' curr' : ''}`} onClick={(e) => { e.preventDefault(); setTab('changes') }}>Changes</a>
-          <a href="#" className={`g_btn${tab === 'backup' ? ' curr' : ''}`} onClick={(e) => { e.preventDefault(); setTab('backup') }}>Backup</a>
+          <a href="#" className={`g_btn${tab === 'backup' ? ' curr' : ''}`} onClick={(e) => { e.preventDefault(); setTab('backup') }}>{i18nT('Backup')}</a>
           <input className="g_round" value={pid} placeholder="pid" onChange={(e) => setSp({ pid: e.target.value })} />
           {tab === 'backup' && (
             <>
@@ -84,7 +85,7 @@ export default function WikiChange() {
           </>
         ) : (
           <div className="g_wiki">
-            <h1 className="msg">Backup</h1>
+            <h1 className="msg">{i18nT('Backup')}</h1>
             <textarea value={backupContent} onChange={(e) => setBackupContent(e.target.value)} cols={80} rows={12} dir="ltr" />
             <p>Use Read to load a backup, Recover to restore from it.</p>
           </div>

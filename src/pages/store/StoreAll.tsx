@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { DefaultSidebar, Shell } from '../../components/Layout'
 import { asArray, EmptyBlock, JustifyRow, LoadingBlock, num, showNotify, useLoad } from '../../lib/legacy'
 import { buyStoreItem, fetchMyItems } from '../../network/legacy'
+import { t as i18nT } from '../../i18n'
 
 /** 老站 list/store.html：items 里每项是 {item: {...}, buy?: {...}}，也兼容扁平结构。 */
 type StoreItemRow = {
@@ -43,7 +44,7 @@ export default function StoreAll() {
         const msg =
           code === -4 ? 'You already have it!'
             : code === -3 ? 'Gold not enough'
-              : code === -2 ? 'Operation failed'
+              : code === -2 ? i18nT('Operation failed')
                 : 'Internal error'
         showNotify(msg, 'err')
       } else {
@@ -60,7 +61,7 @@ export default function StoreAll() {
   return (
     <Shell
       variant="two-col"
-      title="Store"
+      title={i18nT('Store')}
       css={['store.css', 'akari.css']}
       sidebar={
         <>
@@ -70,7 +71,7 @@ export default function StoreAll() {
         </>
       }
     >
-      <div className="g_title">Store</div>
+      <div className="g_title">{i18nT('Store')}</div>
       <div className="g_cont all_store">
         <div className="items">
           {loading && <LoadingBlock />}

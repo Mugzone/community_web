@@ -43,6 +43,8 @@ export const URLS = {
 /** 老站静态资源路径（原样拷贝 web/static 到 public/static） */
 export const staticUrl = (p: string) => `/static/${p.replace(/^\//, '')}`
 
+import { buildUrl } from '../network/api'
+
 /** 老站 window.malody.urls：搬迁过来的页面逻辑仍可能读取 */
 declare global {
   interface Window {
@@ -58,19 +60,19 @@ export function installWindowUrls() {
   window.malody.urls = {
     index: URLS.index,
     search: URLS.search,
-    skinJson: '/api/store/skin/list',
-    skinSubmit: '/api/store/skin/submit',
-    skinStatus: '/api/store/skin/status',
-    skinRemovePreview: '/api/store/skin/preview/delete',
-    skinPurchase: '/api/store/skin/purchase',
-    chartFilter: '/api/community/chart/filter',
-    wikiPreview: '/api/community/wiki/preview',
-    wikiOperate: '/api/community/wiki/page/operate',
-    wikiBackup: '/api/community/wiki/backup',
-    talkSave: '/api/plugin/talk/save',
-    talkList: '/api/plugin/talk/list',
-    talkOper: '/api/plugin/talk/oper',
-    talkItemRaw: '/api/plugin/talk/item',
-    vote: '/api/plugin/vote',
+    skinJson: buildUrl('/store/skin/list'),
+    skinSubmit: buildUrl('/store/skin/submit'),
+    skinStatus: buildUrl('/store/skin/status'),
+    skinRemovePreview: buildUrl('/store/skin/preview/delete'),
+    skinPurchase: buildUrl('/store/skin/purchase'),
+    chartFilter: buildUrl('/community/chart/filter'),
+    wikiPreview: buildUrl('/community/wiki/preview'),
+    wikiOperate: buildUrl('/community/wiki/page/operate'),
+    wikiBackup: buildUrl('/community/wiki/backup'),
+    talkSave: buildUrl('/plugin/talk/save'),
+    talkList: buildUrl('/plugin/talk/list'),
+    talkOper: buildUrl('/plugin/talk/oper'),
+    talkItemRaw: buildUrl('/plugin/talk/item'),
+    vote: buildUrl('/plugin/vote'),
   }
 }

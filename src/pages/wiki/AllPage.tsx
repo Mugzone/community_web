@@ -3,6 +3,7 @@ import { Shell, DefaultSidebar } from '../../components/Layout'
 import { useLoad, asArray, num, LoadingBlock, EmptyBlock, JustifyRow } from '../../lib/legacy'
 import { URLS } from '../../lib/urls'
 import { fetchAllPages } from '../../network/legacy'
+import { t as i18nT } from '../../i18n'
 
 type PageItem = { id: number | string; title?: string }
 type Model = { items: PageItem[]; total: number }
@@ -43,19 +44,19 @@ export default function AllPage() {
   return (
     <Shell
       variant="two-col"
-      title="Pages"
+      title={i18nT('Pages')}
       css={['akari.css']}
       sidebar={
         <>
           <DefaultSidebar />
           <h4>Index</h4>
-          <a href={`${URLS.allPage}?type=song`} onClick={(e) => { e.preventDefault(); changeType('song') }}>Songs</a>
+          <a href={`${URLS.allPage}?type=song`} onClick={(e) => { e.preventDefault(); changeType('song') }}>{i18nT('Songs')}</a>
           <h4>Special</h4>
           <a href={URLS.limit}>The Jail</a>
         </>
       }
     >
-      <div className="g_title">Page</div>
+      <div className="g_title">{i18nT('Page')}</div>
       <div className="g_cont">
         <div className="wiki_cate">
           <JustifyRow>
@@ -76,13 +77,13 @@ export default function AllPage() {
         {total > 1 && (
           <div className="g_more">
             {page > 1 ? (
-              <a href={`${URLS.allPage}?page=${page - 1}&type=${type}`} className="g_round" data-type="back" onClick={(e) => { e.preventDefault(); goPage(page - 1) }}>Prev</a>
+              <a href={`${URLS.allPage}?page=${page - 1}&type=${type}`} className="g_round" data-type="back" onClick={(e) => { e.preventDefault(); goPage(page - 1) }}>{i18nT('Prev')}</a>
             ) : (
               <a className="fake" href="#"></a>
             )}
             <span>{page}/{total}</span>
             {page < total ? (
-              <a href={`${URLS.allPage}?page=${page + 1}&type=${type}`} className="g_round" data-type="back" onClick={(e) => { e.preventDefault(); goPage(page + 1) }}>Next</a>
+              <a href={`${URLS.allPage}?page=${page + 1}&type=${type}`} className="g_round" data-type="back" onClick={(e) => { e.preventDefault(); goPage(page + 1) }}>{i18nT('Next')}</a>
             ) : (
               <a className="fake" href="#"></a>
             )}

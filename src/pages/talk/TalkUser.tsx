@@ -4,6 +4,7 @@ import { useLoad, formatTime, num, LoadingBlock } from '../../lib/legacy'
 import { URLS } from '../../lib/urls'
 import { fetchTalkInbox } from '../../network/legacy'
 import { getJson } from '../../network/api'
+import { t as i18nT } from '../../i18n'
 
 /** talk/user_topics.html + talk/user_topic_item.html */
 type TopicUserItem = {
@@ -63,7 +64,7 @@ function TopicUserItemView({ item, guest }: { item: TopicUserItem; guest: number
     <div className="item">
       <div className="name">
         <div className="num">{item.meta?.count ?? ''}</div>
-        <span>Replies</span>
+        <span>{i18nT('Replies')}</span>
       </div>
       <div className="right">
         {guest ? (
@@ -107,11 +108,11 @@ export default function TalkUser() {
   const pageUrl = (p: number) => `${URLS.talkUser}?page=${p}&lang=${data.lang}&guest=${guest}`
 
   return (
-    <Shell title="Private messages" css={['board.css']} sidebar={<DefaultSidebar />}>
-      <div className="g_title">Private messages</div>
+    <Shell title={i18nT('Private messages')} css={['board.css']} sidebar={<DefaultSidebar />}>
+      <div className="g_title">{i18nT('Private messages')}</div>
       <div className="g_cont">
         <div className="g_actbar">
-          <a className="g_btn" href={URLS.user(data.user?.id ?? 0)}>Back</a>
+          <a className="g_btn" href={URLS.user(data.user?.id ?? 0)}>{i18nT('Back')}</a>
           <a
             href={URLS.talkUser}
             className="g_btn"
@@ -127,7 +128,7 @@ export default function TalkUser() {
         {loading ? <LoadingBlock text="Loading..." /> : null}
 
         {data.items === null ? (
-          <div className="g_memo"><span className="g_round">No Recent Topics</span></div>
+          <div className="g_memo"><span className="g_round">{i18nT('No Recent Topics')}</span></div>
         ) : (
           <div className="discuss">
             {data.items.map((item, i) => (
@@ -143,7 +144,7 @@ export default function TalkUser() {
                 href={pageUrl(data.prev)}
                 className="g_round"
                 onClick={(e) => { e.preventDefault(); gotoPage(data.prev as number) }}
-              >Prev</a>
+              >{i18nT('Prev')}</a>
             ) : (
               <a className="fake" href="#"></a>
             )}
@@ -153,7 +154,7 @@ export default function TalkUser() {
                 href={pageUrl(data.next)}
                 className="g_round"
                 onClick={(e) => { e.preventDefault(); gotoPage(data.next as number) }}
-              >Next</a>
+              >{i18nT('Next')}</a>
             ) : (
               <a className="fake" href="#"></a>
             )}

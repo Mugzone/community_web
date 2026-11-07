@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { DefaultSidebar, Shell } from '../../components/Layout'
 import { asArray, EmptyBlock, JustifyRow, LoadingBlock, num, showNotify, useLoad } from '../../lib/legacy'
 import { fetchMyItems, useStoreItem } from '../../network/legacy'
+import { t as i18nT } from '../../i18n'
 
 /** 老站 list/items.html：items 里每项是 {item: {...}, endtime_str, count}。 */
 type MyItemRow = {
@@ -53,7 +54,7 @@ export default function MyItems() {
       if (code < 0) {
         const msg =
           code === -3 ? 'No item available'
-            : code === -2 ? 'Operation failed'
+            : code === -2 ? i18nT('Operation failed')
               : 'Internal error'
         showNotify(msg, 'err')
       } else {
@@ -70,16 +71,16 @@ export default function MyItems() {
   return (
     <Shell
       variant="two-col"
-      title="Items"
+      title={i18nT('Items')}
       css={['store.css', 'akari.css']}
       sidebar={
         <>
           <DefaultSidebar />
-          <a href="/store/all">Store</a>
+          <a href="/store/all">{i18nT('Store')}</a>
         </>
       }
     >
-      <div className="g_title">Items</div>
+      <div className="g_title">{i18nT('Items')}</div>
       <div className="g_cont all_store">
         <div className="items">
           {loading && <LoadingBlock />}

@@ -1,0 +1,112 @@
+/*
+  1. 主背景 8d8d8d / 141 141 141
+2. 主字体 d5b9b9 / 255 221 221
+3. 链接字体 + 高亮效果 ff9d9d / 255 157 157
+4. 常规按钮 cc6666 / 204 102 102
+5. 主背景上用来加强的背景色块 535353 / 83 83 83
+6. 加强色块上用来更加加强的色块 474747 / 71 71 71
+7. 边框（现在使用了主题色）ef6666 / 239 102 102
+边框内线(二级?) 726464 / 114 100 100
+8.这东西，叫标题栏之类 ef6666 / 239 102 102
+*/
+.clear {
+  clear: both;
+  display: block;
+  height: 0;
+}
+.justfix {
+  display: inline-block;
+  width: 100%;
+  height: 0;
+  overflow: hidden;
+}
+.justfyHold {
+  visibility: hidden;
+  height: 0;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+}
+.textfix {
+  text-overflow: ellipsis;
+  overflow-x: hidden;
+  white-space: nowrap;
+}
+#content {
+  text-align: left;
+}
+#content h1 {
+  font-size: 16px;
+  margin-bottom: 10px;
+}
+#content h2 {
+  margin-bottom: 20px;
+}
+#content .achi,
+#content .puzz {
+  text-align: justify;
+}
+#content .g_btn {
+  margin-left: 0;
+}
+#content .puzz .item {
+  width: 240px;
+  height: 240px;
+  position: relative;
+  margin-bottom: 20px;
+  border: 1px solid #4190e7;
+}
+#content .puzz .item:hover .del {
+  display: block;
+}
+#content .puzz .item img {
+  width: 100%;
+}
+#content .puzz .item .mask {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+#content .puzz .item .mask .block {
+  width: 60px;
+  height: 60px;
+  float: left;
+}
+#content .puzz .item .all {
+  background-color: white;
+  opacity: 0.95;
+}
+#content .puzz .item .del {
+  position: absolute;
+  right: 0;
+  top: 0;
+  padding: 10px;
+  background-color: #4190e7;
+  color: white;
+  opacity: 0.7;
+  cursor: pointer;
+  display: none;
+}
+#content .achi .item {
+  width: 128px;
+  border: 1px solid #4190e7;
+  margin-bottom: 10px;
+  vertical-align: middle;
+}
+#content .achi .item img {
+  width: 128px;
+  height: 128px;
+}
+#content .achi .item span {
+  display: block;
+  height: 32px;
+  line-height: 32px;
+  font-size: 16px;
+  text-align: center;
+}
+#content .item {
+  display: inline-block;
+  background-color: white;
+}

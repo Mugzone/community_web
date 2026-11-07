@@ -10,6 +10,8 @@ import {
   saveTalk,
   operateTalk,
 } from '../../network/legacy'
+import { t as i18nT } from '../../i18n'
+import { avatarUrl } from '../../utils/formatters'
 
 /** talk/usermsg.html + widget/talk.html + widget/edittool_simple.html + module/talk/src/init.js */
 type TalkMessageItem = {
@@ -69,11 +71,11 @@ const INSERTS: Record<string, string> = {
 
 function EditTool({ onPerform }: { onPerform: (type: string) => void }) {
   const items: Array<[string, string, string]> = [
-    ['bold', 'Bold', 'tool-B'],
-    ['italic', 'Italic', 'tool-I'],
-    ['list', 'List', 'tool-list'],
-    ['img', 'Image', 'tool-img'],
-    ['link', 'Link', 'tool-link'],
+    ['bold', i18nT('Bold'), 'tool-B'],
+    ['italic', i18nT('Italic'), 'tool-I'],
+    ['list', i18nT('List'), 'tool-list'],
+    ['img', i18nT('Image'), 'tool-img'],
+    ['link', i18nT('Link'), 'tool-link'],
   ]
   return (
     <div className="g_edittool">
@@ -120,9 +122,8 @@ function TalkItemView({
   return (
     <li className="item" data-id={item.tid} data-time={item.time ?? ''}>
       <a className="bg left" href={href}>
-        {item.avatar
-          ? <img src={`http://cni.mugzone.net/avatar/${item.avatar}`} style={{ background: 'none' }} />
-          : <img />}
+        {/* 老站 widget/discuss_item.html:5 {% avatar item.user 64 small=True %} */}
+        <img src={avatarUrl(item.avatar, item.uid ?? 0, 64)} style={{ background: 'none' }} alt="" />
       </a>
       <div className="bg right">
         <div className="g_wiki">
@@ -131,13 +132,13 @@ function TalkItemView({
             <a href={href} className="name">{item.name ?? ''}</a>
             <span className="time">{time}</span>
             {!item.isOwn ? (
-              <a href="#" data-type="reply" title="Reply" className="tool" onClick={(e) => { e.preventDefault(); onReply(item.tid) }}>Reply</a>
+              <a href="#" data-type="reply" title={i18nT('Reply')} className="tool" onClick={(e) => { e.preventDefault(); onReply(item.tid) }}>{i18nT('Reply')}</a>
             ) : null}
             {item.canEdit ? (
-              <a href="#" data-type="edit" title="Edit" className="tool" onClick={(e) => { e.preventDefault(); onEdit(item.tid) }}>Edit</a>
+              <a href="#" data-type="edit" title={i18nT('Edit')} className="tool" onClick={(e) => { e.preventDefault(); onEdit(item.tid) }}>{i18nT('Edit')}</a>
             ) : null}
             {item.canDel ? (
-              <a href="#" data-type="del" title="Delete" className="tool" onClick={(e) => { e.preventDefault(); onDelete(item.tid) }}>Delete</a>
+              <a href="#" data-type="del" title={i18nT('Delete')} className="tool" onClick={(e) => { e.preventDefault(); onDelete(item.tid) }}>{i18nT('Delete')}</a>
             ) : null}
           </p>
           <div dangerouslySetInnerHTML={{ __html: safeHtml(item.content ?? '') }} />
@@ -315,7 +316,7 @@ export default function UserMsg() {
               onKeyDown={(e) => { if (e.key === 'Enter' && e.ctrlKey) { e.preventDefault(); void onSave() } }}
             ></textarea>
             <p>
-              <a className="g_btn btn g_talk_new" data-type="save" id="g_talk_save" onClick={(e) => { e.preventDefault(); void onSave() }}>Reply</a>
+              <a className="g_btn btn g_talk_new" data-type="save" id="g_talk_save" onClick={(e) => { e.preventDefault(); void onSave() }}>{i18nT('Reply')}</a>
             </p>
           </div>
         </div>
@@ -327,7 +328,7 @@ export default function UserMsg() {
         ) : null}
 
         <div className="g_talk_tool">
-          <div className="g_btn btn g_talk_new" data-type="new" onClick={(e) => { e.preventDefault(); onNew() }}><i></i>Reply</div>
+          <div className="g_btn btn g_talk_new" data-type="new" onClick={(e) => { e.preventDefault(); onNew() }}><i></i>{i18nT('Reply')}</div>
         </div>
 
         {loading ? <LoadingBlock text="Loading..." /> : null}
@@ -343,11 +344,11 @@ export default function UserMsg() {
           className="talk_btn btn"
           style={{ display: hasMore ? 'block' : undefined }}
           onClick={(e) => { e.preventDefault(); void onShowMore() }}
-        >Show more</div>
+        >{i18nT('Show more')}</div>
 
         <div className="g_talk_new_rep" id="g_talk_new2">
-          <p>Want to say something?</p>
-          <div className="g_btn btn g_talk_new" data-type="new" onClick={(e) => { e.preventDefault(); onNew() }}><i></i>Reply</div>
+          <p>{i18nT('Want to say something?')}</p>
+          <div className="g_btn btn g_talk_new" data-type="new" onClick={(e) => { e.preventDefault(); onNew() }}><i></i>{i18nT('Reply')}</div>
         </div>
       </div>
     </Shell>

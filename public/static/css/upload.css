@@ -1,0 +1,76 @@
+/*
+  1. 主背景 8d8d8d / 141 141 141
+2. 主字体 d5b9b9 / 255 221 221
+3. 链接字体 + 高亮效果 ff9d9d / 255 157 157
+4. 常规按钮 cc6666 / 204 102 102
+5. 主背景上用来加强的背景色块 535353 / 83 83 83
+6. 加强色块上用来更加加强的色块 474747 / 71 71 71
+7. 边框（现在使用了主题色）ef6666 / 239 102 102
+边框内线(二级?) 726464 / 114 100 100
+8.这东西，叫标题栏之类 ef6666 / 239 102 102
+*/
+.clear {
+  clear: both;
+  display: block;
+  height: 0;
+}
+.justfix {
+  display: inline-block;
+  width: 100%;
+  height: 0;
+  overflow: hidden;
+}
+.justfyHold {
+  visibility: hidden;
+  height: 0;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+}
+.textfix {
+  text-overflow: ellipsis;
+  overflow-x: hidden;
+  white-space: nowrap;
+}
+#content {
+  text-align: left;
+  width: 1080px;
+}
+#content h1 {
+  line-height: 46px;
+  font-size: 14px;
+  text-align: left;
+}
+#content h1 label {
+  width: 115px;
+  display: inline-block;
+  text-align: right;
+  padding-right: 4px;
+}
+#content h1 input {
+  border: none;
+  width: 192.5px;
+  height: 24px;
+  line-height: 24px;
+  vertical-align: middle;
+  background: none;
+}
+#content h1 img {
+  height: 128px;
+}
+#content .line {
+  text-align: left;
+}
+#content .line a {
+  vertical-align: middle;
+  padding-left: 24px;
+}
+#content .btn {
+  margin: 0 0 0 119px;
+  width: 227.5px;
+  display: inline-block;
+  background-color: transparent;
+}
+#content .btn:hover {
+  background: #4190e7;
+}

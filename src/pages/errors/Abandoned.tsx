@@ -1,6 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { Shell, DefaultSidebar } from '../../components/Layout'
 import { URLS } from '../../lib/urls'
+import { t as i18nT } from '../../i18n'
 
 /** 老站风格：废弃页面统一降级提示，可被任意停用路由复用 */
 export default function Abandoned({
@@ -57,8 +58,8 @@ export function LegacyRedirect({ autoRedirect = false }: { autoRedirect?: boolea
   }
 
   return (
-    <Shell variant="two-col" title="Talk" css={['akari.css']} sidebar={<DefaultSidebar />}>
-      <div className="g_title">Talk</div>
+    <Shell variant="two-col" title={i18nT('Talk')} css={['akari.css']} sidebar={<DefaultSidebar />}>
+      <div className="g_title">{i18nT('Talk')}</div>
       <div className="g_cont">
         <div className="g_memo"><span className="g_round">Talk has moved out of the community site.</span></div>
         <p>Please continue the discussion on our official channels:</p>

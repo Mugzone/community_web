@@ -3,6 +3,7 @@ import { Shell } from '../../components/Layout'
 import { asArray, showNotify, useLoad } from '../../lib/legacy'
 import { URLS } from '../../lib/urls'
 import { fetchPublisher, operatePublisher } from '../../network/legacy'
+import { t as i18nT } from '../../i18n'
 
 /* admin/admin_pub.html：extended base_width.html，交互对应 module/publish/src/init.js */
 type Rec = Record<string, any>
@@ -35,7 +36,7 @@ export default function Publish() {
     if (!uid) {
       return
     }
-    showNotify('Submitting...', 'succ')
+    showNotify(i18nT('Submitting...'), 'succ')
     try {
       await operatePublisher({ uid, type: 'add' })
       setAdding(false)
@@ -73,12 +74,12 @@ export default function Publish() {
           })}
         </div>
         <div className="pub_oper">
-          <a href="#" className="btn g_btn" data-type="add" onClick={(e) => { e.preventDefault(); setAdding(true) }}>Add</a>
+          <a href="#" className="btn g_btn" data-type="add" onClick={(e) => { e.preventDefault(); setAdding(true) }}>{i18nT('Add')}</a>
           {adding && (
             <span className="pub_add">
               <input type="text" name="uid" value={newUid} placeholder="user id" onChange={(e: ChangeEvent<HTMLInputElement>) => setNewUid(e.target.value)} />
-              <span className="btn g_btn" onClick={() => void addUser()}>Confirm</span>
-              <span className="btn g_btn" onClick={() => { setAdding(false); setNewUid('') }}>Cancel</span>
+              <span className="btn g_btn" onClick={() => void addUser()}>{i18nT('Confirm')}</span>
+              <span className="btn g_btn" onClick={() => { setAdding(false); setNewUid('') }}>{i18nT('Cancel')}</span>
             </span>
           )}
         </div>

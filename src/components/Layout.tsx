@@ -2,6 +2,7 @@ import { isValidElement, useEffect, useLayoutEffect, useState, type ReactNode } 
 import { Header } from './Header'
 import { Footer } from './Footer'
 import { useLegacyCss, setNotifyListener, setGlobalLoadingListener } from '../lib/legacy'
+import { t as i18nT } from '../i18n'
 
 export type ShellProps = {
   /** base.html 两栏 / base_width.html 宽版 / base_simple.html 极简 */
@@ -124,10 +125,10 @@ export function DefaultSidebar() {
   return (
     <>
       <a href="/">Home</a>
-      <a href="/page/latest">Recent Changes</a>
+      <a href="/page/latest">{i18nT('Recent Changes')}</a>
       <a href="/page/all/cate">Categories</a>
       <a href="/page/all">Contents</a>
-      <a href="/page/create">New Article</a>
+      <a href="/page/create">{i18nT('New Article')}</a>
     </>
   )
 }

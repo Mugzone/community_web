@@ -2,6 +2,7 @@ import { Shell, DefaultSidebar } from '../../components/Layout'
 import { useLoad, num, showNotify, LoadingBlock } from '../../lib/legacy'
 import { URLS } from '../../lib/urls'
 import { fetchTalkNotify, deleteUserMsg } from '../../network/legacy'
+import { t as i18nT } from '../../i18n'
 
 /** notify.html + module/notify/src/init.js */
 type NotifyItem = {
@@ -62,11 +63,11 @@ export default function Notify() {
   }
 
   return (
-    <Shell title="Notification" css={['akari.css']} sidebar={<DefaultSidebar />}>
-      <div className="g_title">Notification</div>
+    <Shell title={i18nT('Notification')} css={['akari.css']} sidebar={<DefaultSidebar />}>
+      <div className="g_title">{i18nT('Notification')}</div>
       <div className="g_cont notify">
         <div className="g_actbar">
-          <a href={URLS.user(data.user?.id ?? 0)} className="g_btn">Back</a>
+          <a href={URLS.user(data.user?.id ?? 0)} className="g_btn">{i18nT('Back')}</a>
           <a href="#" className="g_btn btn" data-type="del" onClick={(e) => { e.preventDefault(); void onDeleteAll() }}>
             Delete all notifications
           </a>
@@ -75,7 +76,7 @@ export default function Notify() {
         {loading ? <LoadingBlock text="Loading..." /> : null}
 
         {data.count === 0 ? (
-          <div className="g_memo"><span className="g_round">You have no notifications</span></div>
+          <div className="g_memo"><span className="g_round">{i18nT('You have no notifications')}</span></div>
         ) : (
           <div className="list">
             {data.items.map((item, i) => {
@@ -86,7 +87,7 @@ export default function Notify() {
                   {item.read === false ? <>[New]{'\u00a0'}</> : null}
                   <a href={URLS.user(user.id ?? 0)}>{user.username ?? ''}</a>
                   {' '}replied to you{' '}
-                  <a className="link link_key" target="_blank" href={keyToUrl(key)} data-key={key}>View</a>
+                  <a className="link link_key" target="_blank" href={keyToUrl(key)} data-key={key}>{i18nT('View')}</a>
                 </div>
               )
             })}

@@ -4,6 +4,7 @@ import { Shell, DefaultSidebar } from '../../components/Layout'
 import { useLoad, asArray, showNotify, LoadingBlock, EmptyBlock, JustifyRow } from '../../lib/legacy'
 import { URLS } from '../../lib/urls'
 import { fetchWikiCategory, deleteWikiCategory, mergeWikiCategory } from '../../network/legacy'
+import { t as i18nT } from '../../i18n'
 
 /* ------------------------------------------------------------------ *
  * wiki_cate.html（base.html 两栏, akari.css）+ module/wikiCate
@@ -79,16 +80,16 @@ export default function WikiCate() {
       sidebar={
         <>
           <DefaultSidebar />
-          <h4>Help</h4>
-          <a href={URLS.wiki(4)}>About Category</a>
+          <h4>{i18nT('Help')}</h4>
+          <a href={URLS.wiki(4)}>{i18nT('About Category')}</a>
         </>
       }
     >
       <div className="g_title">Category:&nbsp;{data.name}</div>
       <div className="g_cont" data-id={data.id}>
         <div className="g_actbar">
-          <a href="#" className="g_btn btn" data-type="merge" onClick={(e) => { e.preventDefault(); void onMerge() }}>Merge with...</a>
-          <a href="#" className="g_btn btn" data-type="del" onClick={(e) => { e.preventDefault(); void onDelete() }}>Delete</a>
+          <a href="#" className="g_btn btn" data-type="merge" onClick={(e) => { e.preventDefault(); void onMerge() }}>{i18nT('Merge with...')}</a>
+          <a href="#" className="g_btn btn" data-type="del" onClick={(e) => { e.preventDefault(); void onDelete() }}>{i18nT('Delete')}</a>
           <a href="#" className="g_btn btn" data-type="reload" onClick={(e) => { e.preventDefault(); reload() }}>Refresh</a>
         </div>
 
@@ -107,13 +108,13 @@ export default function WikiCate() {
         {total > 1 && (
           <div className="g_more">
             {page > 1 ? (
-              <a href={`${URLS.cate(data.id)}?page=${page - 1}`} className="g_round" data-type="back" onClick={(e) => { e.preventDefault(); goPage(page - 1) }}>Prev</a>
+              <a href={`${URLS.cate(data.id)}?page=${page - 1}`} className="g_round" data-type="back" onClick={(e) => { e.preventDefault(); goPage(page - 1) }}>{i18nT('Prev')}</a>
             ) : (
               <a className="fake" href="#"></a>
             )}
             <span>{page}/{total}</span>
             {page < total ? (
-              <a href={`${URLS.cate(data.id)}?page=${page + 1}`} className="g_round" data-type="back" onClick={(e) => { e.preventDefault(); goPage(page + 1) }}>Next</a>
+              <a href={`${URLS.cate(data.id)}?page=${page + 1}`} className="g_round" data-type="back" onClick={(e) => { e.preventDefault(); goPage(page + 1) }}>{i18nT('Next')}</a>
             ) : (
               <a className="fake" href="#"></a>
             )}

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { Shell } from '../../components/Layout'
 import { useSession } from '../../components/SessionProvider'
-import { asArray, formatTime, JustifyRow, num, showNotify, useLoad, floatFormat } from '../../lib/legacy'
+import { asArray, formatTime, JustifyRow, num, useLoad, floatFormat } from '../../lib/legacy'
 import { URLS, staticUrl } from '../../lib/urls'
 import {
   fetchPlayerInfo,
@@ -11,9 +11,10 @@ import {
   fetchPlayerCharts,
   postForm,
 } from '../../network/api'
-import { fetchAchieveList, operateAchieve } from '../../network/legacy'
+import { fetchAchieveList } from '../../network/legacy'
 import { avatarUrl, coverUrl } from '../../utils/formatters'
 import { regionMap } from '../../utils/profile'
+import { t as i18nT } from '../../i18n'
 
 /* profile/index.html：extended base_width.html（wide），交互对应 module/user/src/init.js */
 type Rec = Record<string, any>
@@ -42,6 +43,12 @@ const FALLBACK: UserData = {
   canBan: false, canActive: false, canEdit: false, redName: false, banner: '',
 }
 
+/** 老站 account/views.py:305-313 成就最多 5 个，并补齐到 3 的倍数让 text-align:justify 生效 */
+const achHolds = (count: number): number => {
+  const n = 3 - (count % 3)
+  return n > 0 && n !== 3 ? n : 0
+}
+
 const s = (v: unknown, fb = ''): string => (v === undefined || v === null ? fb : String(v))
 const n = (v: unknown, fb = 0): number => num(v, fb)
 const fmt2 = (v: unknown): string => floatFormat(v, 2)
@@ -55,14 +62,22 @@ const ymd = (v: unknown): string => {
   return Number.isNaN(d.getTime()) ? raw : `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`
 }
 const genderLabel = (g: unknown): string => {
-  const map: Record<number, string> = { 1: 'Boy', 2: 'Girl', 3: '男の娘' }
+  const map: Record<number, string> = { 1: i18nT('Boy'), 2: i18nT('Girl'), 3: i18nT('男の娘') }
   return map[n(g)] ?? ''
 }
 const countryLabel = (c: unknown): string => regionMap[n(c)]?.fallback ?? '???'
 const bgCover = (v: unknown): string => {
   const raw = s(v)
   if (!raw) return staticUrl('img/cover.png')
-  return raw.startsWith('http') || raw.startsWith('/') ? raw : coverUrl(raw)
+  return coverUrl(raw)
+}
+
+/* /api/account/achieve/list 的 data 可能是数组，也可能是 {list, achievements, ...} 对象 */
+const achList = (res: unknown): Rec[] => {
+  const d = (res as Rec | undefined)?.data
+  if (Array.isArray(d)) return d as Rec[]
+  const obj = (d ?? res ?? {}) as Rec
+  return asArray<Rec>(obj.list ?? obj.achievements)
 }
 
 export default function UserPage() {
@@ -83,16 +98,17 @@ export default function UserPage() {
         fetchPlayerCharts({ uid }).catch(() => undefined),
         fetchAchieveList(uid).catch(() => undefined),
       ])
-      const info: Rec = ((infoRes as Rec | undefined)?.data ?? {}) as Rec
+      // /api/player/info 返回扁平结构（username/gold/... 在顶层）；其它接口带 data 包裹，两者兼容
+      const info: Rec = ((infoRes as Rec | undefined)?.data ?? infoRes ?? {}) as Rec
       return {
         info,
         ranks: asArray<Rec>((rankRes as Rec | undefined)?.data ?? rankRes),
         acts: asArray<Rec>((actRes as Rec | undefined)?.data ?? actRes),
         recent: asArray<Rec>((actRes as Rec | undefined)?.recent ?? []),
         charts: asArray<Rec>((chartRes as Rec | undefined)?.data ?? chartRes),
-        achieves: asArray<Rec>((achRes as Rec | undefined)?.data ?? (achRes as Rec | undefined)?.list ?? achRes),
+        achieves: achList(achRes),
         content: s(info.content ?? info.wiki ?? info.userpage),
-        friendType: n(info.friend_type ?? info.friendType, 0),
+        friendType: n(info.friend_type ?? info.friendType ?? info.friend, 0),
         tab: n(info.tab, 0),
         group: asArray<Rec>(info.group),
         unread: n(info.unread, 0),
@@ -110,7 +126,6 @@ export default function UserPage() {
   const [tab, setTab] = useState<number>(0)
   const [friendType, setFriendType] = useState<number>(0)
   const [achieves, setAchieves] = useState<Rec[]>([])
-  const [editAch, setEditAch] = useState(false)
   useEffect(() => { setTab(data.tab); setFriendType(data.friendType); setAchieves(data.achieves) }, [data])
 
   /* module/user init.js：banner 背景整页生效，SPA 需在卸载时还原 */
@@ -159,18 +174,6 @@ export default function UserPage() {
     reload()
   }
 
-  /* achieve 展示编辑（module/achieve 的 del_mazz） */
-  const removeAchieve = async (item: Rec, index: number) => {
-    const id = s(item.id ?? item.achieve?.id)
-    try {
-      await operateAchieve({ type: 'del_mazz', id })
-    } catch {
-      /* ignore */
-    }
-    setAchieves((prev: Rec[]) => prev.filter((_: Rec, i: number) => i !== index))
-    showNotify('Delete success', 'succ')
-  }
-
   const info = data.info
   const username = s(info.username ?? info.name)
 
@@ -178,7 +181,13 @@ export default function UserPage() {
     <Shell variant="wide" title={username || 'User'} css={['profile.css', 'user.css']} contCls="gb_profile">
       <div className="user_head g_rblock">
         <div className="coverb">
-          <img className="g_round" src={avatarUrl(info.avatar, uid)} alt={username} />
+          {/* 老站 {% avatar to_user 150 "g_round" %}：!avatar 缩略图 + 内联 150px 上限，user.css 没有 img 尺寸规则 */}
+          <img
+            className="g_round"
+            src={avatarUrl(info.avatar, uid, 150)}
+            alt={username}
+            style={{ maxWidth: 150, maxHeight: 150 }}
+          />
         </div>
 
         <div className="right">
@@ -194,7 +203,7 @@ export default function UserPage() {
           <p className="time">
             <span>Joined since:&nbsp;{ymd(info.regtime ?? info.date_joined)}</span>
             <span>Last play:&nbsp;{(info.lastPlay ?? info.last_play) ? ymd(info.lastPlay ?? info.last_play) : 'Never'}</span>
-            <span>Played: {s(info.playtime_str ?? info.playTimeStr)}</span>
+            <span>Played: {s(info.playtime_str ?? info.playTimeStr ?? info.playTime)}</span>
           </p>
           <p>
             <span>Gender:&nbsp;{genderLabel(info.gender)}</span>
@@ -206,33 +215,33 @@ export default function UserPage() {
             {n(info.gold_d ?? info.goldD) > 0 && (
               <span style={{ marginLeft: '10px' }}>Income:&nbsp;{n(info.gold_d ?? info.goldD)}</span>
             )}
-            {n(info.playedtime ?? info.played_time) > 0 && (
+            {n(info.playedtime ?? info.played_time ?? info.playedTime) > 0 && (
               <span style={{ marginLeft: '10px' }}>Charts been played:&nbsp;{s(info.playedtime_str)}</span>
             )}
           </p>
           <p>
-            <span>Stable charts:&nbsp;{n(info.count_2 ?? info.stableCount)}</span>
-            <span>Unstable charts:&nbsp;{n(info.count_1 ?? info.unstableCount)}</span>
+            <span>Stable charts:&nbsp;{n(info.count_2 ?? info.stableCount ?? info.stableCharts)}</span>
+            <span>Unstable charts:&nbsp;{n(info.count_1 ?? info.unstableCount ?? info.unstableCharts)}</span>
             {n(info.count_0 ?? info.slot) > 0 && <span>Chart slot:&nbsp;{n(info.count_0 ?? info.slot)}</span>}
           </p>
         </div>
 
         <div className="tool">
           {data.canBan && (
-            <a href="#" className="btn g_toolbtn l" title="Ban" data-type="ban" onClick={(e) => { e.preventDefault(); void operation('ban') }}><i></i></a>
+            <a href="#" className="btn g_toolbtn l" title={i18nT('Ban')} data-type="ban" onClick={(e) => { e.preventDefault(); void operation('ban') }}><i></i></a>
           )}
           {data.canActive && (
             <a href="#" className="btn g_toolbtn ul" title="Active" data-type="active" onClick={(e) => { e.preventDefault(); void operation('active') }}><i></i></a>
           )}
           {isOther && (
-            <a href={`/talk/user/${uid}/${myUid}`} className="g_toolbtn ml" title="Messages"><i></i></a>
+            <a href={`/talk/user/${uid}/${myUid}`} className="g_toolbtn ml" title={i18nT('Messages')}><i></i></a>
           )}
           {isMe && (
             <>
-              <a href={URLS.notify} className="g_toolbtn w" title="View notification">
+              <a href={URLS.notify} className="g_toolbtn w" title={i18nT('View notification')}>
                 <i></i>{data.unread > 0 && <em></em>}
               </a>
-              <a href={URLS.talkUser} className="g_toolbtn ml" title="Messages"><i></i></a>
+              <a href={URLS.talkUser} className="g_toolbtn ml" title={i18nT('Messages')}><i></i></a>
             </>
           )}
           {isOther && (
@@ -248,14 +257,14 @@ export default function UserPage() {
           {isMe && (
             <>
               <a href={URLS.invite} className="g_toolbtn in" title="Invite Code"><i></i></a>
-              <a href={URLS.friend} className="g_toolbtn f" title="My Friends"><i></i></a>
+              <a href={URLS.friend} className="g_toolbtn f" title={i18nT('My Friends')}><i></i></a>
             </>
           )}
           {isOther && data.canEdit && (
-            <a href={`/upload/avatar?uid=${uid}`} title="Edit" className="g_toolbtn e"><i></i></a>
+            <a href={`/upload/avatar?uid=${uid}`} title={i18nT('Edit')} className="g_toolbtn e"><i></i></a>
           )}
           {isMe && (
-            <a href={URLS.configProfile} title="Edit" className="g_toolbtn e"><i></i></a>
+            <a href={URLS.configProfile} title={i18nT('Edit')} className="g_toolbtn e"><i></i></a>
           )}
         </div>
       </div>
@@ -285,29 +294,27 @@ export default function UserPage() {
             <div className="ach g_rblock">
               <a href={`/accounts/user/achieve/${uid}`}>
                 <JustifyRow>
-                  {achieves.map((item: Rec, i: number) => (
+                  {achieves.slice(0, 5).map((item: Rec, i: number) => (
                     <img key={i} src={s(item.cover ?? item.achieve?.cover)} alt="achieve" />
                   ))}
-                  {[0, 1, 2, 3, 4].map((i: number) => <img className="justfyHold" key={`h${i}`} alt="" />)}
+                  {Array.from({ length: achHolds(Math.min(achieves.length, 5)) }, (_, i) => (
+                    <img className="justfyHold" key={`h${i}`} alt="" />
+                  ))}
                 </JustifyRow>
               </a>
               <span className="justfix"></span>
-              <span className="edit" onClick={() => { setEditAch((v: boolean) => !v) }}>Edit</span>
-              {editAch && achieves.map((item: Rec, i: number) => (
-                <span className="del" key={`d${i}`} onClick={() => void removeAchieve(item, i)}>×</span>
-              ))}
             </div>
           )}
         </div>
 
         <div className="record">
           <div className="option g_rblock">
-            <a href="#" className={`btn ${tab === 0 ? 'curr' : ''}`} data-type="active" onClick={(e) => { e.preventDefault(); switchTab('Recent activities', 0) }}>Recent activities</a>
-            <a href="#" className={`btn ${tab === 1 ? 'curr' : ''}`} data-type="recent" onClick={(e) => { e.preventDefault(); switchTab('Recent high scores', 1) }}>Recent high scores</a>
+            <a href="#" className={`btn ${tab === 0 ? 'curr' : ''}`} data-type="active" onClick={(e) => { e.preventDefault(); switchTab('Recent activities', 0) }}>{i18nT('Recent activities')}</a>
+            <a href="#" className={`btn ${tab === 1 ? 'curr' : ''}`} data-type="recent" onClick={(e) => { e.preventDefault(); switchTab('Recent high scores', 1) }}>{i18nT('Recent high scores')}</a>
             {data.charts.length > 0 && (
-              <a href="#" className={`btn ${tab === 2 ? 'curr' : ''}`} data-type="chart" onClick={(e) => { e.preventDefault(); switchTab('Chart', 2) }}>Chart</a>
+              <a href="#" className={`btn ${tab === 2 ? 'curr' : ''}`} data-type="chart" onClick={(e) => { e.preventDefault(); switchTab('Chart', 2) }}>{i18nT('Chart')}</a>
             )}
-            <a href="#" className={`btn ${tab === 3 ? 'curr' : ''}`} data-type="wiki" onClick={(e) => { e.preventDefault(); switchTab('Profile', 3) }}>Profile</a>
+            <a href="#" className={`btn ${tab === 3 ? 'curr' : ''}`} data-type="wiki" onClick={(e) => { e.preventDefault(); switchTab('Profile', 3) }}>{i18nT('Profile')}</a>
           </div>
 
           <div className={`wiki g_rblock ${tab === 3 ? 'curr' : ''}`}>
@@ -375,7 +382,7 @@ export default function UserPage() {
                   </div>
                 )
               })}
-              <div className="more g_rblock"><a href={`${URLS.chart}?uid=${uid}`}>Show All</a></div>
+              <div className="more g_rblock"><a href={`${URLS.chart}?uid=${uid}`}>{i18nT('Show All')}</a></div>
             </div>
           )}
         </div>

@@ -4,6 +4,7 @@ import { useLoad, asArray, num, LoadingBlock, Pager, JustifyRow } from '../../li
 import { URLS } from '../../lib/urls'
 import { searchWiki, searchPlayer } from '../../network/api'
 import { fetchWikiSearch } from '../../network/legacy'
+import { t as i18nT } from '../../i18n'
 
 /* ------------------------------------------------------------------ *
  * wiki_search.html / wiki_404.html（base.html 两栏, akari.css）
@@ -75,11 +76,11 @@ export default function WikiSearch() {
         className="g_input"
         type="text"
         value={draft}
-        placeholder="Search"
+        placeholder={i18nT('Search')}
         onChange={(e) => setDraft(e.target.value)}
         onKeyDown={(e) => { if (e.key === 'Enter') onSearch() }}
       />
-      <a href="#" className="g_btn" onClick={(e) => { e.preventDefault(); onSearch() }}>Search</a>
+      <a href="#" className="g_btn" onClick={(e) => { e.preventDefault(); onSearch() }}>{i18nT('Search')}</a>
     </div>
   )
 
@@ -94,7 +95,7 @@ export default function WikiSearch() {
         <>
           <div className="g_title">Search:&nbsp;{keyword}</div>
           <div className="g_cont wiki_cate">
-            <p className="search">Try other searches:</p>
+            <p className="search">{i18nT('Try other searches:')}</p>
             {searchBox}
 
             {data.songs.length > 0 && (
@@ -111,7 +112,7 @@ export default function WikiSearch() {
 
             {data.charts.length > 0 && (
               <>
-                <h1>Chart</h1>
+                <h1>{i18nT('Chart')}</h1>
                 <JustifyRow>
                   {data.charts.map((item, i) => (
                     <a key={`c${i}`} className="textfix" href={URLS.chartPage(item.id ?? 0)}>{item.song?.title ?? ''} - {item.author?.username ?? ''}</a>
@@ -123,7 +124,7 @@ export default function WikiSearch() {
 
             {data.pages.length > 0 && (
               <>
-                <h1>Pages (20 limit)</h1>
+                <h1>{i18nT('Pages (20 limit)')}</h1>
                 <JustifyRow>
                   {data.pages.map((item, i) => (
                     <a key={`p${i}`} className="textfix" href={URLS.wiki(item.id ?? item.pid ?? 0)}>{item.title ?? ''}</a>
@@ -151,14 +152,14 @@ export default function WikiSearch() {
         </>
       ) : (
         <>
-          <div className="g_title">Page Not Found</div>
+          <div className="g_title">{i18nT('Page Not Found')}</div>
           <div className="g_cont p404">
-            <p className="search">Try other searches:</p>
+            <p className="search">{i18nT('Try other searches:')}</p>
             {searchBox}
             {keyword && (
               <>
                 The page you search is not found, try another keyword or{' '}
-                <a className="g_btn" href={`${URLS.create}?title=${encodeURIComponent(keyword)}`}>Create a new page</a>
+                <a className="g_btn" href={`${URLS.create}?title=${encodeURIComponent(keyword)}`}>{i18nT('Create a new page')}</a>
               </>
             )}
             {!keyword && <img src="/static/img/404.png" alt="404" />}

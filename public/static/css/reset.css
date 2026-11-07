@@ -1,0 +1,25 @@
+body,
+ul,
+ol,
+dl,
+p,
+h1,
+h2,
+h3,
+textarea {
+  margin: 0;
+  padding: 0;
+}
+ul,
+ol {
+  list-style: none;
+}
+* {
+  font-family: latoregular, Helvetica, Microsoft YaHei, sans-serif;
+}
+a {
+  text-decoration: none;
+}
+i {
+  font-style: normal;
+}

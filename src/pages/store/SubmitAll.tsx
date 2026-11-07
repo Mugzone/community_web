@@ -4,6 +4,7 @@ import { asArray, EmptyBlock, LoadingBlock, num, Pager, useLoad } from '../../li
 import { staticUrl, URLS } from '../../lib/urls'
 import { fetchSubmissionPage } from '../../network/legacy'
 import { coverUrl } from '../../utils/formatters'
+import { t as i18nT } from '../../i18n'
 
 type SubmissionRow = {
   chart?: Record<string, any>
@@ -54,9 +55,9 @@ export default function SubmitAll() {
       <div className="g_cont">
         <div id="option">
           <div>
-            <span className="g_round">Mode</span>
+            <span className="g_round">{i18nT('Mode')}</span>
             <div className="g_select sel_mode" data-key="mode">
-              <span className={mode === -1 ? 'curr' : ''} data-id="-1" onClick={() => pickMode(-1)}>All</span>
+              <span className={mode === -1 ? 'curr' : ''} data-id="-1" onClick={() => pickMode(-1)}>{i18nT('All')}</span>
               {[0, 3, 4, 5, 6].map((m) => (
                 <span key={m} className={mode === m ? 'curr' : ''} data-id={m} onClick={() => pickMode(m)}>
                   <img src={staticUrl(`img/mode/mode-${m}.png`)} alt="" />
@@ -65,10 +66,10 @@ export default function SubmitAll() {
             </div>
           </div>
           <div>
-            <span className="g_round">Status</span>
+            <span className="g_round">{i18nT('Status')}</span>
             <div className="g_select" data-key="status">
-              <span className={status === 0 ? 'curr' : ''} data-id="0" onClick={() => pickStatus(0)}>All</span>
-              <span className={status === 1 ? 'curr' : ''} data-id="1" onClick={() => pickStatus(1)}>Submitted</span>
+              <span className={status === 0 ? 'curr' : ''} data-id="0" onClick={() => pickStatus(0)}>{i18nT('All')}</span>
+              <span className={status === 1 ? 'curr' : ''} data-id="1" onClick={() => pickStatus(1)}>{i18nT('Submitted')}</span>
             </div>
           </div>
         </div>
@@ -102,7 +103,7 @@ export default function SubmitAll() {
           </div>
         ) : (
           <div className="g_memo" style={{ display: !loading && visible.length === 0 ? 'block' : 'none' }}>
-            <span className="g_round">No more charts</span>
+            <span className="g_round">{i18nT('No more charts')}</span>
           </div>
         )}
         <Pager page={page} total={data.total} onChange={(p) => { setPage(p) }} />

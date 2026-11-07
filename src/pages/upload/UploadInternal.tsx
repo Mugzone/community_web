@@ -2,6 +2,7 @@ import { useState, type ChangeEvent, type FormEvent } from 'react'
 import { Shell } from '../../components/Layout'
 import { showNotify, useLoad } from '../../lib/legacy'
 import { fetchUploadPage, fetchUploadSign } from '../../network/legacy'
+import { t as i18nT } from '../../i18n'
 
 const STATIC_HOST = 'http://v0.api.upyun.com/ma-static'
 
@@ -43,7 +44,7 @@ export default function UploadInternal() {
   return (
     <Shell
       variant="two-col"
-      title="Upload file"
+      title={i18nT('Upload file')}
       css={['upload.css']}
       sidebar={
         <div className="tool">
@@ -51,14 +52,14 @@ export default function UploadInternal() {
         </div>
       }
     >
-      <div className="g_title">Upload file</div>
+      <div className="g_title">{i18nT('Upload file')}</div>
       <div className="g_cont">
-        <h1><label htmlFor="">Name</label><span>{name}</span></h1>
+        <h1><label htmlFor="">{i18nT('Name')}</label><span>{name}</span></h1>
         <form action={STATIC_HOST} method="post" encType="multipart/form-data" onSubmit={(e) => void onSubmit(e)}>
-          <h1><label htmlFor="file">Select file</label><input type="file" name="file" onChange={onFile} /></h1>
+          <h1><label htmlFor="file">{i18nT('Select file')}</label><input type="file" name="file" onChange={onFile} /></h1>
           <input name="policy" type="hidden" value={policy} readOnly />
           <input name="signature" type="hidden" value={signature} readOnly />
-          <input type="submit" className="g_btn btn" value="Save" />
+          <input type="submit" className="g_btn btn" value={i18nT('Save')} />
         </form>
       </div>
     </Shell>

@@ -1,0 +1,64 @@
+.sub span {
+  margin-right: 8px;
+}
+.mode-list,
+.platform-list {
+  vertical-align: middle;
+  display: inline-block;
+}
+.mode-list img,
+.platform-list img {
+  width: 28px;
+  height: 28px;
+  display: inline-block;
+}
+#tool_skin {
+  position: absolute;
+  right: 12px;
+  top: 12px;
+}
+#tool_skin .btn {
+  cursor: pointer;
+}
+#btn_skin {
+  position: absolute;
+  right: 12px;
+  bottom: 0;
+}
+#btn_skin .g_btn {
+  width: 160px;
+  text-align: center;
+  display: inline-block;
+  margin-left: 4px;
+}
+.g_btn.disabled,
+.g_btn:hover.disabled {
+  color: #fafafa;
+  background: #666;
+  border-color: #666;
+}
+#preview {
+  overflow: hidden;
+}
+#preview .img {
+  width: 150px;
+  height: 150px;
+  background-size: cover;
+  display: block;
+  float: left;
+  margin-right: 16px;
+  margin-bottom: 16px;
+  background-position: center;
+}
+#preview_block h2 {
+  font-size: 26px;
+  margin: 26px 0 26px;
+  padding-left: 10px;
+  border-left: 4px solid #4190e7;
+  overflow: hidden;
+  font-weight: normal;
+  text-align: left;
+}
+#content .lang2 {
+  display: none;
+}

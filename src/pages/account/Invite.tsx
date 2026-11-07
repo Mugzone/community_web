@@ -2,6 +2,7 @@ import { useState, type ChangeEvent } from 'react'
 import { Shell } from '../../components/Layout'
 import { asArray, showNotify, useLoad } from '../../lib/legacy'
 import { activateInvite, fetchInviteInfo } from '../../network/legacy'
+import { t as i18nT } from '../../i18n'
 
 /* profile/invite.html：extended base_width.html，交互复用 module/account init.js 的 J_code 分支 */
 type Rec = Record<string, any>
@@ -12,7 +13,7 @@ const s = (v: unknown, fb = ''): string => (v === undefined || v === null ? fb :
 
 /* .g_tip 的 3 个 span，顺序即 util.showTip(n) 下标 */
 const TIPS: { text: string; err: boolean }[] = [
-  { text: 'Submitting...', err: false },
+  { text: i18nT('Submitting...'), err: false },
   { text: 'Code been used', err: true },
   { text: 'Code does not exist!', err: true },
 ]
@@ -48,7 +49,7 @@ export default function Invite() {
       return
     }
     setTip(0)
-    showNotify('Submitting...', 'succ')
+    showNotify(i18nT('Submitting...'), 'succ')
     setBusy(true)
     try {
       const res = await activateInvite(c)

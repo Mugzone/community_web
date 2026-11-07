@@ -4,21 +4,22 @@ import { Shell, DefaultSidebar } from '../../components/Layout'
 import { useLoad, showNotify } from '../../lib/legacy'
 import { URLS } from '../../lib/urls'
 import { fetchWikiTmplPage, saveWikiTemplate, fetchWikiPreview } from '../../network/legacy'
+import { t as i18nT } from '../../i18n'
 
 type Model = { id: number | string; key: string; name: string; raw: string }
 const FALLBACK: Model = { id: '', key: '', name: '', raw: '' }
 
 type Tool = { type: string; title: string; cls: string }
 const TOOLS: Tool[] = [
-  { type: 'bold', title: 'Bold', cls: 'tool-B' },
-  { type: 'italic', title: 'Italic', cls: 'tool-I' },
-  { type: 'h1', title: '1st level Heading', cls: 'tool-H1' },
-  { type: 'h2', title: '2nd level Heading', cls: 'tool-H2' },
-  { type: 'h3', title: '3rd level Heading', cls: 'tool-H3' },
-  { type: 'list', title: 'List', cls: 'tool-list' },
-  { type: 'img', title: 'Image', cls: 'tool-img' },
-  { type: 'link', title: 'Link', cls: 'tool-link' },
-  { type: 'table', title: 'Table', cls: 'tool-table' },
+  { type: 'bold', title: i18nT('Bold'), cls: 'tool-B' },
+  { type: 'italic', title: i18nT('Italic'), cls: 'tool-I' },
+  { type: 'h1', title: i18nT('1st level Heading'), cls: 'tool-H1' },
+  { type: 'h2', title: i18nT('2nd level Heading'), cls: 'tool-H2' },
+  { type: 'h3', title: i18nT('3rd level Heading'), cls: 'tool-H3' },
+  { type: 'list', title: i18nT('List'), cls: 'tool-list' },
+  { type: 'img', title: i18nT('Image'), cls: 'tool-img' },
+  { type: 'link', title: i18nT('Link'), cls: 'tool-link' },
+  { type: 'table', title: i18nT('Table'), cls: 'tool-table' },
 ]
 
 /** /page/tmpl/edit —— 老站 wiki/wiki_tmpl_edit.html（模板编辑 + 预览） */
@@ -55,7 +56,7 @@ export default function TmplEdit() {
       await saveWikiTemplate(tmplKey, content.trim())
       window.location.href = `/page/tmpl/${data.id || tid}`
     } catch {
-      showNotify('Failed to save, please try again later.', 'err')
+      showNotify(i18nT('Failed to save, please try again later.'), 'err')
     }
   }
 
@@ -94,14 +95,14 @@ export default function TmplEdit() {
       sidebar={
         <>
           <DefaultSidebar />
-          <h4>Help</h4>
-          <a href={URLS.wiki(2)}>Markup Tutorial</a>
+          <h4>{i18nT('Help')}</h4>
+          <a href={URLS.wiki(2)}>{i18nT('Markup Tutorial')}</a>
         </>
       }
     >
       <div className="g_title">Editing:{'\u00a0'}{data.name || tid}</div>
       <div className="g_cont">
-        <h1 className="msg">Your are editing this page, sidebar has some articles for you to learn our markup language and our edit principles.</h1>
+        <h1 className="msg">{i18nT('Your are editing this page, sidebar has some articles for you to learn our markup language and our edit principles.')}</h1>
         <div className="g_edittool">
           {TOOLS.map((t) => (
             <a key={t.type} href="#" data-type={t.type} onClick={(e) => { e.preventDefault(); perform(t.type) }}>
@@ -123,17 +124,17 @@ export default function TmplEdit() {
           />
         </div>
         <div className="button">
-          <div className="g_btn btn" id="J_save" onClick={() => void save()}>Save</div>
-          <a href="#" id="J_pre" onClick={(e) => { e.preventDefault(); void preview() }}>Preview</a>
-          <a href={`/page/tmpl/${data.id || tid}`}>Cancel</a>
+          <div className="g_btn btn" id="J_save" onClick={() => void save()}>{i18nT('Save')}</div>
+          <a href="#" id="J_pre" onClick={(e) => { e.preventDefault(); void preview() }}>{i18nT('Preview')}</a>
+          <a href={`/page/tmpl/${data.id || tid}`}>{i18nT('Cancel')}</a>
         </div>
         <div className="g_tip">
-          <span>Saving...</span>
-          <span className="err">Failed to save, please try again later.</span>
-          <span className="err">You are not permitted to edit this page.</span>
+          <span>{i18nT('Saving...')}</span>
+          <span className="err">{i18nT('Failed to save, please try again later.')}</span>
+          <span className="err">{i18nT('You are not permitted to edit this page.')}</span>
         </div>
         <div className="preview" id="J_preview" style={{ display: previewHtml ? 'block' : 'none' }}>
-          <h1 className="msg">Preview</h1>
+          <h1 className="msg">{i18nT('Preview')}</h1>
           <div className="g_wiki" dangerouslySetInnerHTML={{ __html: previewHtml }}></div>
         </div>
       </div>

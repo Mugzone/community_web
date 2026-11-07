@@ -4,6 +4,7 @@ import { Shell, DefaultSidebar } from '../../components/Layout'
 import { useLoad, asArray, num, LoadingBlock, EmptyBlock, JustifyRow } from '../../lib/legacy'
 import { URLS } from '../../lib/urls'
 import { fetchSpecialList } from '../../network/legacy'
+import { t as i18nT } from '../../i18n'
 
 type SpecialItem = { id: number | string; name?: string }
 type Model = { items: SpecialItem[]; total: number }
@@ -41,11 +42,11 @@ export default function SpecialList() {
   return (
     <Shell
       variant="two-col"
-      title={isTmpl ? 'Templates' : 'Category'}
+      title={isTmpl ? 'Templates' : i18nT('Category')}
       css={['akari.css']}
       sidebar={<DefaultSidebar />}
     >
-      <div className="g_title">{isTmpl ? 'Template' : 'Category'}</div>
+      <div className="g_title">{isTmpl ? i18nT('Template') : i18nT('Category')}</div>
       <div className="g_cont">
         <div className="wiki_cate">
           <JustifyRow>
@@ -66,13 +67,13 @@ export default function SpecialList() {
         {total > 1 && (
           <div className="g_more">
             {page > 1 ? (
-              <a href={`${base}?page=${page - 1}`} className="g_round" data-type="back" onClick={(e) => { e.preventDefault(); goPage(page - 1) }}>Prev</a>
+              <a href={`${base}?page=${page - 1}`} className="g_round" data-type="back" onClick={(e) => { e.preventDefault(); goPage(page - 1) }}>{i18nT('Prev')}</a>
             ) : (
               <a className="fake" href="#"></a>
             )}
             <span>{page}/{total}</span>
             {page < total ? (
-              <a href={`${base}?page=${page + 1}`} className="g_round" data-type="back" onClick={(e) => { e.preventDefault(); goPage(page + 1) }}>Next</a>
+              <a href={`${base}?page=${page + 1}`} className="g_round" data-type="back" onClick={(e) => { e.preventDefault(); goPage(page + 1) }}>{i18nT('Next')}</a>
             ) : (
               <a className="fake" href="#"></a>
             )}

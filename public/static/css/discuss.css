@@ -1,0 +1,104 @@
+/*
+  1. 主背景 8d8d8d / 141 141 141
+2. 主字体 d5b9b9 / 255 221 221
+3. 链接字体 + 高亮效果 ff9d9d / 255 157 157
+4. 常规按钮 cc6666 / 204 102 102
+5. 主背景上用来加强的背景色块 535353 / 83 83 83
+6. 加强色块上用来更加加强的色块 474747 / 71 71 71
+7. 边框（现在使用了主题色）ef6666 / 239 102 102
+边框内线(二级?) 726464 / 114 100 100
+8.这东西，叫标题栏之类 ef6666 / 239 102 102
+*/
+.clear {
+  clear: both;
+  display: block;
+  height: 0;
+}
+.justfix {
+  display: inline-block;
+  width: 100%;
+  height: 0;
+  overflow: hidden;
+}
+.justfyHold {
+  visibility: hidden;
+  height: 0;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+}
+.textfix {
+  text-overflow: ellipsis;
+  overflow-x: hidden;
+  white-space: nowrap;
+}
+#content {
+  text-align: left;
+}
+#content .g_cont {
+  padding: 10px 0 0;
+}
+#content .g_actbar {
+  padding-left: 10px;
+}
+#content .editor h1 {
+  font-size: 16px;
+  margin: 0 0 10px 10px;
+}
+#content .editor textarea {
+  width: 100%;
+  height: 200px;
+  line-height: 16px;
+  border: none;
+  border-top: 1px solid #4190e7;
+  border-bottom: 1px solid #4190e7;
+  font-size: 14px;
+  outline: 0;
+}
+#content .editor .button {
+  text-align: left;
+  margin: 10px 0 0 10px;
+}
+#content .editor .button div,
+#content .editor .button a {
+  display: inline-block;
+  margin-left: 10px;
+}
+#content .editor .button .btn {
+  text-align: center;
+  width: 227.5px;
+  margin-bottom: 0;
+}
+#content .editor .button a {
+  line-height: 32px;
+  vertical-align: top;
+}
+#content .editor .button#J_opr_new {
+  text-align: center;
+  margin-left: 0;
+}
+#content .editor .g_tip {
+  margin-left: 10px;
+}
+#content .preview {
+  display: none;
+}
+#content .preview h1 {
+  margin-left: 10px;
+  font-size: 16px;
+  font-weight: bold;
+  color: #4190e7;
+}
+#content .preview .g_wiki {
+  padding: 10px;
+}
+#g_talk {
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+#g_talk .g_btn {
+  font-weight: bold;
+  text-align: center;
+  display: inline-block;
+  margin-right: 10px;
+}

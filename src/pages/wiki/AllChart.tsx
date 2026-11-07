@@ -1,8 +1,10 @@
 import { useState, type KeyboardEvent } from 'react'
-import { Shell, DefaultSidebar } from '../../components/Layout'
+import { Shell } from '../../components/Layout'
 import { useLoad, asArray, num } from '../../lib/legacy'
 import { URLS, staticUrl } from '../../lib/urls'
 import { fetchChartFilter } from '../../network/legacy'
+import { t as i18nT } from '../../i18n'
+import { coverUrl } from '../../utils/formatters'
 
 type SelectOption = { id: number; label?: string }
 type ChartItem = { id: number | string; cover?: string; title?: string; version?: string; mode?: number; lastedit?: number }
@@ -10,11 +12,11 @@ type Model = { items: ChartItem[]; total: number }
 const FALLBACK: Model = { items: [], total: 1 }
 
 const MODE_OPTIONS: SelectOption[] = [
-  { id: -1, label: 'All' },
+  { id: -1, label: i18nT('All') },
   { id: 0 }, { id: 3 }, { id: 4 }, { id: 5 }, { id: 6 }, { id: 7 }, { id: 8 }, { id: 9 },
 ]
 const STATUS_OPTIONS: SelectOption[] = [
-  { id: 3, label: 'All' }, { id: 2, label: 'Stable' }, { id: 1, label: 'Beta' }, { id: 0, label: 'Alpha' },
+  { id: 3, label: i18nT('All') }, { id: 2, label: 'Stable' }, { id: 1, label: 'Beta' }, { id: 0, label: 'Alpha' },
 ]
 const FREE_OPTIONS: SelectOption[] = [
   { id: 0, label: 'Exclude' }, { id: 1, label: 'Include' },
@@ -102,22 +104,22 @@ export default function AllChart() {
     </div>
   )
 
+  /* all_chart.html extends base.html，sidebar block 为空，老站此页无侧栏内容 */
   return (
     <Shell
       variant="two-col"
       title="Charts"
       css={['chartlist.css']}
-      sidebar={<DefaultSidebar />}
     >
-      <div className="g_title">Chart</div>
+      <div className="g_title">{i18nT('Chart')}</div>
       <div className="g_cont">
         <div id="option">
           <div>
-            <span className="g_round">Mode</span>
+            <span className="g_round">{i18nT('Mode')}</span>
             {renderSelect('mode', MODE_OPTIONS, mode, 'sel_mode', true)}
           </div>
           <div>
-            <span className="g_round">Status</span>
+            <span className="g_round">{i18nT('Status')}</span>
             {renderSelect('status', STATUS_OPTIONS, status)}
           </div>
           <div>
@@ -125,7 +127,7 @@ export default function AllChart() {
             {renderSelect('free', FREE_OPTIONS, free)}
           </div>
           <div>
-            <span className="g_round">Creator</span>
+            <span className="g_round">{i18nT('Creator')}</span>
             <input
               id="cl_creator"
               className="g_round"
@@ -136,7 +138,7 @@ export default function AllChart() {
             />
           </div>
           <div>
-            <span className="g_round">Keywords</span>
+            <span className="g_round">{i18nT('Keywords')}</span>
             <input
               id="cl_key"
               className="g_round"
@@ -145,7 +147,7 @@ export default function AllChart() {
               onChange={(e) => setKeywordInput(e.target.value)}
               onKeyDown={onEnter}
             />
-            <a id="cl_search" className="g_btn" href="#" onClick={(e) => { e.preventDefault(); applySearch() }}>Search</a>
+            <a id="cl_search" className="g_btn" href="#" onClick={(e) => { e.preventDefault(); applySearch() }}>{i18nT('Search')}</a>
           </div>
         </div>
         <div id="maps">
@@ -153,7 +155,7 @@ export default function AllChart() {
             <div className="g_map" key={it.id}>
               <a className="link" href={URLS.chartPage(it.id)} target="_blank">
                 {it.cover
-                  ? <div className="cover g_cover" style={{ backgroundImage: `url(${it.cover})` }}></div>
+                  ? <div className="cover g_cover" style={{ backgroundImage: `url(${coverUrl(it.cover)})` }}></div>
                   : <div className="cover"></div>}
                 <img className="mode" src={staticUrl(`img/mode/mode-${it.mode}.png`)} alt="" />
                 <div className="meta">
@@ -165,7 +167,11 @@ export default function AllChart() {
           ))}
           <span className="justfix"></span>
         </div>
-        <div className="g_more g_pager" style={{ display: !loading && items.length > 0 ? 'block' : 'none' }}>
+        {/* 老站 self.pager.show() 移除内联 display，交回 .g_pager 的 inline-block；写死 block 会拉成一整行 */}
+        <div
+          className="g_more g_pager"
+          style={!loading && items.length > 0 ? undefined : { display: 'none' }}
+        >
           <a href="#" className="prev" onClick={(e) => { e.preventDefault(); toPage(page - 1) }}>&lt;</a>
           <span onClick={() => {
             const raw = window.prompt('Select page', String(page + 1))
@@ -176,7 +182,7 @@ export default function AllChart() {
           <a href="#" className="next" onClick={(e) => { e.preventDefault(); toPage(page + 1) }}>&gt;</a>
         </div>
         <div className="g_memo" style={{ display: !loading && items.length === 0 && page === 0 ? 'block' : 'none' }}>
-          <span className="g_round">No more charts</span>
+          <span className="g_round">{i18nT('No more charts')}</span>
         </div>
       </div>
     </Shell>

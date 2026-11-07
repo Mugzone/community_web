@@ -5,6 +5,7 @@ import { URLS } from '../../lib/urls'
 import { fetchWiki, saveWiki, getSession } from '../../network/api'
 import { fetchWikiPreview } from '../../network/legacy'
 import { EditTool, wikiToHtml } from './WikiPage'
+import { t as i18nT } from '../../i18n'
 
 /* ------------------------------------------------------------------ *
  * wiki/wiki_page_edit.html（预览/保存/工具条）+ module/wiki_edit
@@ -64,12 +65,12 @@ export default function WikiEdit() {
   const onSave = async (): Promise<void> => {
     if (saving) return
     setSaving(true)
-    showNotify('Saving...', 'succ')
+    showNotify(i18nT('Saving...'), 'succ')
     try {
       await saveWiki({ wiki: content, pid, uid, lang: 0 })
       window.history.back()
     } catch {
-      showNotify('Failed to save, please try again later.', 'err')
+      showNotify(i18nT('Failed to save, please try again later.'), 'err')
     } finally {
       setSaving(false)
     }
@@ -82,25 +83,25 @@ export default function WikiEdit() {
   return (
     <Shell
       variant="two-col"
-      title="Editing"
+      title={i18nT('Editing')}
       css={['wiki_edit.css', 'tmpl.css']}
       sidebar={
         <>
           <DefaultSidebar />
-          <h4>Help</h4>
-          <a href={URLS.wiki(2)}>Markup Tutorial</a>
-          <a href={URLS.wiki(4)}>Category Guide</a>
+          <h4>{i18nT('Help')}</h4>
+          <a href={URLS.wiki(2)}>{i18nT('Markup Tutorial')}</a>
+          <a href={URLS.wiki(4)}>{i18nT('Category Guide')}</a>
         </>
       }
     >
-      <div className="g_title">Editing</div>
+      <div className="g_title">{i18nT('Editing')}</div>
       <div className="g_cont">
-        <h1 className="msg">Your are editing this page, sidebar has some articles for you to learn our markup language and our edit principles.</h1>
+        <h1 className="msg">{i18nT('Your are editing this page, sidebar has some articles for you to learn our markup language and our edit principles.')}</h1>
 
         {/* module/wiki_edit —— 编辑/预览切换 */}
         <div className="button">
-          <a href="#" className="g_btn btn" data-type="edit" onClick={(e) => { e.preventDefault(); setMode('edit') }}>Edit</a>
-          <a href="#" className="g_btn btn" data-type="preview" onClick={(e) => { e.preventDefault(); void onPreview() }}>Preview</a>
+          <a href="#" className="g_btn btn" data-type="edit" onClick={(e) => { e.preventDefault(); setMode('edit') }}>{i18nT('Edit')}</a>
+          <a href="#" className="g_btn btn" data-type="preview" onClick={(e) => { e.preventDefault(); void onPreview() }}>{i18nT('Preview')}</a>
         </div>
 
         <div style={{ display: mode === 'edit' ? 'block' : 'none' }}>
@@ -119,18 +120,18 @@ export default function WikiEdit() {
         </div>
 
         <div className="button">
-          <div className="g_btn btn" data-type="save" onClick={() => { void onSave() }}>Save</div>
-          <a href="#" className="btn" data-type="cancel" onClick={(e) => { e.preventDefault(); onCancel() }}>Cancel</a>
+          <div className="g_btn btn" data-type="save" onClick={() => { void onSave() }}>{i18nT('Save')}</div>
+          <a href="#" className="btn" data-type="cancel" onClick={(e) => { e.preventDefault(); onCancel() }}>{i18nT('Cancel')}</a>
         </div>
         <div className="g_tip">
-          <span>Saving...</span>
-          <span className="err">Failed to save, please try again later.</span>
-          <span className="err">You are not permitted to edit this page.</span>
-          <span className="err">Editing is available for active account</span>
+          <span>{i18nT('Saving...')}</span>
+          <span className="err">{i18nT('Failed to save, please try again later.')}</span>
+          <span className="err">{i18nT('You are not permitted to edit this page.')}</span>
+          <span className="err">{i18nT('Editing is available for active account')}</span>
         </div>
 
         <div className="preview" id="J_preview" style={{ display: mode === 'preview' ? 'block' : 'none' }}>
-          <h1 className="msg">Preview</h1>
+          <h1 className="msg">{i18nT('Preview')}</h1>
           <div className="g_wiki" dangerouslySetInnerHTML={{ __html: previewHtml }}></div>
         </div>
 

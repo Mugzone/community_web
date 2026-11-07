@@ -3,6 +3,7 @@ import { Shell } from '../../components/Layout'
 import { useLoad, asArray, LoadingBlock, EmptyBlock, JustifyRow } from '../../lib/legacy'
 import { URLS } from '../../lib/urls'
 import { fetchQuestList } from '../../network/legacy'
+import { t as i18nT } from '../../i18n'
 
 type QuestItem = {
   id: number | string
@@ -38,15 +39,15 @@ export default function AllQuest() {
   }
 
   return (
-    <Shell variant="wide" title="Quest" css={['akari.css']}>
+    <Shell variant="wide" title={i18nT('Quest')} css={['akari.css']}>
       <div className="quest_tabs">
-        <a className="g_btn g_round curr" href={URLS.allQuest}>Quest</a>
-        <a className="g_btn g_round" href={URLS.allDaily}>Daily</a>
+        <a className="g_btn g_round curr" href={URLS.allQuest}>{i18nT('Quest')}</a>
+        <a className="g_btn g_round" href={URLS.allDaily}>{i18nT('Daily')}</a>
       </div>
 
       <div className="g_cont g_round all_quest">
-        <p>quest_01</p>
-        <p>quest_02</p>
+        <p>{i18nT('quest_01')}</p>
+        <p>{i18nT('quest_02')}</p>
         <div className="items">
           <JustifyRow>
             {items.map((it) => (
@@ -58,7 +59,7 @@ export default function AllQuest() {
                 <p>{it.require}</p>
                 <div>
                   {it.status === 2 ? (
-                    <div className="status comp g_round"><span>Complete!</span></div>
+                    <div className="status comp g_round"><span>{i18nT('Complete!')}</span></div>
                   ) : (
                     <div className="status do g_round" onClick={() => toggleStatus(it.id)}>
                       <div className="bar" style={{ width: `${it.percent ?? 0}%` }}></div>

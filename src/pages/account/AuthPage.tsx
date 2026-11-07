@@ -11,6 +11,7 @@ import {
   resetPassword,
 } from '../../network/legacy'
 import { md5 } from '../../utils/md5'
+import { t as i18nT } from '../../i18n'
 
 /* reg.html 是「多模式单页」：按 URL 切换 5 套表单，全部保留。 */
 type Mode = 'login' | 'reg' | 'forget' | 'reset_psw' | 'change_email'
@@ -20,37 +21,37 @@ type TipDef = { text: string; err: boolean }
 /* 逐条对应 reg.html 里 .g_tip 下的 span（顺序即 showTip 的下标）。 */
 const TIPS: Record<Mode, TipDef[]> = {
   login: [
-    { text: 'Invalid Email or Password', err: true },
-    { text: 'Submitting...', err: false },
+    { text: i18nT('Invalid Email or Password'), err: true },
+    { text: i18nT('Submitting...'), err: false },
   ],
   reg: [
     { text: 'reg_1', err: true },
     { text: 'reg_2', err: true },
-    { text: 'Invalid email', err: true },
+    { text: i18nT('Invalid email'), err: true },
     { text: 'reg_3', err: true },
-    { text: 'Password missmatching', err: true },
+    { text: i18nT('Password missmatching'), err: true },
     { text: 'reg_4', err: true },
     { text: 'reg_5', err: true },
-    { text: 'Submitting...', err: false },
+    { text: i18nT('Submitting...'), err: false },
   ],
   forget: [
-    { text: 'Invalid email', err: true },
-    { text: 'Please check your email to continue', err: false },
-    { text: 'Submitting...', err: false },
-    { text: 'Operation failed', err: true },
-    { text: 'Email address does not exist!', err: true },
+    { text: i18nT('Invalid email'), err: true },
+    { text: i18nT('Please check your email to continue'), err: false },
+    { text: i18nT('Submitting...'), err: false },
+    { text: i18nT('Operation failed'), err: true },
+    { text: i18nT('Email address does not exist!'), err: true },
   ],
   reset_psw: [
     { text: 'reg_3', err: true },
-    { text: 'Password missmatching', err: true },
-    { text: 'Submitting...', err: false },
-    { text: 'Please login with your new password', err: false },
-    { text: 'Operation failed', err: true },
+    { text: i18nT('Password missmatching'), err: true },
+    { text: i18nT('Submitting...'), err: false },
+    { text: i18nT('Please login with your new password'), err: false },
+    { text: i18nT('Operation failed'), err: true },
   ],
   change_email: [
-    { text: 'Invalid email', err: true },
-    { text: 'Please check your new email for activation information', err: false },
-    { text: 'Submitting...', err: false },
+    { text: i18nT('Invalid email'), err: true },
+    { text: i18nT('Please check your new email for activation information'), err: false },
+    { text: i18nT('Submitting...'), err: false },
   ],
 }
 
@@ -160,7 +161,7 @@ export default function AuthPage() {
   const submit = async () => {
     if (busy) return
     setTip(SUBMIT_TIP[mode])
-    showNotify('Submitting...', 'succ')
+    showNotify(i18nT('Submitting...'), 'succ')
     const ret = validate(mode, form)
     if (typeof ret === 'number') {
       const idx = VALID_TIP[mode][ret] ?? ERROR_TIP[mode]
@@ -190,7 +191,7 @@ export default function AuthPage() {
         if (mode === 'reg' && REG_ERR[code] !== undefined) idx = REG_ERR[code]
         else if (mode === 'forget' && code === -1) idx = 4
         setTip(idx)
-        showNotify(res?.message ?? TIPS[mode][idx]?.text ?? 'Operation failed', 'err')
+        showNotify(res?.message ?? TIPS[mode][idx]?.text ?? i18nT('Operation failed'), 'err')
         return
       }
 
@@ -209,7 +210,7 @@ export default function AuthPage() {
       }
       if (mode === 'reg') {
         setTip(SUCCESS_TIP[mode])
-        showNotify('Submitting...', 'succ')
+        showNotify(i18nT('Submitting...'), 'succ')
         navigate(URLS.index)
         return
       }
@@ -221,7 +222,7 @@ export default function AuthPage() {
     } catch {
       const idx = ERROR_TIP[mode]
       setTip(idx)
-      showNotify(TIPS[mode][idx]?.text ?? 'Operation failed', 'err')
+      showNotify(TIPS[mode][idx]?.text ?? i18nT('Operation failed'), 'err')
     } finally {
       setBusy(false)
     }
@@ -232,12 +233,12 @@ export default function AuthPage() {
     case 'login':
       content = (
         <>
-          <div className="g_title">Sign in</div>
+          <div className="g_title">{i18nT('Sign in')}</div>
           <div className="g_cont">
             <h1><label htmlFor="s_email">Email</label><input type="text" name="email" id="s_email" value={form.email ?? ''} onChange={onField} onKeyDown={onEnter} /> </h1>
-            <h1><label htmlFor="s_psw">Password</label><input type="password" name="psw" id="s_psw" value={form.psw ?? ''} onChange={onField} onKeyDown={onEnter} /> </h1>
-            <h2><a href={URLS.forget}>Forgot Password?</a></h2>
-            <div className="g_btn btn" id="J_signin" onClick={() => void submit()}>Sign in</div>
+            <h1><label htmlFor="s_psw">{i18nT('Password')}</label><input type="password" name="psw" id="s_psw" value={form.psw ?? ''} onChange={onField} onKeyDown={onEnter} /> </h1>
+            <h2><a href={URLS.forget}>{i18nT('Forgot Password?')}</a></h2>
+            <div className="g_btn btn" id="J_signin" onClick={() => void submit()}>{i18nT('Sign in')}</div>
             <Tips mode={mode} tip={tip} />
           </div>
         </>
@@ -246,14 +247,14 @@ export default function AuthPage() {
     case 'reg':
       content = (
         <>
-          <div className="g_title">Register a New Account</div>
+          <div className="g_title">{i18nT('Register a New Account')}</div>
           <div className="g_cont">
-            <h1><label htmlFor="name">Nickname</label><input type="text" name="name" id="name" value={form.name ?? ''} onChange={onField} onKeyDown={onEnter} /> </h1>
+            <h1><label htmlFor="name">{i18nT('Nickname')}</label><input type="text" name="name" id="name" value={form.name ?? ''} onChange={onField} onKeyDown={onEnter} /> </h1>
             <h1><label htmlFor="email">Email</label><input type="text" name="email" id="email" value={form.email ?? ''} onChange={onField} onKeyDown={onEnter} /> </h1>
-            <h1><label htmlFor="psw">Password</label><input type="password" name="psw" id="psw" value={form.psw ?? ''} onChange={onField} onKeyDown={onEnter} /> </h1>
-            <h1><label htmlFor="repsw">Confirm</label><input type="password" name="repsw" id="repsw" value={form.repsw ?? ''} onChange={onField} onKeyDown={onEnter} /> </h1>
-            <h1><label></label>reg_notice</h1>
-            <div className="g_btn btn" id="J_new" onClick={() => void submit()}>START::DASH</div>
+            <h1><label htmlFor="psw">{i18nT('Password')}</label><input type="password" name="psw" id="psw" value={form.psw ?? ''} onChange={onField} onKeyDown={onEnter} /> </h1>
+            <h1><label htmlFor="repsw">{i18nT('Confirm')}</label><input type="password" name="repsw" id="repsw" value={form.repsw ?? ''} onChange={onField} onKeyDown={onEnter} /> </h1>
+            <h1><label></label>{i18nT('reg_notice')}</h1>
+            <div className="g_btn btn" id="J_new" onClick={() => void submit()}>{i18nT('START::DASH')}</div>
             <Tips mode={mode} tip={tip} />
           </div>
         </>
@@ -262,10 +263,10 @@ export default function AuthPage() {
     case 'forget':
       content = (
         <>
-          <div className="g_title">Forget password</div>
+          <div className="g_title">{i18nT('Forget password')}</div>
           <div className="g_cont">
             <h1><label htmlFor="email">Email</label><input type="text" name="email" id="email" value={form.email ?? ''} onChange={onField} onKeyDown={onEnter} /> </h1>
-            <div className="g_btn btn" id="J_forget" onClick={() => void submit()}>Retrieve Password</div>
+            <div className="g_btn btn" id="J_forget" onClick={() => void submit()}>{i18nT('Retrieve Password')}</div>
             <Tips mode={mode} tip={tip} />
           </div>
         </>
@@ -274,11 +275,11 @@ export default function AuthPage() {
     case 'reset_psw':
       content = (
         <>
-          <div className="g_title">Reset password</div>
+          <div className="g_title">{i18nT('Reset password')}</div>
           <div className="g_cont">
-            <h1><label htmlFor="psw">Password</label><input type="password" name="psw" id="psw" value={form.psw ?? ''} onChange={onField} onKeyDown={onEnter} /> </h1>
-            <h1><label htmlFor="repsw">Confirm</label><input type="password" name="repsw" id="repsw" value={form.repsw ?? ''} onChange={onField} onKeyDown={onEnter} /> </h1>
-            <div className="g_btn btn" id="J_reset" onClick={() => void submit()}>Reset Password</div>
+            <h1><label htmlFor="psw">{i18nT('Password')}</label><input type="password" name="psw" id="psw" value={form.psw ?? ''} onChange={onField} onKeyDown={onEnter} /> </h1>
+            <h1><label htmlFor="repsw">{i18nT('Confirm')}</label><input type="password" name="repsw" id="repsw" value={form.repsw ?? ''} onChange={onField} onKeyDown={onEnter} /> </h1>
+            <div className="g_btn btn" id="J_reset" onClick={() => void submit()}>{i18nT('Reset Password')}</div>
             <Tips mode={mode} tip={tip} />
           </div>
         </>
@@ -287,10 +288,10 @@ export default function AuthPage() {
     case 'change_email':
       content = (
         <>
-          <div className="g_title">Change email</div>
+          <div className="g_title">{i18nT('Change email')}</div>
           <div className="g_cont">
             <h1><label htmlFor="email">New email</label><input type="text" name="email" id="email" value={form.email ?? ''} onChange={onField} onKeyDown={onEnter} /> </h1>
-            <div className="g_btn btn" id="J_changeEmail" onClick={() => void submit()}>Submit</div>
+            <div className="g_btn btn" id="J_changeEmail" onClick={() => void submit()}>{i18nT('Submit')}</div>
             <Tips mode={mode} tip={tip} />
           </div>
         </>

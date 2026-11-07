@@ -4,7 +4,8 @@ import { Shell } from '../../components/Layout'
 import { asArray, num, Pager, showNotify, useLoad, floatFormat } from '../../lib/legacy'
 import { URLS, staticUrl } from '../../lib/urls'
 import { fetchScorePage, operateScore } from '../../network/legacy'
-import { avatarUrl, modeLabel } from '../../utils/formatters'
+import { avatarUrl, coverUrl, modeLabel } from '../../utils/formatters'
+import { t as i18nT } from '../../i18n'
 
 /* score.html + score/chart.html + score/items.html：extended base.html（两栏 + Platforms 侧栏），交互 module/score */
 type Rec = Record<string, any>
@@ -23,7 +24,7 @@ const fmt2 = (v: unknown): string => floatFormat(v, 2)
 const coverSrc = (v: unknown): string => {
   const raw = s(v)
   if (!raw) return staticUrl('img/cover.png')
-  return raw.startsWith('http') || raw.startsWith('/') ? raw : `//cni.mugzone.net/${raw}`
+  return coverUrl(raw)
 }
 
 export default function ScorePage() {
@@ -97,7 +98,7 @@ export default function ScorePage() {
 
   const sidebar = (
     <>
-      <h4>Platforms</h4>
+      <h4>{i18nT('Platforms')}</h4>
       <div className="option">
         <a href={`${URLS.score(chartId)}?from=0`} onClick={(e) => { e.preventDefault(); changeFrom(0) }}>Windows &amp; Mac</a>
         <a href={`${URLS.score(chartId)}?from=2`} onClick={(e) => { e.preventDefault(); changeFrom(2) }}>iOS &amp; Android</a>
@@ -106,28 +107,28 @@ export default function ScorePage() {
   )
 
   return (
-    <Shell variant="two-col" title="Ranking" css={['score.css']} contCls="" sidebar={sidebar}>
+    <Shell variant="two-col" title={i18nT('Ranking')} css={['score.css']} contCls="" sidebar={sidebar}>
       <div className="g_title">Ranking:&nbsp;{s(song.title)} - {s(chart.version)}</div>
       <div className="g_cont" data-id={chartId}>
         <div className="g_actbar">
-          {data.backId && <a href={URLS.chartPage(data.backId)} className="g_btn">Back to chart</a>}
+          {data.backId && <a href={URLS.chartPage(data.backId)} className="g_btn">{i18nT('Back to chart')}</a>}
           {data.isAdmin && (
-            <a href="#" className="g_btn btn" data-type="del" onClick={(e) => { e.preventDefault(); void clearAll() }}>Clear All Records</a>
+            <a href="#" className="g_btn btn" data-type="del" onClick={(e) => { e.preventDefault(); void clearAll() }}>{i18nT('Clear All Records')}</a>
           )}
-          <a href="#" className="g_btn btn" data-type="delmy" onClick={(e) => { e.preventDefault(); void deleteMy() }}>Remove score</a>
+          <a href="#" className="g_btn btn" data-type="delmy" onClick={(e) => { e.preventDefault(); void deleteMy() }}>{i18nT('Remove score')}</a>
         </div>
 
         {/* score/chart.html */}
         <div className="g_temp temp song">
           <div className="bg">
-            <h1>Chart information</h1>
+            <h1>{i18nT('Chart information')}</h1>
             {song.cover && <div className="left g_cover" style={{ backgroundImage: `url(${coverSrc(song.cover_url ?? song.cover)})` }}></div>}
             <div className="right">
-              <h2><label>Title</label><span className="textfix">{s(song.title)}</span></h2>
-              <h2><label>Artist</label><span className="textfix">{s(song.artist)}</span></h2>
-              <h2><label>Version</label><span>{s(chart.version)}</span></h2>
-              <h2><label>Mode</label><span>{modeLabel(chart.mode)}</span></h2>
-              <h2><label>Release Date</label><span>{s(chart.lastedit_str)}</span></h2>
+              <h2><label>{i18nT('Title')}</label><span className="textfix">{s(song.title)}</span></h2>
+              <h2><label>{i18nT('Artist')}</label><span className="textfix">{s(song.artist)}</span></h2>
+              <h2><label>{i18nT('Version')}</label><span>{s(chart.version)}</span></h2>
+              <h2><label>{i18nT('Mode')}</label><span>{modeLabel(chart.mode)}</span></h2>
+              <h2><label>{i18nT('Release Date')}</label><span>{s(chart.lastedit_str)}</span></h2>
             </div>
           </div>
         </div>
@@ -135,17 +136,17 @@ export default function ScorePage() {
         {data.list.length > 0 ? (
           <>
             <div className="g_memo">
-              <span className="g_round">{from === 2 ? 'Scores from iOS or Android' : 'Scores from Windows & Mac'}</span>
+              <span className="g_round">{from === 2 ? i18nT('Scores from iOS or Android') : i18nT('Scores from Windows & Mac')}</span>
             </div>
             {/* score/items.html */}
             <div className="list_head">
-              <span className="rank">Rank</span>
-              <span className="name">Player</span>
-              <span className="score">Score</span>
-              <span className="combo">Combo</span>
-              <span className="acc">Acc.</span>
-              <span className="mod">Mod</span>
-              <span className="time">Achieved</span>
+              <span className="rank">{i18nT('Rank')}</span>
+              <span className="name">{i18nT('Player')}</span>
+              <span className="score">{i18nT('Score')}</span>
+              <span className="combo">{i18nT('Combo')}</span>
+              <span className="acc">{i18nT('Acc.')}</span>
+              <span className="mod">{i18nT('Mod')}</span>
+              <span className="time">{i18nT('Achieved')}</span>
             </div>
             <ul className="list">
               {data.list.map((item: Rec, i: number) => {
@@ -176,7 +177,7 @@ export default function ScorePage() {
             <Pager page={page} total={data.total} onChange={(p: number) => { setPage(p) }} />
           </>
         ) : (
-          <div className="g_memo"><span className="g_round">No Score Currently</span></div>
+          <div className="g_memo"><span className="g_round">{i18nT('No Score Currently')}</span></div>
         )}
       </div>
     </Shell>

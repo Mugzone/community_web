@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Shell } from '../../components/Layout'
 import { asArray, num, Pager, useLoad } from '../../lib/legacy'
 import { fetchLimitList } from '../../network/legacy'
+import { t as i18nT } from '../../i18n'
 
 /* list/limit.html：extended base_width.html，页面级 akari.css。数据 fetchLimitList(page) */
 type Rec = Record<string, any>
@@ -46,9 +47,9 @@ export default function Limit() {
           <table className="jail_table">
             <thead>
               <tr>
-                <th style={{ width: '200px' }}>Name</th>
+                <th style={{ width: '200px' }}>{i18nT('Name')}</th>
                 <th style={{ width: '250px' }}>Limitation</th>
-                <th style={{ width: '200px' }}>Release Date</th>
+                <th style={{ width: '200px' }}>{i18nT('Release Date')}</th>
               </tr>
             </thead>
             <tbody>

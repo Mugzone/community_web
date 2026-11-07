@@ -3,6 +3,8 @@ import { Shell, DefaultSidebar } from '../../components/Layout'
 import { useLoad, asArray, LoadingBlock, EmptyBlock, floatFormat } from '../../lib/legacy'
 import { URLS, staticUrl } from '../../lib/urls'
 import { fetchGlobalRank } from '../../network/api'
+import { avatarUrl } from '../../utils/formatters'
+import { t as i18nT } from '../../i18n'
 
 type PlayerItem = {
   uid?: number | string
@@ -49,7 +51,8 @@ export default function AllPlayer() {
 
   const renderTop = (it: PlayerItem, rank: number) => (
     <div className="item-top g_round">
-      <span className="avatar">{it.avatar ? <img src={it.avatar} alt="" /> : null}</span>
+      {/* 老站 rank_item_top.html:5 {% avatar item.user 90 %}：后端只给短文件名，需拼 CDN + !avatar128 */}
+      <span className="avatar"><img src={avatarUrl(it.avatar, uidOf(it), 90)} style={{ maxWidth: 90, maxHeight: 90 }} alt="" /></span>
       <i className={`label top-${rank}`}></i>
       <div className="right">
         <span className="name textfix"><a href={URLS.user(uidOf(it))}>{nameOf(it)}</a></span>
@@ -64,7 +67,8 @@ export default function AllPlayer() {
   const renderRow = (it: PlayerItem, rank: number) => (
     <div className="item">
       <span className="rank">{rank}</span>
-      <span className="avatar">{it.avatar ? <img src={it.avatar} alt="" /> : null}</span>
+      {/* 老站 rank_item.html:6 {% avatar item.user 48 small=True %}：!avatar64 + 内联 48px */}
+      <span className="avatar"><img src={avatarUrl(it.avatar, uidOf(it), 48)} style={{ maxWidth: 48, maxHeight: 48 }} alt="" /></span>
       <span className="name textfix"><a href={URLS.user(uidOf(it))}>{nameOf(it)}</a></span>
       <span className="lv">{floatFormat(it.level, 0)}</span>
       <span className="exp">{txt(expOf(it))}</span>
@@ -102,14 +106,14 @@ export default function AllPlayer() {
                 {rank === 4 && <span className="clear"></span>}
                 {rank === 4 && (
                   <div className="list_head">
-                    <span className="rank">Rank</span>
+                    <span className="rank">{i18nT('Rank')}</span>
                     <span className="avatar"></span>
-                    <span className="name">Player</span>
-                    <span className="lv">Level</span>
-                    <span className="exp">Exp</span>
-                    <span className="acc">Acc.</span>
-                    <span className="pc">Play Count</span>
-                    <span className="combo">Combo</span>
+                    <span className="name">{i18nT('Player')}</span>
+                    <span className="lv">{i18nT('Level')}</span>
+                    <span className="exp">{i18nT('Exp')}</span>
+                    <span className="acc">{i18nT('Acc.')}</span>
+                    <span className="pc">{i18nT('Play Count')}</span>
+                    <span className="combo">{i18nT('Combo')}</span>
                   </div>
                 )}
                 {rank <= 3 ? renderTop(it, rank) : renderRow(it, rank)}

@@ -4,6 +4,7 @@ import { num, showNotify, useLoad } from '../../lib/legacy'
 import { URLS } from '../../lib/urls'
 import { fetchUploadPage, fetchUploadSign } from '../../network/legacy'
 import { avatarUidUrl } from '../../utils/formatters'
+import { t as i18nT } from '../../i18n'
 
 const IMG_HOST = 'http://v0.api.upyun.com/ma-img'
 
@@ -44,23 +45,23 @@ export default function UploadAvatar() {
   }
 
   return (
-    <Shell variant="two-col" title="Change Avatar" css={['upload.css']}>
-      <div className="g_title">Change Avatar</div>
+    <Shell variant="two-col" title={i18nT('Change Avatar')} css={['upload.css']}>
+      <div className="g_title">{i18nT('Change Avatar')}</div>
       <div className="g_cont">
         <div className="g_actbar">
-          <a href={URLS.user(targetId)} className="g_btn">Cancel</a>
+          <a href={URLS.user(targetId)} className="g_btn">{i18nT('Cancel')}</a>
         </div>
         {toUid ? <h1><label></label>Current user: {targetId}</h1> : null}
         <h1>
-          <label htmlFor="">Current</label>
+          <label htmlFor="">{i18nT('Current')}</label>
           <img className="g_round" src={avatarUidUrl(num(targetId, 0))} alt="" />
         </h1>
         <form action={IMG_HOST} method="post" encType="multipart/form-data" onSubmit={(e) => void onSubmit(e)}>
-          <h1><label htmlFor="file">New image</label><input type="file" name="file" accept="image/png, image/jpeg" onChange={onFile} /></h1>
+          <h1><label htmlFor="file">{i18nT('New image')}</label><input type="file" name="file" accept="image/png, image/jpeg" onChange={onFile} /></h1>
           <input name="policy" type="hidden" value={policy} readOnly />
           <input name="signature" type="hidden" value={signature} readOnly />
           <p className="line">
-            <input type="submit" className="g_btn btn" value="Save" />
+            <input type="submit" className="g_btn btn" value={i18nT('Save')} />
           </p>
         </form>
       </div>

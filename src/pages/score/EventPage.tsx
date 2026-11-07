@@ -4,6 +4,7 @@ import { Shell, DefaultSidebar } from '../../components/Layout'
 import { asArray, num, useLoad, floatFormat } from '../../lib/legacy'
 import { URLS } from '../../lib/urls'
 import { fetchEventPage } from '../../network/legacy'
+import { t as i18nT } from '../../i18n'
 
 /* score/event3.html 与 score/event.html：extended base.html（两栏 + 默认侧栏），两个视图共用 fetchEventPage */
 type Rec = Record<string, any>
@@ -42,15 +43,15 @@ export default function EventPage() {
   }
 
   return (
-    <Shell variant="two-col" title="Event record" css={['score.css']} contCls="" sidebar={<DefaultSidebar />}>
-      <div className="g_title">Event record</div>
+    <Shell variant="two-col" title={i18nT('Event record')} css={['score.css']} contCls="" sidebar={<DefaultSidebar />}>
+      <div className="g_title">{i18nT('Event record')}</div>
       <div className="g_cont">
         {data.back && (
-          <div className="g_actbar"><a href={data.back} className="g_btn">Back</a></div>
+          <div className="g_actbar"><a href={data.back} className="g_btn">{i18nT('Back')}</a></div>
         )}
 
         <div className="option g_rblock">
-          <a href="#" className={`btn ${view === 'players' ? 'curr' : ''}`} onClick={(e) => { e.preventDefault(); switchView('players') }}>Players</a>
+          <a href="#" className={`btn ${view === 'players' ? 'curr' : ''}`} onClick={(e) => { e.preventDefault(); switchView('players') }}>{i18nT('Players')}</a>
           <a href="#" className={`btn ${view === 'records' ? 'curr' : ''}`} onClick={(e) => { e.preventDefault(); switchView('records') }}>Records</a>
         </div>
 
@@ -58,7 +59,7 @@ export default function EventPage() {
           /* score/event3.html */
           <>
             <div className="list_head" style={{ width: '300px' }}>
-              <span className="chart">Player</span>
+              <span className="chart">{i18nT('Player')}</span>
               <span className="score">Points</span>
             </div>
             <ul className="list">
@@ -78,12 +79,12 @@ export default function EventPage() {
           data.records.length > 0 ? (
             <>
               <div className="list_head">
-                <span className="chart">Chart</span>
-                <span className="score">Score</span>
-                <span className="combo">Combo</span>
-                <span className="acc">Acc.</span>
-                <span className="mod">Mod</span>
-                <span className="time">Achieved</span>
+                <span className="chart">{i18nT('Chart')}</span>
+                <span className="score">{i18nT('Score')}</span>
+                <span className="combo">{i18nT('Combo')}</span>
+                <span className="acc">{i18nT('Acc.')}</span>
+                <span className="mod">{i18nT('Mod')}</span>
+                <span className="time">{i18nT('Achieved')}</span>
               </div>
               <ul className="list">
                 {data.records.map((item: Rec, i: number) => {
@@ -106,7 +107,7 @@ export default function EventPage() {
               </ul>
             </>
           ) : (
-            <div className="g_memo"><span className="g_round">No record Currently</span></div>
+            <div className="g_memo"><span className="g_round">{i18nT('No record Currently')}</span></div>
           )
         )}
       </div>

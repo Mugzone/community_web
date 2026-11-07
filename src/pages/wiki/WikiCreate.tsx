@@ -3,6 +3,7 @@ import { Shell, DefaultSidebar } from '../../components/Layout'
 import { useLoad, showNotify, LoadingBlock } from '../../lib/legacy'
 import { URLS } from '../../lib/urls'
 import { createWikiPage, fetchSongInfo, getSession } from '../../network/api'
+import { t as i18nT } from '../../i18n'
 
 /* ------------------------------------------------------------------ *
  * wiki_create/wiki_create.html / wiki_create_song.html /
@@ -19,9 +20,9 @@ const CREATE_03 = 'You can upload your chart and create chart page with Malody e
 /** GLOBAL_PAGE：intro3=3 / intro2=3 / lang=5 / editor=1368 —— 保持老站 /wiki/<id> URL */
 const HELP_LINKS = (
   <>
-    <a href={URLS.wiki(3)}>How to create a new article</a>,{' '}
-    <a href={URLS.wiki(3)}>How to create a new song/chart</a>,{' '}
-    <a href={URLS.wiki(5)}>About Multi-language</a>
+    <a href={URLS.wiki(3)}>{i18nT('How to create a new article')}</a>,{' '}
+    <a href={URLS.wiki(3)}>{i18nT('How to create a new song/chart')}</a>,{' '}
+    <a href={URLS.wiki(5)}>{i18nT('About Multi-language')}</a>
   </>
 )
 
@@ -64,7 +65,7 @@ export default function WikiCreate() {
     try {
       const resp = await createWikiPage({ uid, title: submitTitle.trim(), type })
       if (resp.exist) {
-        showNotify('The page is already exist.', 'err')
+        showNotify(i18nT('The page is already exist.'), 'err')
         return
       }
       if (resp.id) {
@@ -78,9 +79,9 @@ export default function WikiCreate() {
         window.location.href = dest
         return
       }
-      showNotify('Failed to craete, please try again later.', 'err')
+      showNotify(i18nT('Failed to craete, please try again later.'), 'err')
     } catch {
-      showNotify('Failed to craete, please try again later.', 'err')
+      showNotify(i18nT('Failed to craete, please try again later.'), 'err')
     } finally {
       setSubmitting(false)
     }
@@ -89,16 +90,16 @@ export default function WikiCreate() {
   const typeSwitcher = (
     <div className="g_select create_types" style={{ marginBottom: 12 }}>
       <span className={type === 1 ? 'curr' : ''} onClick={() => switchType(1)}>Article</span>
-      <span className={type === 2 ? 'curr' : ''} onClick={() => switchType(2)}>Song</span>
-      <span className={type === 3 ? 'curr' : ''} onClick={() => switchType(3)}>Chart</span>
+      <span className={type === 2 ? 'curr' : ''} onClick={() => switchType(2)}>{i18nT('Song')}</span>
+      <span className={type === 3 ? 'curr' : ''} onClick={() => switchType(3)}>{i18nT('Chart')}</span>
     </div>
   )
 
   const footerTip = (blank: string): ReactNode => (
     <div className="g_tip">
-      <span className="err">Failed to craete, please try again later.</span>
+      <span className="err">{i18nT('Failed to craete, please try again later.')}</span>
       <span>{blank}</span>
-      <span className="err">The page is already exist.<em></em></span>
+      <span className="err">{i18nT('The page is already exist.')}<em></em></span>
     </div>
   )
 
@@ -109,15 +110,15 @@ export default function WikiCreate() {
       {type === 5 ? (
         <h1><label htmlFor="title">Event name</label><input type="text" id="title" value={eventName} onChange={(e) => setEventName(e.target.value)} /></h1>
       ) : type === 6 ? (
-        <h1><label htmlFor="title">Template</label><input type="text" id="title" value={templateName} onChange={(e) => setTemplateName(e.target.value)} /></h1>
+        <h1><label htmlFor="title">{i18nT('Template')}</label><input type="text" id="title" value={templateName} onChange={(e) => setTemplateName(e.target.value)} /></h1>
       ) : (
-        <h1><label htmlFor="title">Title</label><input type="text" placeholder="Article title, song name or chart name" id="title" value={title} onChange={(e) => setTitle(e.target.value)} /></h1>
+        <h1><label htmlFor="title">{i18nT('Title')}</label><input type="text" placeholder={i18nT('Article title, song name or chart name')} id="title" value={title} onChange={(e) => setTitle(e.target.value)} /></h1>
       )}
       <div className="button">
-        <div className="g_btn btn" id="J_submit" onClick={() => { void onSubmit() }}>Submit</div>
-        <a href="#" onClick={(e) => { e.preventDefault(); window.history.back() }}>Cancel</a>
+        <div className="g_btn btn" id="J_submit" onClick={() => { void onSubmit() }}>{i18nT('Submit')}</div>
+        <a href="#" onClick={(e) => { e.preventDefault(); window.history.back() }}>{i18nT('Cancel')}</a>
       </div>
-      {footerTip('Please fill in title and select language.')}
+      {footerTip(i18nT('Please fill in title and select language.'))}
     </>
   )
 
@@ -126,12 +127,12 @@ export default function WikiCreate() {
     <>
       <h1 className="help">{CREATE_01}</h1>
       <h1 className="help">Document: {HELP_LINKS}</h1>
-      <h1><label htmlFor="title">Title</label><input type="text" id="title" value={title} onChange={(e) => setTitle(e.target.value)} /></h1>
-      <h1><label htmlFor="artist">Artist</label><input type="text" id="artist" value={artist} onChange={(e) => setArtist(e.target.value)} /></h1>
+      <h1><label htmlFor="title">{i18nT('Title')}</label><input type="text" id="title" value={title} onChange={(e) => setTitle(e.target.value)} /></h1>
+      <h1><label htmlFor="artist">{i18nT('Artist')}</label><input type="text" id="artist" value={artist} onChange={(e) => setArtist(e.target.value)} /></h1>
       <div className="button">
-        <div className="g_btn btn" id="J_submit" onClick={() => { void onSubmit() }}>Submit</div>
+        <div className="g_btn btn" id="J_submit" onClick={() => { void onSubmit() }}>{i18nT('Submit')}</div>
       </div>
-      {footerTip('Please fill in blanks')}
+      {footerTip(i18nT('Please fill in blanks'))}
     </>
   )
 
@@ -141,19 +142,19 @@ export default function WikiCreate() {
     <>
       <h1 className="help">{CREATE_02}</h1>
       <div className="block">
-        <div className="sec">Create from editor</div>
+        <div className="sec">{i18nT('Create from editor')}</div>
         <h1 className="help">{CREATE_03}</h1>
-        <h1 className="help">Document: <a href={URLS.wiki(1368)}>Introduce to editor</a></h1>
+        <h1 className="help">Document: <a href={URLS.wiki(1368)}>{i18nT('Introduce to editor')}</a></h1>
       </div>
       <div className="block">
-        <div className="sec">Create manually</div>
+        <div className="sec">{i18nT('Create manually')}</div>
         <h1 className="help">Document: {HELP_LINKS}</h1>
-        <h1><label>Song</label><span>{songLabel}</span></h1>
-        <h1><label htmlFor="version">Version</label><input style={{ backgroundColor: 'white' }} type="text" id="version" placeholder="Example: 4K HD, 7K Lv.10" value={version} onChange={(e) => setVersion(e.target.value)} /></h1>
+        <h1><label>{i18nT('Song')}</label><span>{songLabel}</span></h1>
+        <h1><label htmlFor="version">{i18nT('Version')}</label><input style={{ backgroundColor: 'white' }} type="text" id="version" placeholder="Example: 4K HD, 7K Lv.10" value={version} onChange={(e) => setVersion(e.target.value)} /></h1>
         <div className="button">
-          <div className="g_btn btn" id="J_submit" onClick={() => { void onSubmit() }}>Submit</div>
+          <div className="g_btn btn" id="J_submit" onClick={() => { void onSubmit() }}>{i18nT('Submit')}</div>
         </div>
-        {footerTip('Please fill in blanks')}
+        {footerTip(i18nT('Please fill in blanks'))}
       </div>
     </>
   )
@@ -171,15 +172,15 @@ export default function WikiCreate() {
       sidebar={
         <>
           <DefaultSidebar />
-          <h4>Others</h4>
-          <a href={`${URLS.create}`} onClick={(e) => { e.preventDefault(); switchType(1) }}>New Article</a>
-          <a href={`${URLS.create}?type=2`} onClick={(e) => { e.preventDefault(); switchType(2) }}>New Song</a>
+          <h4>{i18nT('Others')}</h4>
+          <a href={`${URLS.create}`} onClick={(e) => { e.preventDefault(); switchType(1) }}>{i18nT('New Article')}</a>
+          <a href={`${URLS.create}?type=2`} onClick={(e) => { e.preventDefault(); switchType(2) }}>{i18nT('New Song')}</a>
           <a href={`${URLS.create}?type=3&parent=${parent}`} onClick={(e) => { e.preventDefault(); switchType(3) }}>New Chart</a>
           <a href={`${URLS.create}?type=6`} onClick={(e) => { e.preventDefault(); switchType(6) }}>Create template</a>
         </>
       }
     >
-      <div className="g_title">Create new page</div>
+      <div className="g_title">{i18nT('Create new page')}</div>
       <div className="g_cont wiki_create">
         {typeSwitcher}
         {form}

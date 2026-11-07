@@ -314,7 +314,7 @@ export const renderTemplateHtml = (
     return `<a href="#" class="g_round g_tmpl_vote${
       voted ? " g_tmpl_voted" : ""
     }" data-eid="${escapeHtml(eid)}" data-choice="${escapeHtml(choice)}">${
-      voted ? "Voted" : "Vote"
+      voted ? t("Voted") : t("Vote")
     }</a>`;
   }
 

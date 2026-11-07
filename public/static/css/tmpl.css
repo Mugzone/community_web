@@ -1,0 +1,335 @@
+/*
+  1. 主背景 8d8d8d / 141 141 141
+2. 主字体 d5b9b9 / 255 221 221
+3. 链接字体 + 高亮效果 ff9d9d / 255 157 157
+4. 常规按钮 cc6666 / 204 102 102
+5. 主背景上用来加强的背景色块 535353 / 83 83 83
+6. 加强色块上用来更加加强的色块 474747 / 71 71 71
+7. 边框（现在使用了主题色）ef6666 / 239 102 102
+边框内线(二级?) 726464 / 114 100 100
+8.这东西，叫标题栏之类 ef6666 / 239 102 102
+*/
+.clear {
+  clear: both;
+  display: block;
+  height: 0;
+}
+.justfix {
+  display: inline-block;
+  width: 100%;
+  height: 0;
+  overflow: hidden;
+}
+.justfyHold {
+  visibility: hidden;
+  height: 0;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+}
+.textfix {
+  text-overflow: ellipsis;
+  overflow-x: hidden;
+  white-space: nowrap;
+}
+.tmplpage {
+  text-align: left;
+}
+.tmplpage .org,
+.tmplpage .use {
+  width: 100%;
+  padding: 10px;
+  background: #cacaca;
+  border: 1px dotted #4190e7;
+  box-sizing: border-box;
+  margin-bottom: 24px;
+}
+.tmplpage .use {
+  margin-top: 10px;
+}
+.g_tmpl_activity {
+  width: 435px;
+  height: 128px;
+  border-radius: 4px;
+  -moz-border-radius: 4px;
+  -webkit-border-radius: 4px;
+  display: inline-block;
+  position: relative;
+  z-index: 1;
+  margin: 0 0 10px 5px;
+}
+.g_tmpl_activity:before {
+  position: absolute;
+  width: 96%;
+  height: 50%;
+  left: 50%;
+  margin-left: -48%;
+  bottom: 0;
+  box-shadow: 0 0 8px #222;
+  display: block;
+  content: '';
+  border-radius: 4px;
+  z-index: -1;
+}
+.g_tmpl_activity:hover {
+  box-shadow: 0 0 5px #222;
+}
+.g_tmpl_activity a {
+  display: block;
+  color: #333;
+  background-color: white;
+  height: 100%;
+  border-radius: 4px;
+  -moz-border-radius: 4px;
+  -webkit-border-radius: 4px;
+  border: 1px solid #4190e7;
+}
+.g_tmpl_activity a:hover {
+  text-decoration: none;
+  background: white;
+  color: #333;
+}
+.g_tmpl_activity .g_cover {
+  width: 128px;
+  height: 128px;
+  border-top-left-radius: 3px;
+  -moz-border-radius-topleft: 3px;
+  -webkit-border-top-left-radius: 3px;
+  border-bottom-left-radius: 3px;
+  -moz-border-radius-bottomleft: 3px;
+  -webkit-border-bottom-left-radius: 3px;
+  border-right: 1px solid #4190e7;
+  background-image: url('../img/cover.png');
+}
+.g_tmpl_activity .right {
+  position: absolute;
+  left: 129px;
+  top: 0;
+  width: 296px;
+  height: 128px;
+  overflow: hidden;
+  padding-left: 4px;
+}
+.g_tmpl_activity .right:hover .desc {
+  right: 0px;
+}
+.g_tmpl_activity .right p {
+  margin: 0;
+}
+.g_tmpl_activity .right p.sub {
+  font-size: 12px;
+  color: #787878;
+  line-height: 14px;
+}
+.g_tmpl_activity .right p.goal {
+  border-top: 1px solid #4190e7;
+  color: #4190e7;
+}
+.g_tmpl_activity .right p.desc {
+  width: 296px;
+  background: white;
+  height: 128px;
+  position: absolute;
+  right: -296px;
+  top: 1px;
+  transition: right 0.2s;
+  -webkit-transition: right 0.2s;
+}
+.g_tmpl_activity .right p span {
+  display: inline-block;
+  max-width: 150px;
+}
+.g_tmpl_activity .right p span.name {
+  float: right;
+}
+.g_tmpl_event {
+  width: 435px;
+  height: 110px;
+  border-radius: 4px;
+  -moz-border-radius: 4px;
+  -webkit-border-radius: 4px;
+  display: inline-block;
+  position: relative;
+  z-index: 1;
+  margin: 30px 0 10px 5px;
+  border: 1px solid #4190e7;
+  vertical-align: middle;
+}
+.g_tmpl_event a {
+  width: 128px;
+  height: 128px;
+  position: absolute;
+  left: 10px;
+  top: -30px;
+  z-index: 1;
+  border-radius: 3px;
+  -moz-border-radius: 3px;
+  -webkit-border-radius: 3px;
+  background-image: url('../img/cover.png');
+  background-position: center;
+  background-size: cover;
+}
+.g_tmpl_event img {
+  width: 128px;
+  height: 128px;
+  padding: 0;
+  margin: 0;
+}
+.g_tmpl_event .right {
+  padding: 10px 0 0 150px;
+  position: relative;
+}
+.g_tmpl_event .right .title {
+  font-size: 16px;
+  color: #787878;
+  line-height: 28px;
+}
+.g_tmpl_event .right .title img {
+  width: 28px;
+  height: 28px;
+  vertical-align: top;
+  background: none;
+}
+.g_tmpl_event .right .title span {
+  color: black;
+  display: inline-block;
+  vertical-align: top;
+}
+.g_tmpl_event .right .fin {
+  position: absolute;
+  z-index: -1;
+  font-size: 40px;
+  color: #ececec;
+  -webkit-transform: rotate(-20deg);
+  transform: rotate(-20deg);
+  left: 250px;
+  top: 40px;
+}
+.g_tmpl_user {
+  width: 194px;
+  height: 52px;
+  background: #97c2f2;
+  border-radius: 4px;
+  -moz-border-radius: 4px;
+  -webkit-border-radius: 4px;
+  display: inline-block;
+  margin: 0 0 10px 0;
+  vertical-align: middle;
+}
+.g_tmpl_user .avatar {
+  float: left;
+  margin: 2px;
+}
+.g_tmpl_user .avatar img {
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  margin: 0;
+  background-color: transparent;
+  background-image: url('../img/avatar.png');
+  background-size: contain;
+  border-radius: 4px;
+  -moz-border-radius: 4px;
+  -webkit-border-radius: 4px;
+}
+.g_tmpl_user a {
+  width: 140px;
+  line-height: 52px;
+  color: #333;
+  display: inline-block;
+}
+.g_tmpl_user a:hover {
+  color: #333;
+  background-color: transparent;
+}
+.g_tmpl_login {
+  border: 1px dotted #4190e7;
+  padding: 5px;
+  display: inline-block;
+}
+.g_tmpl_first {
+  display: inline-block;
+  width: 350px;
+  height: 80px;
+  position: relative;
+  vertical-align: bottom;
+}
+.g_tmpl_first .avatar {
+  position: absolute;
+  left: 6px;
+  top: -22px;
+}
+.g_tmpl_first .right {
+  text-align: left;
+  padding-left: 106px;
+}
+.g_tmpl_first img {
+  border-radius: 4px;
+  -moz-border-radius: 4px;
+  -webkit-border-radius: 4px;
+  width: 96px;
+}
+.g_tmpl_first .logo {
+  position: absolute;
+  right: 10px;
+  top: 14px;
+  width: 70px;
+  border-radius: 0;
+  -moz-border-radius: 0;
+  -webkit-border-radius: 0;
+}
+.g_tmpl_first a {
+  font-size: 16px;
+  font-weight: bold;
+  line-height: 45px;
+}
+.g_tmpl_first .empty {
+  font-size: 32px;
+  color: #787878;
+  line-height: 80px;
+  padding-left: 10px;
+}
+.g_tmpl_vote {
+  width: 120px;
+  margin-left: 20px;
+  display: inline-block;
+  height: 32px;
+  line-height: 32px;
+  vertical-align: middle;
+  padding: 0 8px;
+  font-size: 16px;
+  cursor: pointer;
+  text-align: center;
+  border: 1px solid #4190e7;
+  color: #4190e7;
+  vertical-align: top;
+}
+.g_tmpl_vote:hover {
+  background-color: #4190e7;
+  color: white;
+  text-decoration: none;
+}
+.g_tmpl_voted {
+  background-color: #4190e7;
+  color: white !important;
+  text-decoration: none;
+  cursor: not-allowed;
+}
+.g_tmpl_votedlist {
+  line-height: 30px;
+}
+.g_tmpl_votedlist span {
+  font-weight: bold;
+  display: inline-block;
+  width: 80px;
+}
+.g_tmpl_votedlist i {
+  display: inline-block;
+  height: 20px;
+  background-color: #4190e7;
+  vertical-align: middle;
+  border-radius: 2px;
+  -moz-border-radius: 2px;
+  -webkit-border-radius: 2px;
+  margin-right: 5px;
+}

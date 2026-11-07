@@ -2,6 +2,7 @@ import { Shell, DefaultSidebar } from '../../components/Layout'
 import { useLoad, asArray, LoadingBlock } from '../../lib/legacy'
 import { URLS } from '../../lib/urls'
 import { fetchWikiLatest } from '../../network/legacy'
+import { t as i18nT } from '../../i18n'
 
 type ChangeItem = {
   user_id?: number | string
@@ -32,7 +33,7 @@ export default function WikiLatest() {
 
   return (
     <Shell variant="two-col" css={['akari.css']} sidebar={<DefaultSidebar />}>
-      <div className="g_title">Recent Changes</div>
+      <div className="g_title">{i18nT('Recent Changes')}</div>
       <div className="g_cont wiki_change">
         {items.map((it, i) => (
           <h1 key={i}>
@@ -41,7 +42,7 @@ export default function WikiLatest() {
             <span className="textfix gray">-- {it.create_time_str}</span>
           </h1>
         ))}
-        {!loading && items.length === 0 && <h1>No Active Edit</h1>}
+        {!loading && items.length === 0 && <h1>{i18nT('No Active Edit')}</h1>}
         {loading && <LoadingBlock />}
       </div>
     </Shell>

@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import App from './App'
 import { SessionProvider } from './components/SessionProvider'
+import { I18nProvider } from './i18n'
 import { installWindowUrls } from './lib/urls'
 
 installWindowUrls()
@@ -13,7 +14,9 @@ if (root) {
     <React.StrictMode>
       <BrowserRouter>
         <SessionProvider>
-          <App />
+          <I18nProvider>
+            <App />
+          </I18nProvider>
         </SessionProvider>
       </BrowserRouter>
     </React.StrictMode>,

@@ -1,0 +1,175 @@
+/*
+  1. 主背景 8d8d8d / 141 141 141
+2. 主字体 d5b9b9 / 255 221 221
+3. 链接字体 + 高亮效果 ff9d9d / 255 157 157
+4. 常规按钮 cc6666 / 204 102 102
+5. 主背景上用来加强的背景色块 535353 / 83 83 83
+6. 加强色块上用来更加加强的色块 474747 / 71 71 71
+7. 边框（现在使用了主题色）ef6666 / 239 102 102
+边框内线(二级?) 726464 / 114 100 100
+8.这东西，叫标题栏之类 ef6666 / 239 102 102
+*/
+.clear {
+  clear: both;
+  display: block;
+  height: 0;
+}
+.justfix {
+  display: inline-block;
+  width: 100%;
+  height: 0;
+  overflow: hidden;
+}
+.justfyHold {
+  visibility: hidden;
+  height: 0;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+}
+.textfix {
+  text-overflow: ellipsis;
+  overflow-x: hidden;
+  white-space: nowrap;
+}
+#center .g_cont .temp {
+  margin-bottom: 24px;
+}
+#center .g_cont .temp.song div {
+  display: inline-block;
+}
+#center .g_cont .temp.song .left {
+  float: left;
+  width: 130px;
+  height: 124px;
+  border-right: 1px solid #4190e7;
+  border-top: 1px solid #4190e7;
+  border-bottom-left-radius: 4px;
+  -moz-border-radius-bottomleft: 4px;
+  -webkit-border-bottom-left-radius: 4px;
+}
+#center .g_cont .temp.song .right {
+  float: right;
+}
+#center .g_cont .msg {
+  background-color: #e3eefb;
+  padding: 4px;
+  display: inline-block;
+}
+#center .g_cont .list_head,
+#center .g_cont .list li {
+  border-bottom: 1px solid #4190e7;
+  text-align: left;
+  height: 32px;
+  line-height: 32px;
+  vertical-align: middle;
+}
+#center .g_cont .list li {
+  position: relative;
+}
+#center .g_cont .list li.top {
+  height: 50px;
+  line-height: 50px;
+}
+#center .g_cont .list li.top .g_mod {
+  width: 44px;
+  height: 44px;
+  margin-left: -8px;
+}
+#center .g_cont .list li .acc {
+  text-align: left;
+  position: relative;
+  height: 30px;
+  line-height: 30px;
+}
+#center .g_cont .list li .acc i {
+  display: block;
+  height: 28px;
+  position: absolute;
+}
+#center .g_cont .list li .acc i.color-0 {
+  background-color: #67f0ab;
+}
+#center .g_cont .list li .acc i.color-1 {
+  background-color: #d9f067;
+}
+#center .g_cont .list li .acc i.color-2 {
+  background-color: #f0c267;
+}
+#center .g_cont .list li .acc i.color-3 {
+  background-color: #f09567;
+}
+#center .g_cont .list li .acc i.color-4 {
+  background-color: #ef6666;
+}
+#center .g_cont .list li .acc em {
+  display: block;
+  font-style: normal;
+  width: 100%;
+  text-align: center;
+  position: absolute;
+  color: #222;
+}
+#center .g_cont .list li .label {
+  width: 52px;
+  height: 18px;
+  background: url('../img/toplabel.png') no-repeat top left;
+  background-size: cover;
+  display: block;
+  position: absolute;
+  top: 3px;
+  left: -5px;
+}
+#center .g_cont .list li .label.top-1 {
+  background-position: 0 0px;
+}
+#center .g_cont .list li .label.top-2 {
+  background-position: 0 -21px;
+}
+#center .g_cont .list li .label.top-3 {
+  background-position: 0 -43px;
+}
+#center .g_cont .list li:nth-child(odd) {
+  background-color: #e6e6e6;
+}
+#center .g_cont .list_head span,
+#center .g_cont .list span {
+  display: inline-block;
+  text-align: center;
+  vertical-align: middle;
+}
+#center .g_cont span.rank {
+  width: 50px;
+}
+#center .g_cont span.rank img {
+  vertical-align: top;
+  border-radius: 4px;
+  -moz-border-radius: 4px;
+  -webkit-border-radius: 4px;
+}
+#center .g_cont span.name {
+  width: 120px;
+}
+#center .g_cont span.score {
+  width: 120px;
+}
+#center .g_cont span.combo {
+  width: 80px;
+}
+#center .g_cont span.acc {
+  width: 120px;
+}
+#center .g_cont span.mod {
+  width: 240px;
+}
+#center .g_cont span.time {
+  width: 120px;
+}
+#center .g_cont span.chart {
+  width: 170px;
+}
+#center .g_cont span .g_mod {
+  width: 34px;
+  height: 34px;
+  margin-left: -8px;
+}

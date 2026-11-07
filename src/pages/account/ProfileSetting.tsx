@@ -6,6 +6,7 @@ import { URLS } from '../../lib/urls'
 import { fetchPlayerInfo, savePlayerInfo } from '../../network/api'
 import { regionMap } from '../../utils/profile'
 import { avatarUrl } from '../../utils/formatters'
+import { t as i18nT } from '../../i18n'
 
 /* user_profile.html：编辑资料单页，交互对应 module/profile/src/init.js */
 type Rec = Record<string, any>
@@ -34,16 +35,16 @@ const FALLBACK: ProfileData = {
 
 /* .g_tip 下的 10 个 span，顺序即 util.showTip(n) 的下标。 */
 const TIPS: { text: string; err: boolean; link?: string }[] = [
-  { text: 'Saving...', err: false },
-  { text: 'Failed to save, please try again later.', err: true },
-  { text: 'Password must not be shorter than 8 characters.', err: true },
-  { text: 'Please enter the old password, and then the new password twice.', err: true },
-  { text: 'Saved', err: false },
-  { text: 'Please check the format of DOB (YYYY-MM-DD).', err: true },
-  { text: "Can't change username", err: true, link: '/store/all' },
-  { text: 'Please use another username', err: true },
-  { text: 'Please wait for 180 days after last username changes', err: true },
-  { text: 'The username is in use', err: true },
+  { text: i18nT('Saving...'), err: false },
+  { text: i18nT('Failed to save, please try again later.'), err: true },
+  { text: i18nT('Password must not be shorter than 8 characters.'), err: true },
+  { text: i18nT('Please enter the old password, and then the new password twice.'), err: true },
+  { text: i18nT('Saved'), err: false },
+  { text: i18nT('Please check the format of DOB (YYYY-MM-DD).'), err: true },
+  { text: i18nT("Can't change username"), err: true, link: '/store/all' },
+  { text: i18nT('Please use another username'), err: true },
+  { text: i18nT('Please wait for 180 days after last username changes'), err: true },
+  { text: i18nT('The username is in use'), err: true },
 ]
 
 /* module/profile/src/init.js error 回调：返回码 -> .g_tip 下标 */
@@ -64,9 +65,9 @@ const dobStr = (v: unknown): string => {
 
 function GenderSelect({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   const opts: { id: string; label: string }[] = [
-    { id: '1', label: 'Boy' },
-    { id: '2', label: 'Girl' },
-    { id: '3', label: '男の娘' },
+    { id: '1', label: i18nT('Boy') },
+    { id: '2', label: i18nT('Girl') },
+    { id: '3', label: i18nT('男の娘') },
   ]
   return (
     <div className="g_select">
@@ -146,7 +147,7 @@ export default function ProfileSetting() {
       return
     }
     setTip(0)
-    showNotify('Saving...', 'succ')
+    showNotify(i18nT('Saving...'), 'succ')
     setBusy(true)
     try {
       const res = await savePlayerInfo({
@@ -176,39 +177,40 @@ export default function ProfileSetting() {
   ))
 
   return (
-    <Shell variant="wide" title="Edit Profile" css={['profile.css']} contCls="">
-      <div className="g_title">Edit Profile</div>
+    <Shell variant="wide" title={i18nT('Edit Profile')} css={['profile.css']} contCls="">
+      <div className="g_title">{i18nT('Edit Profile')}</div>
       <div className="g_cont">
         <div className="g_actbar">
-          <a href={URLS.user(uid)} className="g_btn">Back</a>
-          <a href="/upload/avatar" className="g_btn">Change avatar</a>
-          <a href="/upload/banner" className="g_btn">Change banner</a>
+          <a href={URLS.user(uid)} className="g_btn">{i18nT('Back')}</a>
+          <a href="/upload/avatar" className="g_btn">{i18nT('Change avatar')}</a>
+          <a href="/upload/banner" className="g_btn">{i18nT('Change banner')}</a>
           <a href="/store/my" className="g_btn">My items</a>
           {data.isPub && <a href={URLS.publish} className="g_btn">Publisher</a>}
         </div>
-        <h1><label htmlFor="avatar">Avatar</label><a href="/upload/avatar"><img className="g_round" src={avatarUrl(data.avatar, uid)} alt="Avatar" /></a></h1>
-        <h1><label htmlFor="name">Nickname</label><input type="text" name="name" id="name" value={form.name} onChange={setField('name')} /> </h1>
+        {/* 老站 user_profile.html:18 {% avatar user 128 hclass="g_round" %}：!avatar128 + 内联 128px 上限 */}
+        <h1><label htmlFor="avatar">{i18nT('Avatar')}</label><a href="/upload/avatar"><img className="g_round" src={avatarUrl(data.avatar, uid, 128)} alt={i18nT('Avatar')} style={{ maxWidth: 128, maxHeight: 128 }} /></a></h1>
+        <h1><label htmlFor="name">{i18nT('Nickname')}</label><input type="text" name="name" id="name" value={form.name} onChange={setField('name')} /> </h1>
         <h1><label htmlFor="email">Email</label><input type="text" className="lock" name="email" id="email" value={form.email} disabled /> </h1>
         <h1 className="select">
-          <label htmlFor="gender">Gender</label>
+          <label htmlFor="gender">{i18nT('Gender')}</label>
           <GenderSelect value={form.gender} onChange={(v: string) => setForm((f: FormState) => ({ ...f, gender: v }))} />
         </h1>
-        <h1><label htmlFor="country">Location</label>
+        <h1><label htmlFor="country">{i18nT('Location')}</label>
           <select className="g_options" name="country" id="country" value={form.country} onChange={setField('country')}>
             {regionOptions}
           </select>
         </h1>
-        <h1><label htmlFor="age">Date of Birth</label><input type="text" name="age" id="age" placeholder="year-month-day" value={form.age} onChange={setField('age')} /></h1>
+        <h1><label htmlFor="age">{i18nT('Date of Birth')}</label><input type="text" name="age" id="age" placeholder="year-month-day" value={form.age} onChange={setField('age')} /></h1>
         <h1>
           <label htmlFor="show">Default tab</label>
           <select name="tab" id="tab" className="g_options" value={form.tab} onChange={setField('tab')}>
-            <option value="0">Recent activities</option>
-            <option value="1">Recent high scores</option>
-            <option value="2">Chart</option>
-            <option value="3">Profile</option>
+            <option value="0">{i18nT('Recent activities')}</option>
+            <option value="1">{i18nT('Recent high scores')}</option>
+            <option value="2">{i18nT('Chart')}</option>
+            <option value="3">{i18nT('Profile')}</option>
           </select>
         </h1>
-        <div className="g_btn btn" id="J_submit" onClick={() => void save()}>Save</div>
+        <div className="g_btn btn" id="J_submit" onClick={() => void save()}>{i18nT('Save')}</div>
         <div className="g_tip">
           {TIPS.map((d, i: number) => {
             const cls = `${d.err ? 'err' : ''}${tip === i ? ' curr' : ''}`.trim()

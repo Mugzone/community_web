@@ -1,0 +1,177 @@
+/*
+  1. 主背景 8d8d8d / 141 141 141
+2. 主字体 d5b9b9 / 255 221 221
+3. 链接字体 + 高亮效果 ff9d9d / 255 157 157
+4. 常规按钮 cc6666 / 204 102 102
+5. 主背景上用来加强的背景色块 535353 / 83 83 83
+6. 加强色块上用来更加加强的色块 474747 / 71 71 71
+7. 边框（现在使用了主题色）ef6666 / 239 102 102
+边框内线(二级?) 726464 / 114 100 100
+8.这东西，叫标题栏之类 ef6666 / 239 102 102
+*/
+.clear {
+  clear: both;
+  display: block;
+  height: 0;
+}
+.justfix {
+  display: inline-block;
+  width: 100%;
+  height: 0;
+  overflow: hidden;
+}
+.justfyHold {
+  visibility: hidden;
+  height: 0;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+}
+.textfix {
+  text-overflow: ellipsis;
+  overflow-x: hidden;
+  white-space: nowrap;
+}
+#center .g_cont2 {
+  padding: 10px;
+}
+#center .g_cont2 .list {
+  margin-top: 24px;
+}
+#center .g_cont2 .mode {
+  margin: 24px 7px;
+}
+#center .g_cont2 .mode a {
+  display: inline-block;
+  border-radius: 4px;
+  -moz-border-radius: 4px;
+  -webkit-border-radius: 4px;
+  margin: 0 5px;
+  padding: 4px;
+}
+#center .g_cont2 .mode a img {
+  width: 64px;
+  height: 64px;
+}
+#center .g_cont2 .mode a.curr {
+  background: #4d4d4d;
+}
+#center .g_cont2 .list_head,
+#center .g_cont2 .item {
+  border-bottom: 1px solid #4190e7;
+  text-align: left;
+  height: 52px;
+  line-height: 50px;
+}
+#center .g_cont2 .list_head span.rank,
+#center .g_cont2 .item span.rank {
+  width: 50px;
+}
+#center .g_cont2 .list_head span.avatar img,
+#center .g_cont2 .item span.avatar img {
+  width: 48px;
+  height: 48px;
+  vertical-align: top;
+  border-radius: 4px;
+  -moz-border-radius: 4px;
+  -webkit-border-radius: 4px;
+}
+#center .g_cont2 .list_head span.avatar,
+#center .g_cont2 .item span.avatar {
+  width: 50px;
+}
+#center .g_cont2 .list_head span.name,
+#center .g_cont2 .item span.name {
+  width: 120px;
+}
+#center .g_cont2 .list_head span.lv,
+#center .g_cont2 .item span.lv {
+  width: 50px;
+}
+#center .g_cont2 .list_head span.exp,
+#center .g_cont2 .item span.exp {
+  width: 120px;
+}
+#center .g_cont2 .list_head span.acc,
+#center .g_cont2 .item span.acc {
+  width: 80px;
+}
+#center .g_cont2 .list_head span.combo,
+#center .g_cont2 .item span.combo {
+  width: 100px;
+}
+#center .g_cont2 .list_head span.pc,
+#center .g_cont2 .item span.pc {
+  width: 100px;
+}
+#center .g_cont2 .list_head {
+  margin-top: 32px;
+}
+#center .g_cont2 .list_head span,
+#center .g_cont2 .item span {
+  display: inline-block;
+  text-align: center;
+  vertical-align: middle;
+}
+#center .g_cont2 .item:nth-child(even) {
+  background-color: #e6e6e6;
+}
+#center .g_cont2 .item-top {
+  display: inline-block;
+  width: 286.66666667px;
+  height: 96px;
+  background-color: #4190e7;
+  position: relative;
+  color: white;
+}
+#center .g_cont2 .item-top:nth-child(2) {
+  margin: 0 6px;
+}
+#center .g_cont2 .item-top .right {
+  display: inline-block;
+  float: left;
+  text-align: left;
+  padding: 3px;
+}
+#center .g_cont2 .item-top .right span {
+  display: block;
+  width: 128px;
+}
+#center .g_cont2 .item-top .right .name {
+  font-weight: bold;
+  font-size: 16px;
+  padding-bottom: 3px;
+}
+#center .g_cont2 .item-top .right .name a {
+  color: white;
+}
+#center .g_cont2 .item-top .avatar {
+  float: left;
+  margin: 3px;
+}
+#center .g_cont2 .item-top .avatar img {
+  width: 90px;
+  height: 90px;
+  border-radius: 4px;
+  -moz-border-radius: 4px;
+  -webkit-border-radius: 4px;
+}
+#center .g_cont2 .item-top .label {
+  width: 70px;
+  height: 24px;
+  background: url('../img/toplabel.png') no-repeat top left;
+  background-size: cover;
+  display: block;
+  position: absolute;
+  top: 8px;
+  left: -2px;
+}
+#center .g_cont2 .item-top .label.top-1 {
+  background-position: 0 0px;
+}
+#center .g_cont2 .item-top .label.top-2 {
+  background-position: 0 -29px;
+}
+#center .g_cont2 .item-top .label.top-3 {
+  background-position: 0 -58px;
+}

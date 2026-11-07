@@ -3,6 +3,7 @@ import { Shell, DefaultSidebar } from '../../components/Layout'
 import { useLoad, showNotify } from '../../lib/legacy'
 import { URLS } from '../../lib/urls'
 import { operateWikiPage, fetchWikiTmplPage } from '../../network/legacy'
+import { t as i18nT } from '../../i18n'
 
 type Model = { name: string; id: number | string; key: string; raw: string; html: string }
 const FALLBACK: Model = { name: '', id: '', key: '', raw: '', html: '' }
@@ -47,12 +48,12 @@ export default function TmplPage() {
   }
 
   return (
-    <Shell variant="two-col" title="Template" css={['wiki.css', 'tmpl.css']} sidebar={<DefaultSidebar />}>
+    <Shell variant="two-col" title={i18nT('Template')} css={['wiki.css', 'tmpl.css']} sidebar={<DefaultSidebar />}>
       <div className="g_title">Template:{data.name}</div>
       <div className="g_cont tmplpage">
         <div className="g_actbar">
-          <a href={`/page/tmpl/edit?tid=${data.id}`} className="g_btn">Edit</a>
-          <a href="#" className="g_btn btn" data-type="del" onClick={(e) => { e.preventDefault(); void del() }}>Delete</a>
+          <a href={`/page/tmpl/edit?tid=${data.id}`} className="g_btn">{i18nT('Edit')}</a>
+          <a href="#" className="g_btn btn" data-type="del" onClick={(e) => { e.preventDefault(); void del() }}>{i18nT('Delete')}</a>
         </div>
         <div className="org">{data.raw}</div>
         <h1>Usage:</h1>

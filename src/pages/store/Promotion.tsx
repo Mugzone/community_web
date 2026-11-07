@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Shell } from '../../components/Layout'
 import { num, showNotify, useLoad } from '../../lib/legacy'
 import { fetchPromotion, submitBid } from '../../network/legacy'
+import { t as i18nT } from '../../i18n'
 
 export default function Promotion() {
   const { data, reload } = useLoad<Record<string, any>>(
@@ -28,7 +29,7 @@ export default function Promotion() {
       const code = num(resp?.code, 0)
       if (code < 0) {
         const msg =
-          code === -2 ? 'You already have one promotion ticket'
+          code === -2 ? i18nT('You already have one promotion ticket')
             : code === -3 ? "You don't have enough gold"
               : 'System error'
         showNotify(msg, 'err')
@@ -50,16 +51,16 @@ export default function Promotion() {
         <p>Please read <a href="/wiki/1980">this page</a> before using the system.</p>
         <div className="bid">
           {have ? (
-            <p>You already have one promotion ticket</p>
+            <p>{i18nT('You already have one promotion ticket')}</p>
           ) : (
             <>
               <p>
-                <label>Current bidders</label>:<span>{count}</span>
-                <label style={{ marginLeft: 20 }}>Current price</label>:<span>{low}</span>
-                <label style={{ marginLeft: 20 }}>My bid</label>:<span>{my}</span>
+                <label>{i18nT('Current bidders')}</label>:<span>{count}</span>
+                <label style={{ marginLeft: 20 }}>{i18nT('Current price')}</label>:<span>{low}</span>
+                <label style={{ marginLeft: 20 }}>{i18nT('My bid')}</label>:<span>{my}</span>
               </p>
               <div>
-                <label>Increment</label>:
+                <label>{i18nT('Increment')}</label>:
                 <div className="g_select" data-key="price">
                   {[1000, 2000, 5000].map((p) => (
                     <span key={p} data-id={p} onClick={() => void onBid(p)}>{p}</span>

@@ -1,4 +1,9 @@
-const API_BASE = (import.meta.env.VITE_API_BASE ?? '/api').replace(/\/$/, '')
+/**
+ * 请求基址。生产构建不设置 VITE_API_BASE，走下面的独立 API 域名；
+ * 本地 .env.development 覆盖成 /api 由 vite proxy 转发。
+ * 注意：import.meta.env.VITE_* 是构建时静态替换，部署后改环境变量无效，必须重新 build。
+ */
+const API_BASE = (import.meta.env.VITE_API_BASE ?? 'https://api.mugzone.net/api').replace(/\/$/, '')
 const resolveApiOrigin = () => {
   if (typeof window === 'undefined') return undefined
   try {

@@ -6,8 +6,9 @@ import { URLS, staticUrl } from '../../lib/urls'
 import { fetchChartInfo, fetchRankingList, fetchChartDonateList, fetchWiki } from '../../network/api'
 import { fetchChartPage, fetchWikiLang, operateWikiPage, operateScore } from '../../network/legacy'
 import { bindHiddenToggles } from '../../utils/wiki'
-import { avatarUidUrl } from '../../utils/formatters'
+import { avatarUidUrl, coverUrl } from '../../utils/formatters'
 import { wikiToHtml, useWikiHtml, LangTabs, TalkWidget } from './WikiPage'
+import { t as i18nT } from '../../i18n'
 
 /* ------------------------------------------------------------------ *
  * wiki/wiki_page_chart.html（base_width.html 宽版）+ module/wiki
@@ -74,14 +75,14 @@ const EMPTY_CHART: ChartState = {
 
 const percentLabel = (v: number): string => {
   if (v < 0) return 'N/A'
-  if (v >= 99) return 'Masterpiece'
-  if (v >= 90) return 'Very Positive'
-  if (v >= 80) return 'Positive'
-  if (v >= 60) return 'Mostly Positive'
-  if (v >= 40) return 'Mixed'
-  if (v >= 30) return 'Mostly Negative'
-  if (v >= 20) return 'Negative'
-  return 'Very Negative'
+  if (v >= 99) return i18nT('Masterpiece')
+  if (v >= 90) return i18nT('Very Positive')
+  if (v >= 80) return i18nT('Positive')
+  if (v >= 60) return i18nT('Mostly Positive')
+  if (v >= 40) return i18nT('Mixed')
+  if (v >= 30) return i18nT('Mostly Negative')
+  if (v >= 20) return i18nT('Negative')
+  return i18nT('Very Negative')
 }
 
 /** wiki/tmpl_first.html —— 首个达成者 */
@@ -109,13 +110,13 @@ function ScoreList({ rows }: { rows: ScoreRow[] }) {
   return (
     <>
       <div className="list_head">
-        <span className="rank">Rank</span>
-        <span className="name">Player</span>
-        <span className="score">Score</span>
-        <span className="combo">Combo</span>
-        <span className="acc">Acc.</span>
-        <span className="mod">Mod</span>
-        <span className="time">Achieved</span>
+        <span className="rank">{i18nT('Rank')}</span>
+        <span className="name">{i18nT('Player')}</span>
+        <span className="score">{i18nT('Score')}</span>
+        <span className="combo">{i18nT('Combo')}</span>
+        <span className="acc">{i18nT('Acc.')}</span>
+        <span className="mod">{i18nT('Mod')}</span>
+        <span className="time">{i18nT('Achieved')}</span>
       </div>
       <ul className="list">
         {rows.map((row, i) => {
@@ -268,7 +269,7 @@ export default function ChartPage() {
       return
     }
     try { await operateWikiPage(type, { key }); showNotify('Success', 'succ') }
-    catch { showNotify('Operation failed', 'err') }
+    catch { showNotify(i18nT('Operation failed'), 'err') }
   }
 
   const onJudge = (v: number): void => { setJudge(v) }
@@ -276,7 +277,8 @@ export default function ChartPage() {
 
   const chart = data.chart
   const song = data.song
-  const cover = String(song.cover_url ?? song.cover ?? chart.cover ?? '') || staticUrl('img/cover.png')
+  const rawCover = String(song.cover_url ?? song.cover ?? chart.cover ?? '')
+  const cover = rawCover ? coverUrl(rawCover) : staticUrl('img/cover.png')
   const songTitle = String(song.title ?? chart.title ?? '')
   const songArtist = String(song.artist ?? chart.artist ?? '')
   const chartId = chart.id ?? id
@@ -299,7 +301,7 @@ export default function ChartPage() {
         </div>
 
         <div className="tail">
-          <a href={URLS.song(data.sid)}>Back to song</a>
+          <a href={URLS.song(data.sid)}>{i18nT('Back to song')}</a>
         </div>
 
         <div className="right">
@@ -308,9 +310,9 @@ export default function ChartPage() {
           )}
           <h2 className="textfix title">
             {chartType === 2 ? <em className="t2">Stable</em> : chartType === 1 ? <em className="t1">Beta</em> : <em className="t0">Alpha</em>}
-            {num(chart.pubmark, 0) === 1 && <em className="w" title="Need further modification">Warn</em>}
+            {num(chart.pubmark, 0) === 1 && <em className="w" title={i18nT('Need further modification')}>Warn</em>}
             {chart.hide === true && <em className="h">Hide</em>}
-            {num(chart.promote, 0) > 0 && <em className="p" title="Promotion">PM</em>}
+            {num(chart.promote, 0) > 0 && <em className="p" title={i18nT('Promotion')}>PM</em>}
             {num(chart.mcver, 0) === 1 && <em className="t2">Free</em>}
             <span className="textfix artist">{data.songEx.artist}</span> - {data.songEx.title}
           </h2>
@@ -330,9 +332,9 @@ export default function ChartPage() {
           </h2>
           <h2 className="sub">
             <label>ID</label>:c<span>{chartId}</span>&nbsp;&nbsp;
-            <label>Length</label>:<span>{song.length ?? chart.length ?? ''}s</span>&nbsp;&nbsp;
-            <label>BPM</label>:<span>{floatFormat(song.bpm)}</span>
-            <label>Last updated</label>:<span className="textfix">{chart.lastedit_str ?? ''}</span>
+            <label>{i18nT('Length')}</label>:<span>{song.length ?? chart.length ?? ''}s</span>&nbsp;&nbsp;
+            <label>{i18nT('BPM')}</label>:<span>{floatFormat(song.bpm)}</span>
+            <label>{i18nT('Last updated')}</label>:<span className="textfix">{chart.lastedit_str ?? ''}</span>
           </h2>
           <h2 className="tags">
             {data.tags.length > 0 && (
@@ -355,7 +357,7 @@ export default function ChartPage() {
           )}
           <a href="#" className="btn g_toolbtn e" data-type="edit_meta" title="Edit meta" onClick={(e) => { e.preventDefault(); void onTool('edit_meta') }}><i></i></a>
           <a href={`${URLS.change}?key=${key}`} className="g_toolbtn log" title="Change History"><i></i></a>
-          {data.canDel && <a href="#" className="btn g_toolbtn d" data-type="del" title="Delete" onClick={(e) => { e.preventDefault(); void onTool('del') }}><i></i></a>}
+          {data.canDel && <a href="#" className="btn g_toolbtn d" data-type="del" title={i18nT('Delete')} onClick={(e) => { e.preventDefault(); void onTool('del') }}><i></i></a>}
           {data.canMerge && <a href="#" className="btn g_toolbtn m" data-type="merge" title="Merge to another song" onClick={(e) => { e.preventDefault(); void onTool('merge') }}><i></i></a>}
         </div>
       </div>
@@ -366,10 +368,10 @@ export default function ChartPage() {
           <span>{percentLabel(data.percent)}</span>
         </div>
         <div className="num" style={{ float: 'right' }}>
-          <img src={staticUrl('img/icon-donate.png')} alt="" />Donation<span className="l">{data.gold}</span>
+          <img src={staticUrl('img/icon-donate.png')} alt="" />{i18nT('Donation')}<span className="l">{data.gold}</span>
         </div>
         <div className="num" style={{ float: 'right' }}>
-          <img src={staticUrl('img/icon-play.png')} alt="" /><span>Hot</span><span className="l">{chart.playcount ?? 0}</span>
+          <img src={staticUrl('img/icon-play.png')} alt="" /><span>{i18nT('Hot')}</span><span className="l">{chart.playcount ?? 0}</span>
         </div>
       </div>
 
@@ -385,12 +387,12 @@ export default function ChartPage() {
       )}
 
       <div className="g_cont2 g_rblock">
-        <h1 className="sec">Ranking</h1>
+        <h1 className="sec">{i18nT('Ranking')}</h1>
         <div className="g_actbar" id="score_actbar">
-          <a href="#" className="g_btn btn" data-type="delall" onClick={(e) => { e.preventDefault(); void onTool('delall') }}>Clear All Records</a>
-          <a href="#" className="g_btn btn" data-type="delmy" onClick={(e) => { e.preventDefault(); void onTool('delmy') }}>Remove score</a>
+          <a href="#" className="g_btn btn" data-type="delall" onClick={(e) => { e.preventDefault(); void onTool('delall') }}>{i18nT('Clear All Records')}</a>
+          <a href="#" className="g_btn btn" data-type="delmy" onClick={(e) => { e.preventDefault(); void onTool('delmy') }}>{i18nT('Remove score')}</a>
           <select id="g_judge" className="g_options" value={judge} onChange={(e) => onJudge(Number(e.target.value))}>
-            <option value="-1">All</option>
+            <option value="-1">{i18nT('All')}</option>
             <option value="0">A(Easy)</option>
             <option value="1">B(Easy+)</option>
             <option value="2">C(Normal)</option>
@@ -409,7 +411,7 @@ export default function ChartPage() {
 
       {data.donate.length > 0 && (
         <div className="g_cont2 g_rblock">
-          <h1 className="sec">Supporters</h1>
+          <h1 className="sec">{i18nT('Supporters')}</h1>
           <div className="donate_area g_tmpl_grouplist">
             <JustifyRow>
               {data.donate.map((d, i) => {
@@ -432,7 +434,7 @@ export default function ChartPage() {
       <div className="g_cont2 g_rblock">
         <div className="tool">
           <LangTabs value={lang} onChange={(c, l) => { void onChangeLang(c, l) }} />
-          {data.canEdit && <a href="#" className="btn g_toolbtn e" data-type="edit" title="Edit" onClick={(e) => { e.preventDefault(); onEdit() }}><i></i></a>}
+          {data.canEdit && <a href="#" className="btn g_toolbtn e" data-type="edit" title={i18nT('Edit')} onClick={(e) => { e.preventDefault(); onEdit() }}><i></i></a>}
         </div>
         <div
           className="g_wiki"

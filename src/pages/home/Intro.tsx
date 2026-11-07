@@ -163,7 +163,7 @@ export default function Intro() {
         </div>
       </div>
       <div id="foot">
-        Copyright &copy; 2013-2025 Mugzone
+        Copyright &copy; 2013-2026 Mugzone
       </div>
     </Shell>
   )

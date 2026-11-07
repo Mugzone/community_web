@@ -2,6 +2,8 @@ import { Shell } from '../../components/Layout'
 import { useLoad, asArray, LoadingBlock, EmptyBlock } from '../../lib/legacy'
 import { URLS, staticUrl } from '../../lib/urls'
 import { fetchDailyList } from '../../network/legacy'
+import { t as i18nT } from '../../i18n'
+import { coverUrl } from '../../utils/formatters'
 
 type DailyItem = { id: number | string; title?: string; version?: string; cover?: string; mode?: number }
 const FALLBACK: DailyItem[] = []
@@ -21,19 +23,19 @@ export default function AllDaily() {
   const items = data ?? []
 
   return (
-    <Shell variant="wide" title="Daily" css={['akari.css', 'tmpl.css']}>
+    <Shell variant="wide" title={i18nT('Daily')} css={['akari.css', 'tmpl.css']}>
       <div className="quest_tabs">
-        <a className="g_btn g_round" href={URLS.allQuest}>Quest</a>
-        <a className="g_btn g_round curr" href={URLS.allDaily}>Daily</a>
+        <a className="g_btn g_round" href={URLS.allQuest}>{i18nT('Quest')}</a>
+        <a className="g_btn g_round curr" href={URLS.allDaily}>{i18nT('Daily')}</a>
       </div>
 
       <div className="g_cont g_round" style={{ textAlign: 'left' }}>
-        <p>quest_04</p>
+        <p>{i18nT('quest_04')}</p>
         <div className="items">
           {items.map((it) => (
             <div className="g_tmpl_event" key={it.id}>
               {it.cover
-                ? <a href={URLS.chartPage(it.id)} style={{ backgroundImage: `url(${it.cover})` }}></a>
+                ? <a href={URLS.chartPage(it.id)} style={{ backgroundImage: `url(${coverUrl(it.cover)})` }}></a>
                 : <a href={URLS.chartPage(it.id)}></a>}
               <div className="right">
                 <p className="title textfix">

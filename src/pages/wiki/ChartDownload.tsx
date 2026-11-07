@@ -4,6 +4,7 @@ import { Shell, DefaultSidebar } from '../../components/Layout'
 import { useLoad, asArray, LoadingBlock } from '../../lib/legacy'
 import { URLS, staticUrl } from '../../lib/urls'
 import { fetchChartDownload } from '../../network/legacy'
+import { t as i18nT } from '../../i18n'
 
 type DownloadItem = { name?: string; url?: string }
 type Model = { backId: number | string; list: DownloadItem[] }
@@ -37,12 +38,12 @@ export default function ChartDownload() {
     <Shell variant="two-col" title={notFound ? 'Not found' : undefined} css={['akari.css']} sidebar={<DefaultSidebar />}>
       {notFound ? (
         <>
-          <div className="g_title">Page Not Found</div>
+          <div className="g_title">{i18nT('Page Not Found')}</div>
           <div className="g_cont p404">
-            <p className="search">Try other searches:</p>
+            <p className="search">{i18nT('Try other searches:')}</p>
             <p>
               The page you search is not found, try another keyword or{' '}
-              <a className="g_btn" href={`/page/create?title=${encodeURIComponent(id)}`}>Create a new page</a>
+              <a className="g_btn" href={`/page/create?title=${encodeURIComponent(id)}`}>{i18nT('Create a new page')}</a>
             </p>
             <img src={staticUrl('img/404.png')} alt="404" />
           </div>
@@ -52,7 +53,7 @@ export default function ChartDownload() {
           <div className="g_title">Chart Download</div>
           <div className="g_cont wiki_change">
             <div className="g_actbar">
-              <a href={URLS.wiki(data.backId)} className="g_btn">Back</a>
+              <a href={URLS.wiki(data.backId)} className="g_btn">{i18nT('Back')}</a>
             </div>
             {list.map((it, i) => (
               <h1 key={i}>

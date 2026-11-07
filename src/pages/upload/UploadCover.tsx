@@ -4,6 +4,7 @@ import { num, showNotify, useLoad } from '../../lib/legacy'
 import { URLS } from '../../lib/urls'
 import { fetchUploadPage, fetchUploadSign } from '../../network/legacy'
 import { coverUrl } from '../../utils/formatters'
+import { t as i18nT } from '../../i18n'
 
 const IMG_HOST = 'http://v0.api.upyun.com/ma-img'
 
@@ -45,22 +46,22 @@ export default function UploadCover() {
   }
 
   return (
-    <Shell variant="two-col" title="Change Cover" css={['upload.css']}>
-      <div className="g_title">Change Cover</div>
+    <Shell variant="two-col" title={i18nT('Change Cover')} css={['upload.css']}>
+      <div className="g_title">{i18nT('Change Cover')}</div>
       <div className="g_cont">
         <div className="g_actbar">
-          <a href={URLS.song(songId)} className="g_btn">Cancel</a>
+          <a href={URLS.song(songId)} className="g_btn">{i18nT('Cancel')}</a>
         </div>
         {cover ? (
-          <h1><label htmlFor="">Current</label><img src={coverUrl(cover)} alt="" /></h1>
+          <h1><label htmlFor="">{i18nT('Current')}</label><img src={coverUrl(cover)} alt="" /></h1>
         ) : (
-          <h1><label htmlFor="">Current</label><span>No cover</span></h1>
+          <h1><label htmlFor="">{i18nT('Current')}</label><span>No cover</span></h1>
         )}
         <form action={IMG_HOST} method="post" encType="multipart/form-data" onSubmit={(e) => void onSubmit(e)}>
-          <h1><label htmlFor="file">New cover</label><input type="file" name="file" accept="image/png, image/jpeg" onChange={onFile} /></h1>
+          <h1><label htmlFor="file">{i18nT('New cover')}</label><input type="file" name="file" accept="image/png, image/jpeg" onChange={onFile} /></h1>
           <input name="policy" type="hidden" value={policy} readOnly />
           <input name="signature" type="hidden" value={signature} readOnly />
-          <input type="submit" className="g_btn btn" value="Save" />
+          <input type="submit" className="g_btn btn" value={i18nT('Save')} />
         </form>
       </div>
     </Shell>

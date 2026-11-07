@@ -4,7 +4,8 @@ import { Shell } from '../../components/Layout'
 import { asArray, num, Pager, useLoad } from '../../lib/legacy'
 import { URLS, staticUrl } from '../../lib/urls'
 import { fetchEventRank } from '../../network/legacy'
-import { avatarUrl } from '../../utils/formatters'
+import { avatarUrl, coverUrl } from '../../utils/formatters'
+import { t as i18nT } from '../../i18n'
 
 /* score/event_rank.html：extended base_width.html，含 wiki/tmpl_event_chart.html 与 wiki/tmpl_eventsum.html */
 type Rec = Record<string, any>
@@ -22,7 +23,7 @@ const n = (v: unknown, fb = 0): number => num(v, fb)
 const coverSrc = (v: unknown): string => {
   const raw = s(v)
   if (!raw) return staticUrl('img/cover.png')
-  return raw.startsWith('http') || raw.startsWith('/') ? raw : `//cni.mugzone.net/${raw}`
+  return coverUrl(raw)
 }
 
 export default function EventRank() {
@@ -53,7 +54,7 @@ export default function EventRank() {
   const record = data.record
 
   return (
-    <Shell variant="wide" title={s(record.name) || 'Event record'} css={['wiki.css', 'tmpl.css']} contCls="">
+    <Shell variant="wide" title={s(record.name) || i18nT('Event record')} css={['wiki.css', 'tmpl.css']} contCls="">
       <div className="song_title g_rblock">
         <div className="coverb">
           <div className="cover" style={{ backgroundImage: `url(${coverSrc(data.cover)})` }}></div>
@@ -93,9 +94,9 @@ export default function EventRank() {
           <span className="clear"></span>
           <div className="score_area" style={{ display: 'inline-block' }}>
             <div className="list_head">
-              <span className="rank">Rank</span>
-              <span className="name">Player</span>
-              <span className="score">Score</span>
+              <span className="rank">{i18nT('Rank')}</span>
+              <span className="name">{i18nT('Player')}</span>
+              <span className="score">{i18nT('Score')}</span>
             </div>
             <ul className="list">
               {data.list.map((item: Rec, i: number) => {

@@ -6,9 +6,11 @@ import { staticUrl, URLS } from '../../lib/urls'
 import {
   deleteSkin, fetchSkinDetail, fetchTalkList, purchaseSkin, saveTalk,
 } from '../../network/legacy'
+import { t as i18nT } from '../../i18n'
+import { avatarUrl, coverUrl } from '../../utils/formatters'
 
 const MODE_LABELS = ['Key', 'Step', 'DJ', 'Catch', 'Pad', 'Taiko', 'Ring', 'Slide', 'Live', 'Cube']
-const PLATFORM_LABELS = ['PC', 'Pad Horizontal', 'Pad Portrait', 'Phone Horizontal', 'Phone Portrait']
+const PLATFORM_LABELS = ['PC', i18nT('Pad Horizontal'), i18nT('Pad Portrait'), i18nT('Phone Horizontal'), i18nT('Phone Portrait')]
 
 type TalkItem = {
   tid?: number | string
@@ -25,11 +27,11 @@ type TalkItem = {
 }
 
 const TALK_TOOLS: { type: string; cls: string; title: string }[] = [
-  { type: 'bold', cls: 'tool-B', title: 'Bold' },
-  { type: 'italic', cls: 'tool-I', title: 'Italic' },
-  { type: 'list', cls: 'tool-list', title: 'List' },
-  { type: 'img', cls: 'tool-img', title: 'Image' },
-  { type: 'link', cls: 'tool-link', title: 'Link' },
+  { type: 'bold', cls: 'tool-B', title: i18nT('Bold') },
+  { type: 'italic', cls: 'tool-I', title: i18nT('Italic') },
+  { type: 'list', cls: 'tool-list', title: i18nT('List') },
+  { type: 'img', cls: 'tool-img', title: i18nT('Image') },
+  { type: 'link', cls: 'tool-link', title: i18nT('Link') },
 ]
 
 export default function SkinDetail() {
@@ -67,7 +69,8 @@ export default function SkinDetail() {
   const skin: any = detail?.skin ?? detail ?? {}
   const id = skin.id ?? sid
   const name = String(skin.name ?? '')
-  const coverBg = String(skin.cover_url ?? skin.cover ?? '') || '/static/img/cover.png'
+  const rawCover = String(skin.cover_url ?? skin.cover ?? '')
+  const coverBg = rawCover ? coverUrl(rawCover) : '/static/img/cover.png'
   const price = num(skin.price, 0)
   const stat = num(skin.status, 0)
   const author: any = skin.author ?? {}
@@ -169,9 +172,8 @@ export default function SkinDetail() {
     return (
       <li className="item" data-id={tid} data-time={t.time} key={`${tid}-${idx}`}>
         <a className="bg left" href={URLS.user(uid)}>
-          {t.avatar
-            ? <img src={`http://cni.mugzone.net/avatar/${t.avatar}`} style={{ background: 'none' }} alt="" />
-            : <img alt="" />}
+          {/* 老站 widget/discuss_item.html:5 {% avatar item.user 64 small=True %} */}
+          <img src={avatarUrl(t.avatar, uid, 64)} style={{ background: 'none' }} alt="" />
         </a>
         <div className="bg right">
           <div className="g_wiki">
@@ -180,13 +182,13 @@ export default function SkinDetail() {
               <a href={URLS.user(uid)} className="name">{showName}</a>
               <span className="time">{showTime}</span>
               {!t.isOwn && (
-                <a href="#" data-type="reply" title="Reply" className="tool" onClick={(e) => { e.preventDefault(); openEditor(`@${showName} `) }}>Reply</a>
+                <a href="#" data-type="reply" title={i18nT('Reply')} className="tool" onClick={(e) => { e.preventDefault(); openEditor(`@${showName} `) }}>{i18nT('Reply')}</a>
               )}
               {t.canEdit && (
-                <a href="#" data-type="edit" title="Edit" className="tool" onClick={(e) => { e.preventDefault(); openEditor(body) }}>Edit</a>
+                <a href="#" data-type="edit" title={i18nT('Edit')} className="tool" onClick={(e) => { e.preventDefault(); openEditor(body) }}>{i18nT('Edit')}</a>
               )}
               {t.canDel && (
-                <a href="#" data-type="del" title="Delete" className="tool" onClick={(e) => { e.preventDefault(); showNotify('Delete success!', 'succ') }}>Delete</a>
+                <a href="#" data-type="del" title={i18nT('Delete')} className="tool" onClick={(e) => { e.preventDefault(); showNotify('Delete success!', 'succ') }}>{i18nT('Delete')}</a>
               )}
             </p>
             {body}
@@ -205,23 +207,23 @@ export default function SkinDetail() {
           <div className="cover" style={{ backgroundImage: `url(${coverBg})` }}></div>
         </div>
         <div className="tail">
-          <a href={URLS.skin}>Back to skin list</a>
+          <a href={URLS.skin}>{i18nT('Back to skin list')}</a>
         </div>
         <div id="tool_skin" style={{ zIndex: 10 }}>
           {canEdit && (
-            <a href={`/store/skin/entry?id=${id}`} className="btn g_toolbtn e" title="Edit skin"><i></i></a>
+            <a href={`/store/skin/entry?id=${id}`} className="btn g_toolbtn e" title={i18nT('Edit skin')}><i></i></a>
           )}
           {canDelete && (
-            <a href="#" className="btn g_toolbtn d" data-type="del" title="Delete" onClick={(e) => { e.preventDefault(); void onDelete() }}><i></i></a>
+            <a href="#" className="btn g_toolbtn d" data-type="del" title={i18nT('Delete')} onClick={(e) => { e.preventDefault(); void onDelete() }}><i></i></a>
           )}
           <a href={`/page/change?key=${key}`} className="g_toolbtn log" title="Change History"><i></i></a>
         </div>
         {haslink && (
           <div id="btn_skin" style={{ zIndex: 10 }}>
             {needLogin ? (
-              <a href="#login" id="link_login" className="g_btn login" onClick={(e) => { e.preventDefault(); showNotify('Please login', 'err') }}>Login to purchase</a>
+              <a href="#login" id="link_login" className="g_btn login" onClick={(e) => { e.preventDefault(); showNotify(i18nT('Please login'), 'err') }}>{i18nT('Login to purchase')}</a>
             ) : purchased && !bought ? (
-              <a href={downUrl} className="g_btn download" download={downName}>Download skin</a>
+              <a href={downUrl} className="g_btn download" download={downName}>{i18nT('Download skin')}</a>
             ) : (
               <>
                 <a
@@ -230,7 +232,7 @@ export default function SkinDetail() {
                   style={{ display: bought ? 'none' : undefined }}
                   onClick={(e) => { e.preventDefault(); void onBuy() }}
                 >{price ? `${price} Gold` : 'Free'}</a>
-                <a href={downUrl} className="g_btn download" download={downName} id="link_download" style={{ display: bought ? undefined : 'none' }}>Download skin</a>
+                <a href={downUrl} className="g_btn download" download={downName} id="link_download" style={{ display: bought ? undefined : 'none' }}>{i18nT('Download skin')}</a>
               </>
             )}
           </div>
@@ -242,14 +244,14 @@ export default function SkinDetail() {
             {name}
           </h2>
           <h2 className="sub">
-            <label>Author</label>:<a href={URLS.user(authorId)}>{authorName}</a>
-            <label>Price</label>:<span>{price ? price : 'free'}</span>
-            <label>Status</label>:<span>{stat === 0 ? 'Draft' : stat === 1 ? 'Beta' : stat === 2 ? 'Stable' : ''}</span>
+            <label>{i18nT('Author')}</label>:<a href={URLS.user(authorId)}>{authorName}</a>
+            <label>{i18nT('Price')}</label>:<span>{price ? price : 'free'}</span>
+            <label>{i18nT('Status')}</label>:<span>{stat === 0 ? 'Draft' : stat === 1 ? 'Beta' : stat === 2 ? 'Stable' : ''}</span>
           </h2>
           <h2 className="sub">
-            <label>Version</label>:<span>{String(skin.version ?? '')}</span>
-            <label>Last update</label>:<span>{String(skin.update_str ?? '')}</span>
-            {!!skin.client && <><label>Required</label>:<span>{String(skin.client)}</span></>}
+            <label>{i18nT('Version')}</label>:<span>{String(skin.version ?? '')}</span>
+            <label>{i18nT('Last update')}</label>:<span>{String(skin.update_str ?? '')}</span>
+            {!!skin.client && <><label>{i18nT('Required')}</label>:<span>{String(skin.client)}</span></>}
             {!!skin.clientmax && <>&nbsp;-&nbsp;<span>{String(skin.clientmax)}</span></>}
           </h2>
           <h2 className="sub">
@@ -261,7 +263,7 @@ export default function SkinDetail() {
             </span>
           </h2>
           <h2 className="sub">
-            <label>Support modes</label>:
+            <label>{i18nT('Support modes')}</label>:
             <span className="mode-list">
               {modeArr.map((i) => (
                 <img data-index={i} className="mode" key={i} src={staticUrl(`img/mode/mode-${i}.png`)} title={MODE_LABELS[i] ?? ''} alt="" />
@@ -273,7 +275,7 @@ export default function SkinDetail() {
 
       {previewArr.length > 0 && (
         <div className="g_rblock g_cont2 g_wiki">
-          <h2>Preview images</h2>
+          <h2>{i18nT('Preview images')}</h2>
           <div id="preview">
             {previewArr.map((img) => (
               <a
@@ -288,7 +290,7 @@ export default function SkinDetail() {
 
       <div className="g_cont2 g_rblock">
         <div className="tool">
-          <a href="#" className="btn g_toolbtn e" data-type="edit" title="Edit" onClick={(e) => { e.preventDefault(); onDescEdit() }}><i></i></a>
+          <a href="#" className="btn g_toolbtn e" data-type="edit" title={i18nT('Edit')} onClick={(e) => { e.preventDefault(); onDescEdit() }}><i></i></a>
         </div>
         <div className="g_wiki">
           {desc
@@ -315,20 +317,20 @@ export default function SkinDetail() {
             </div>
             <textarea cols={80} rows={30} dir="ltr" value={content} onChange={(e) => setContent(e.target.value)}></textarea>
             <p>
-              <a className="g_btn btn g_talk_new" data-type="save" id="g_talk_save" href="#" onClick={(e) => { e.preventDefault(); void onSaveTalk() }}>Reply</a>
+              <a className="g_btn btn g_talk_new" data-type="save" id="g_talk_save" href="#" onClick={(e) => { e.preventDefault(); void onSaveTalk() }}>{i18nT('Reply')}</a>
             </p>
           </div>
         </div>
         <div className="g_talk_tool">
-          <div className="g_btn btn g_talk_new" data-type="new" onClick={() => openEditor()}><i></i>Reply</div>
+          <div className="g_btn btn g_talk_new" data-type="new" onClick={() => openEditor()}><i></i>{i18nT('Reply')}</div>
         </div>
         <ul id="g_talk_list">
           {talkItems.map(renderTalkItem)}
         </ul>
-        <div id="g_talk_next" data-type="next" className="talk_btn btn" onClick={() => { setTalkPage((p) => p + 1) }}>Show more</div>
+        <div id="g_talk_next" data-type="next" className="talk_btn btn" onClick={() => { setTalkPage((p) => p + 1) }}>{i18nT('Show more')}</div>
         <div className="g_talk_new_rep" id="g_talk_new2">
-          <p>Want to say something?</p>
-          <div className="g_btn btn g_talk_new" data-type="new" onClick={() => openEditor()}><i></i>Reply</div>
+          <p>{i18nT('Want to say something?')}</p>
+          <div className="g_btn btn g_talk_new" data-type="new" onClick={() => openEditor()}><i></i>{i18nT('Reply')}</div>
         </div>
       </div>
     </Shell>

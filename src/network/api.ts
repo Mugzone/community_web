@@ -998,7 +998,7 @@ export const likeChart = (payload: { cid: number; state: number; hash?: string; 
     },
   })
 
-export const fetchRankingList = (params: { cid: number; pro?: number; order?: number; hash?: string; ver?: number; bver?: number }) =>
+export const fetchRankingList = (params: { cid: number; pro?: number; order?: number; judge?: number; hash?: string; ver?: number; bver?: number }) =>
   getJson<RespRanking>('/ranking/list', { params })
 
 export type RespRankingFirst5Item = {

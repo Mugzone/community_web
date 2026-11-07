@@ -11,10 +11,11 @@ import {
   fetchPlayerCharts,
   postForm,
 } from '../../network/api'
-import { fetchAchieveList } from '../../network/legacy'
+import { fetchAchieveList, fetchUserPageWiki } from '../../network/legacy'
 import { avatarUrl, coverUrl } from '../../utils/formatters'
 import { regionMap } from '../../utils/profile'
 import { t as i18nT } from '../../i18n'
+import { useWikiHtml } from '../wiki/WikiPage'
 
 /* profile/index.html：extended base_width.html（wide），交互对应 module/user/src/init.js */
 type Rec = Record<string, any>
@@ -91,15 +92,19 @@ export default function UserPage() {
 
   const { data, reload } = useLoad<UserData>(
     async () => {
-      const [infoRes, rankRes, actRes, chartRes, achRes] = await Promise.all([
+      const [infoRes, rankRes, actRes, chartRes, achRes, upRes] = await Promise.all([
         fetchPlayerInfo({ uid }).catch(() => undefined),
         fetchPlayerAllRank({ uid }).catch(() => undefined),
         fetchPlayerActivity({ uid }).catch(() => undefined),
         fetchPlayerCharts({ uid }).catch(() => undefined),
         fetchAchieveList(uid).catch(() => undefined),
+        // 老站 account/views.py:317 取 plugin_wiki(key=user_<uid>).html；
+        // Go 的 /community/wiki/userpage 返回的是 raw wiki 文本，需前端渲染
+        fetchUserPageWiki(uid).catch(() => undefined),
       ])
       // /api/player/info 返回扁平结构（username/gold/... 在顶层）；其它接口带 data 包裹，两者兼容
       const info: Rec = ((infoRes as Rec | undefined)?.data ?? infoRes ?? {}) as Rec
+      const up: Rec = ((upRes as Rec | undefined)?.data ?? upRes ?? {}) as Rec
       return {
         info,
         ranks: asArray<Rec>((rankRes as Rec | undefined)?.data ?? rankRes),
@@ -107,7 +112,7 @@ export default function UserPage() {
         recent: asArray<Rec>((actRes as Rec | undefined)?.recent ?? []),
         charts: asArray<Rec>((chartRes as Rec | undefined)?.data ?? chartRes),
         achieves: achList(achRes),
-        content: s(info.content ?? info.wiki ?? info.userpage),
+        content: s(up.content ?? up.wiki ?? info.content ?? info.wiki ?? info.userpage),
         friendType: n(info.friend_type ?? info.friendType ?? info.friend, 0),
         tab: n(info.tab, 0),
         group: asArray<Rec>(info.group),
@@ -122,6 +127,9 @@ export default function UserPage() {
     [uid],
     FALLBACK,
   )
+
+  // 与 wiki 正文共用渲染管线（markdown 式标记 + {{ name:... }} 模板块）
+  const profileHtml = useWikiHtml(data.content)
 
   const [tab, setTab] = useState<number>(0)
   const [friendType, setFriendType] = useState<number>(0)
@@ -323,8 +331,8 @@ export default function UserPage() {
                 <a href={URLS.userpageEdit(uid)} className="g_toolbtn e"><i></i></a>
               </div>
             )}
-            {data.content && (
-              <div className="g_wiki userpage" dangerouslySetInnerHTML={{ __html: `${data.content}<span class="clear"></span>` }}></div>
+            {profileHtml && (
+              <div className="g_wiki userpage" dangerouslySetInnerHTML={{ __html: `${profileHtml}<span class="clear"></span>` }}></div>
             )}
           </div>
 

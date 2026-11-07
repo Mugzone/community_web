@@ -19,6 +19,7 @@ type ChartRow = {
   cid?: number | string
   display_version?: string
   version?: string
+  level?: number | string
   length?: number | string
   mode?: number
   playcount?: number | string
@@ -57,6 +58,20 @@ const EMPTY_SONG: SongState = {
 
 const TYPE_LABELS = ['Alpha', 'Beta', 'Stable']
 
+/**
+ * 老站 wikipage/models.py:404 TempDataChart.display_version：
+ * level=0 原样返回；否则去掉 version 里已有的 LV.<n>，再统一拼 " Lv.<level>"。
+ * 后端 /community/song/page 的 chartlist 已带 display_version，这里只用于
+ * /community/song/charts 兜底数据（该接口只有 version + level）。
+ */
+const displayVersion = (c: ChartRow): string => {
+  if (c.display_version) return String(c.display_version)
+  const raw = String(c.version ?? '')
+  const lv = Number(c.level ?? 0)
+  if (!Number.isFinite(lv) || lv <= 0) return raw
+  return `${raw.replace(/LV\.\d+/gi, '')} Lv.${lv}`
+}
+
 /** wiki/display_chart_list.html —— 谱面列表 */
 function ChartList({ charts, songId }: { charts: ChartRow[]; songId: number | string }) {
   return (
@@ -75,7 +90,7 @@ function ChartList({ charts, songId }: { charts: ChartRow[]; songId: number | st
           <h2 className="item" key={`${c.id ?? 'c'}-${i}`}>
             <i className="col1 textfix">
               <img src={staticUrl(`img/mode/mode-${c.mode ?? 0}.png`)} alt="" />
-              <a href={URLS.chartPage(c.id ?? c.cid ?? 0)}>{c.display_version ?? c.version ?? ''}</a>
+              <a href={URLS.chartPage(c.id ?? c.cid ?? 0)}>{displayVersion(c)}</a>
             </i>
             <i className="col2">{c.length ?? ''}</i>
             <i className="col3">{c.type !== undefined ? (TYPE_LABELS[c.type] ?? c.type) : ''}</i>
@@ -114,7 +129,9 @@ export default function SongPage() {
       const title = String(songExRaw.title ?? info.title ?? song.title ?? '')
       const artist = String(songExRaw.artist ?? info.artist ?? song.artist ?? '')
       const hasOrg = Boolean(songExRaw.hasOrg) || (Boolean(song.titleOrg) && song.titleOrg !== song.title)
-      const charts: ChartRow[] = asArray<ChartRow>((chartsR as any)?.data ?? p.chartlist ?? chartsR)
+      // 老站 display_chart_list.html 用后端算好的 display_version；
+      // /community/song/charts 只给 version+level（连 id 都没有），仅作兜底。
+      const charts: ChartRow[] = asArray<ChartRow>(p.chartlist ?? (chartsR as any)?.data ?? chartsR)
       const tags: TagRow[] = asArray<any>(p.taglist ?? info.tagOptions ?? []).map((t: any) => {
         const inner = t?.tag ?? t
         return { id: inner?.id ?? t?.id, name: inner?.name ?? t?.name }

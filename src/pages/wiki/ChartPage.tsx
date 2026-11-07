@@ -210,7 +210,14 @@ export default function ChartPage() {
 
   const { data: scores, reload: reloadScores } = useLoad<ScoreRow[]>(
     async () => {
-      const resp: any = await fetchRankingList({ cid: Number(id) || 0, order: judge, pro: platform })
+      // 老站 score/views.py:31 from_to_platform：0=Pro Judge(platform 0,1)、1=Standard(2,3,4)；
+      // Go /ranking/list 的 pro 是「是否 Pro Judge」布尔（1=platform<2），故需反转。
+      // judge 是判定等级过滤（老站 filter(judge=judge)），不是 order 排序位掩码。
+      const resp: any = await fetchRankingList({
+        cid: Number(id) || 0,
+        pro: platform === 0 ? 1 : 0,
+        judge,
+      })
       return asArray<ScoreRow>(resp?.data ?? resp?.items ?? resp)
     },
     [id, judge, platform],

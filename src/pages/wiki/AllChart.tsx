@@ -5,6 +5,7 @@ import { URLS, staticUrl } from '../../lib/urls'
 import { fetchChartFilter } from '../../network/legacy'
 import { t as i18nT } from '../../i18n'
 import { coverUrl } from '../../utils/formatters'
+import { SkeletonCards } from '../../components/Skeleton'
 
 type SelectOption = { id: number; label?: string }
 type ChartItem = { id: number | string; cover?: string; title?: string; version?: string; mode?: number; lastedit?: number }
@@ -151,7 +152,8 @@ export default function AllChart() {
           </div>
         </div>
         <div id="maps">
-          {items.map((it) => (
+          {loading && <SkeletonCards count={12} />}
+          {!loading && items.map((it) => (
             <div className="g_map" key={it.id}>
               <a className="link" href={URLS.chartPage(it.id)} target="_blank">
                 {it.cover

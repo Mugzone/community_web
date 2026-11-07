@@ -86,8 +86,9 @@ export const fetchChartDownload = (pageId: number | string) =>
   get<WebResp>('/community/wiki/download', { pid: pageId })
 export const fetchChartFilter = (params: Params) =>
   get<WebResp>('/community/chart/filter', params)
+// 目标用户走 touid：query 的 uid 是全局 token 中间件的登录态参数，同名会触发 -1000
 export const fetchUserPageWiki = (userId: number | string) =>
-  get<WebResp>('/community/wiki/userpage', { uid: userId })
+  get<WebResp>('/community/wiki/userpage', { touid: userId })
 export const saveUserPageWiki = (userId: number | string, content: string) =>
   post<WebResp>('/community/wiki/userpage', { uid: userId, content })
 export const fetchSongPage = (pageId: number | string) =>

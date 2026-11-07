@@ -1,4 +1,5 @@
 import { Children, Fragment, useCallback, useEffect, useState, type ReactNode } from 'react'
+import { SkeletonRows } from '../components/Skeleton'
 
 /**
  * 老站大量列表用 `text-align: justify` + inline-block 卡片实现两端对齐，
@@ -172,8 +173,9 @@ export function Pager({
   )
 }
 
-export function LoadingBlock({ text = 'Loading...' }: { text?: string }) {
-  return <div className="loading_block">{text}</div>
+/** 统一加载态：用骨架行占位，不再显示裸 "Loading..." 文本（老站服务端直出无此态） */
+export function LoadingBlock({ text = 'Loading...', count = 5 }: { text?: string; count?: number }) {
+  return <SkeletonRows count={count} label={text} />
 }
 
 export function EmptyBlock({ text = 'No data' }: { text?: string }) {

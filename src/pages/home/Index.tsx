@@ -6,6 +6,7 @@ import { fetchHomeData } from '../../network/legacy'
 import { fetchBasicInfo } from '../../network/api'
 import { t as i18nT } from '../../i18n'
 import { coverUrl } from '../../utils/formatters'
+import { skeletonCardNodes } from '../../components/Skeleton'
 
 /* 老站 index.html 的数据结构（homepage.views.index） */
 type Banner = { img?: string; image?: string; url?: string; link?: string }
@@ -166,7 +167,7 @@ function FooterExtra() {
 }
 
 export default function Index() {
-  const { data } = useLoad<HomeState>(
+  const { data, loading } = useLoad<HomeState>(
     async () => {
       const [home, basic] = await Promise.all([
         fetchHomeData().catch(() => ({ code: -1 })),
@@ -214,10 +215,12 @@ export default function Index() {
       <div id="newMap" className="g_rblock">
         <p className="label">New Arrival <a href={`${URLS.chart}?type=2`} className="more">{i18nT('More')}</a></p>
         <JustifyRow>
-          {data.newMap.map((map, i) => (
+          {/* 加载中用卡片骨架占位，避免整块空白（老站服务端直出无此态） */}
+          {loading && skeletonCardNodes(5)}
+          {!loading && data.newMap.map((map, i) => (
             <MapCardView key={`nm${i}`} map={map} song />
           ))}
-          {data.newMapBlank.map((_, i) => (
+          {!loading && data.newMapBlank.map((_, i) => (
             <div className="g_map justfyHold" key={`nmb${i}`}></div>
           ))}
           <span className="justfix"></span>
@@ -225,10 +228,11 @@ export default function Index() {
 
         <p className="label">{i18nT('Weekly Show')}</p>
         <JustifyRow>
-          {data.hotMap.map((map, i) => (
+          {loading && skeletonCardNodes(5)}
+          {!loading && data.hotMap.map((map, i) => (
             <MapCardView key={`hm${i}`} map={map} run />
           ))}
-          {data.hotMapBlank.map((_, i) => (
+          {!loading && data.hotMapBlank.map((_, i) => (
             <div className="g_map justfyHold" key={`hmb${i}`}></div>
           ))}
           <span className="justfix"></span>

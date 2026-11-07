@@ -1,0 +1,52 @@
+/* SPA 加载骨架：老站是服务端直出，没有加载态；新站异步取数期间用骨架占位，
+   避免空白区块和布局跳动。颜色跟随站点浅色主题。 */
+.wb-skel {
+  position: relative;
+  overflow: hidden;
+  background-color: #e8edf4;
+  border-radius: 4px;
+}
+
+.wb-skel::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.65), rgba(255, 255, 255, 0));
+  animation: wb-skel-shimmer 1.5s ease-in-out infinite;
+}
+
+@keyframes wb-skel-shimmer {
+  to { transform: translateX(100%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wb-skel::after { animation: none; }
+}
+
+/* 卡片骨架：复用老站 .g_map / .cover / .meta 的尺寸，
+   首页 192x240、谱面列表按各自页面 CSS，自动对齐真实卡片。 */
+.wb-skel-card .cover {
+  background-color: #e8edf4;
+  border-radius: 4px;
+}
+
+.wb-skel-card .wb-skel-line {
+  height: 12px;
+  margin: 7px 0 0;
+  width: 100%;
+}
+
+.wb-skel-card .wb-skel-line.is-short { width: 62%; }
+
+/* 行骨架：列表 / 表格 / 正文区域 */
+.wb-skel-rows { padding: 6px 0; }
+
+.wb-skel-row {
+  height: 46px;
+  margin: 0 0 8px;
+  border-radius: 4px;
+}
+
+.wb-skel-row:nth-child(3n) { width: 88%; }
+.wb-skel-row:nth-child(4n) { width: 72%; }

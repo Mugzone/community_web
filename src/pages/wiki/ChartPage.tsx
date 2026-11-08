@@ -269,7 +269,7 @@ export default function ChartPage() {
   }
 
   const onEdit = (): void => {
-    window.location.href = `/wiki/edit?key=${encodeURIComponent(key)}&lang=${lang}`
+    window.location.href = `/wiki/edit?key=${encodeURIComponent(key)}&lang=${lang}&from=${encodeURIComponent(window.location.pathname + window.location.search)}`
   }
 
   const onTool = async (type: string): Promise<void> => {
@@ -288,8 +288,14 @@ export default function ChartPage() {
     }
     if (type === 'del') {
       if (!window.confirm('Are you sure to delete the page?')) return
-      try { await operateWikiPage('del', { key }) }
-      catch { showNotify('Delete failed', 'err') }
+      try {
+        await operateWikiPage('del', { key })
+        // 老站 module/wiki/src/init.js:del：有 sid 时跳回所属歌曲页，否则回首页。
+        const sid = Number(data.sid) || 0
+        window.location.href = sid > 0 ? URLS.song(sid) : URLS.index
+      } catch (e) {
+        showNotify(e instanceof Error && e.message ? e.message : 'Delete failed', 'err')
+      }
       return
     }
     if (type === 'merge') {

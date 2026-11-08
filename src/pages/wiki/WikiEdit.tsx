@@ -13,14 +13,51 @@ import { t as i18nT } from '../../i18n'
 
 const query = (k: string): string => new URLSearchParams(window.location.search).get(k) ?? ''
 
+type WikiTarget = { pid?: number; sid?: number; cid?: number; touid?: number; prefix?: string }
+
+/** 各显示页点 Edit 时传的是完整 key（wiki_N / song_N / chart_N / skin_N / user_N），
+ *  /community/wiki 的 key 则由 pid / sid / cid / touid / prefix 五选一生成。
+ *  早期只从 key 里抠数字当 pid，导致 song/chart/skin 都读写到 wiki_<数字>，
+ *  原文为空且保存落到错误的 key。读写必须共用这一组参数。 */
+const parseWikiKey = (raw: string): WikiTarget => {
+  const m = raw.match(/^(wiki|song|chart|user)_(\d+)$/)
+  if (m) {
+    const n = Number(m[2])
+    switch (m[1]) {
+      case 'wiki': return { pid: n }
+      case 'song': return { sid: n }
+      case 'chart': return { cid: n }
+      case 'user': return { touid: n }
+    }
+  }
+  // skin_N 等前缀型 key 直接作为 prefix（后端按裸 plugin_wiki key 读写）
+  return raw ? { prefix: raw } : {}
+}
+
+/** 保存后的落地页；from 由各显示页透传，兼容直接打开编辑页的情况 */
+const backUrl = (raw: string, from: string): string => {
+  if (from.startsWith('/')) return from
+  const m = raw.match(/^(wiki|song|chart|skin|user)_(\d+)$/)
+  if (!m) return '/'
+  const n = m[2]
+  switch (m[1]) {
+    case 'wiki': return URLS.wiki(n)
+    case 'song': return URLS.song(n)
+    case 'chart': return URLS.chartPage(n)
+    case 'skin': return URLS.skinDetail(n)
+    case 'user': return URLS.user(n)
+    default: return '/'
+  }
+}
+
 export default function WikiEdit() {
   const key = query('key')
-  const pidMatch = key.match(/(\d+)/)
-  const pid = pidMatch ? Number(pidMatch[1]) : 0
+  const from = query('from')
+  const target = parseWikiKey(key)
 
   const { data, loading } = useLoad<Record<string, any>>(
     async () => {
-      const resp = await fetchWiki({ pid, lang: 0 })
+      const resp = await fetchWiki({ ...target, lang: 0 })
       return (resp ?? {}) as Record<string, any>
     },
     [key],
@@ -63,8 +100,10 @@ export default function WikiEdit() {
     setSaving(true)
     showNotify(i18nT('Saving...'), 'succ')
     try {
-      await saveWiki({ wiki: content, pid, uid, lang: 0 })
-      window.history.back()
+      await saveWiki({ wiki: content, ...target, uid, lang: 0 })
+      // 用 replace 整页重载来源页，确保拿到刚保存的内容；
+      // history.back() 可能命中 bfcache 直接恢复旧 DOM，看起来像「保存没生效」。
+      window.location.replace(backUrl(key, from))
     } catch {
       showNotify(i18nT('Failed to save, please try again later.'), 'err')
     } finally {
@@ -73,7 +112,7 @@ export default function WikiEdit() {
   }
 
   const onCancel = (): void => {
-    window.history.back()
+    window.location.replace(backUrl(key, from))
   }
 
   return (

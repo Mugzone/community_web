@@ -329,7 +329,7 @@ export default function WikiPage() {
   }
 
   const onEdit = (): void => {
-    window.location.href = `/wiki/edit?key=${encodeURIComponent(key)}&lang=${lang}`
+    window.location.href = `/wiki/edit?key=${encodeURIComponent(key)}&lang=${lang}&from=${encodeURIComponent(window.location.pathname + window.location.search)}`
   }
 
   const onLock = async (lockIt: boolean): Promise<void> => {

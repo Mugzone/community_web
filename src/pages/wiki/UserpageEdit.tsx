@@ -50,7 +50,9 @@ export default function UserpageEdit() {
   const save = async () => {
     try {
       await saveUserPageWiki(id, content)
-      window.history.back()
+      // 整页重载用户主页，确保拿到刚保存的内容；history.back() 在直接打开
+      // 编辑页时会跳到 about:blank，命中 bfcache 时又会显示旧正文。
+      window.location.replace(URLS.user(id))
     } catch {
       showNotify(i18nT('Failed to save, please try again later.'), 'err')
     }

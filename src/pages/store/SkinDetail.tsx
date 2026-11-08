@@ -133,7 +133,7 @@ export default function SkinDetail() {
   }
 
   const onDescEdit = () => {
-    window.location.href = `/wiki/edit?key=${key}`
+    window.location.href = `/wiki/edit?key=${encodeURIComponent(key)}&from=${encodeURIComponent(window.location.pathname + window.location.search)}`
   }
 
   const openEditor = (text = '', rId: number | string = 0, eId: number | string = 0) => {

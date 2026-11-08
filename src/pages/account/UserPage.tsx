@@ -14,7 +14,7 @@ import {
 } from '../../network/api'
 import { fetchAchieveList, fetchUserPageWiki } from '../../network/legacy'
 import { avatarUrl, coverUrl } from '../../utils/formatters'
-import { regionMap } from '../../utils/profile'
+import { isRedName, regionMap } from '../../utils/profile'
 import { t as i18nT } from '../../i18n'
 import { useWikiHtml } from '../../utils/wikiRender'
 
@@ -177,7 +177,8 @@ export default function UserPage() {
         canBan: Boolean(info.canban),
         canActive: Boolean(info.canactive),
         canEdit: Boolean(info.can_edit ?? info.canEdit),
-        redName: Boolean(info.red_name ?? info.redName),
+        // 老站红名由 active_type 决定，/player/info 里叫 active（见 utils/profile.ts）
+        redName: isRedName(info),
         banner: bannerUrl(info.banner_url ?? info.bannerUrl ?? info.banner),
       }
     },

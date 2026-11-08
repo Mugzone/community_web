@@ -45,3 +45,17 @@ export const regionMap: Record<number, RegionMeta> = {
   38: { labelKey: 'player.region.38', fallback: 'Bulgaria' },
   39: { labelKey: 'player.region.39', fallback: 'Macau' },
 }
+
+/**
+ * 老站 account/views.py:user_page：
+ *   ma_user.active_type != MalodyUserProfile.ACTIVE_TYPE_NORMAL(0) 时
+ *   context["red_name"] = True，profile/index.html 与 profile/user.html 把
+ *   用户名染成 #ef6666（0=NORMAL / 1=CODE / 2=STB）。
+ * MaApi-go 的 /player/info 用 `active` 返回同一列 active_type，并不返回
+ * red_name；兼容老 web 可能直接给出 red_name / active_type 的情况。
+ */
+export const isRedName = (info: Record<string, unknown>): boolean => {
+  if (info.red_name ?? info.redName) return true
+  const active = Number(info.active ?? info.active_type ?? 0)
+  return Number.isFinite(active) && active !== 0
+}

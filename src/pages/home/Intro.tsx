@@ -36,9 +36,18 @@ function IntroSlider({ id, images }: { id: string; images: string[] }) {
 
   return (
     <div id={id} className="list_wrap">
-      <ul style={{ transform: `translateX(-${curr * 100}%)`, transition: 'transform 0.4s ease' }}>
+      {/* Intro.css 的 .list_wrap ul 是 width:100%（一张图宽），li 浮动后会竖着叠起来，
+          translateX 平移后只剩空白。这里把 ul 撑成 n 张宽、li 各占 1/n，横向排成一行；
+          translateX 的百分比相对 ul 自身宽度，所以每页平移 100/n %。 */}
+      <ul
+        style={{
+          width: `${images.length * 100}%`,
+          transform: `translateX(-${(curr * 100) / images.length}%)`,
+          transition: 'transform 0.4s ease',
+        }}
+      >
         {images.map((src, i) => (
-          <li key={i}><img src={src} /></li>
+          <li key={i} style={{ width: `${100 / images.length}%` }}><img src={src} /></li>
         ))}
       </ul>
       <div className="dot">

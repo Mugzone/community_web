@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { Shell } from '../../components/Layout'
 import { useSession } from '../../components/SessionProvider'
@@ -17,6 +17,7 @@ import { avatarUrl, coverUrl } from '../../utils/formatters'
 import { isRedName, regionMap } from '../../utils/profile'
 import { t as i18nT } from '../../i18n'
 import { useWikiHtml } from '../../utils/wikiRender'
+import { bindHiddenToggles } from '../../utils/wiki'
 
 /* profile/index.html：extended base_width.html（wide），交互对应 module/user/src/init.js */
 type Rec = Record<string, any>
@@ -188,6 +189,10 @@ export default function UserPage() {
 
   // 与 wiki 正文共用渲染管线（markdown 式标记 + {{ name:... }} 模板块）
   const profileHtml = useWikiHtml(data.content)
+  // 与 WikiPage / SongPage / ChartPage 一致：#hidden 折叠块靠事件委托切换 open class，
+  // 只有 CSS 的话「Click to display」点了不会展开。
+  const profileRef = useRef<HTMLDivElement>(null)
+  useEffect(() => bindHiddenToggles(profileRef.current), [profileHtml])
 
   const [tab, setTab] = useState<number>(0)
   const [friendType, setFriendType] = useState<number>(0)
@@ -407,7 +412,7 @@ export default function UserPage() {
               </div>
             )}
             {profileHtml && (
-              <div className="g_wiki userpage" dangerouslySetInnerHTML={{ __html: `${profileHtml}<span class="clear"></span>` }}></div>
+              <div className="g_wiki userpage" ref={profileRef} dangerouslySetInnerHTML={{ __html: `${profileHtml}<span class="clear"></span>` }}></div>
             )}
           </div>
 

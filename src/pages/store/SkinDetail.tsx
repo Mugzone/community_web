@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { Shell } from '../../components/Layout'
 import { asArray, formatTime, num, showNotify, useLoad } from '../../lib/legacy'
@@ -9,7 +9,8 @@ import {
 } from '../../network/legacy'
 import { t as i18nT } from '../../i18n'
 import { avatarUrl, coverUrl } from '../../utils/formatters'
-import { renderTalkHtml, renderTalkSmallHtml, useWikiHtml } from '../../utils/wikiRender'
+import { renderTalkHtml, renderTalkSmallHtml, useWikiOrLegacyHtml } from '../../utils/wikiRender'
+import { bindHiddenToggles } from '../../utils/wiki'
 import './SkinDetail.css'
 
 const MODE_LABELS = ['Key', 'Step', 'DJ', 'Catch', 'Pad', 'Taiko', 'Ring', 'Slide', 'Live', 'Cube']
@@ -89,7 +90,12 @@ export default function SkinDetail() {
   const desc = String(detail?.desc ?? skin.desc ?? '')
   // 简介是 wiki raw，和讨论区正文走同一套渲染管线（标记 + 换行）；
   // 早期直接把字符串塞进 JSX，wiki 标记和换行都不会生效。
-  const descHtml = useWikiHtml(desc)
+  // 但接口实际返回的是老站已翻译好的 HTML（如 <h1>…</h1><p>…），再按 wiki 渲染
+  // 会把标签转义成文本；这种情况改走白名单清洗，raw wiki 仍按 wiki 渲染。
+  const descHtml = useWikiOrLegacyHtml(desc)
+  // 简介里的 #hidden 折叠块（Click to display）同样需要点击切换
+  const descRef = useRef<HTMLDivElement>(null)
+  useEffect(() => bindHiddenToggles(descRef.current), [descHtml])
   const key = String(detail?.key ?? talkKey)
   const canEdit = !!(detail?.can_edit ?? skin.can_edit)
   const canDelete = !!(detail?.can_delete ?? skin.can_delete)
@@ -341,7 +347,7 @@ export default function SkinDetail() {
         </div>
         <div className="g_wiki">
           {desc
-            ? <div dangerouslySetInnerHTML={{ __html: descHtml }} />
+            ? <div ref={descRef} dangerouslySetInnerHTML={{ __html: descHtml }} />
             : <div className="g_wiki_new btn" data-type="edit" onClick={onDescEdit}>Add description</div>}
           <span className="clear"></span>
         </div>

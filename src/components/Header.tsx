@@ -4,8 +4,13 @@ import { URLS, staticUrl } from '../lib/urls'
 import { useSession } from './SessionProvider'
 import { LoginModal } from './LoginModal'
 import { fetchUnreadMsg } from '../network/legacy'
-import { buildUrl } from '../network/api'
+import { fetchPlayerInfo } from '../network/api'
+import { avatarFallbackUrl, avatarUrl } from '../utils/formatters'
 import { t as i18nT } from '../i18n'
+
+/* /player/image 是头像上传签名接口（返回 JSON），不能直接当 <img src>。
+ * 头像文件名取自 /player/info 的 avatar，按 uid 缓存，避免每次挂载 Header 都重复请求。 */
+const avatarCache = new Map<number, string>()
 
 /** 复刻老站 templates/widget/header.html 的 DOM 与 class */
 export function Header() {
@@ -14,6 +19,32 @@ export function Header() {
   const [keyword, setKeyword] = useState('')
   const [unread, setUnread] = useState(false)
   const navigate = useNavigate()
+  const uid = isLogin ? session?.uid ?? 0 : 0
+  const [avatar, setAvatar] = useState<string>(() => avatarCache.get(uid) ?? avatarFallbackUrl())
+
+  useEffect(() => {
+    if (!uid) return
+    const cached = avatarCache.get(uid)
+    if (cached) {
+      setAvatar(cached)
+      return
+    }
+    let alive = true
+    fetchPlayerInfo({ uid })
+      .then((resp) => {
+        // /player/info 是扁平结构（avatar 在顶层），兼容带 data 包裹的形式
+        const info = ((resp as { data?: { avatar?: string } } | undefined)?.data ?? resp) as { avatar?: string } | undefined
+        const url = avatarUrl(info?.avatar, uid)
+        avatarCache.set(uid, url)
+        if (alive) setAvatar(url)
+      })
+      .catch(() => {
+        // 取不到时保持默认头像
+      })
+    return () => {
+      alive = false
+    }
+  }, [uid])
 
   // 老站 util.js:246-276 每 6 分钟轮询未读消息，有未读才显示 .notify 气泡
   useEffect(() => {
@@ -53,7 +84,7 @@ export function Header() {
               <a href={URLS.logout}>{i18nT('Logout')}</a>
               <Link to={URLS.user(session?.uid ?? 0)}><b>{session?.username}</b></Link>
               <Link to={URLS.user(session?.uid ?? 0)} className="avatar">
-                <img src={buildUrl('/player/image', { uid: session?.uid ?? 0 })} alt="" />
+                <img src={avatar} alt="" />
               </Link>
             </>
           ) : (

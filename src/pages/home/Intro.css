@@ -65,6 +65,10 @@ html[data-styles~="intro"] body {
   -webkit-tap-highlight-color: transparent;
   -webkit-user-select: none;
   font-family: "latoregular";
+  /* #body / #ma / #head_body 用 left:50% + 负 margin 居中（#body 宽 1080px）。
+     视口比 1080px 窄时内容会被推到负坐标，左侧无法滚动、直接被裁掉（手机上尤其明显）。
+     给页面一个与内容等宽的最小宽度，窄屏时改为可横向滚动 / 整页缩放。 */
+  min-width: 1080px;
 }
 html[data-styles~="intro"] a {
   color: #333;

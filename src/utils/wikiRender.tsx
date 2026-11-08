@@ -3,6 +3,7 @@ import { fetchWikiTemplate, type RespWikiTemplate } from '../network/api'
 import { t as i18nT } from '../i18n'
 import {
   renderWiki, renderChat, wikiRenderOptions, escapeHtml, sanitizeUrl, sanitizeRenderedHtml,
+  looksLikeLegacyHtml, sanitizeLegacyHtml,
   type WikiTemplate, type WikiRenderOptions,
 } from './wiki'
 import { renderTemplateHtml, applyTemplateHtml } from './wikiTemplates'
@@ -119,6 +120,20 @@ export function useWikiHtml(raw: string, options: Partial<WikiRenderOptions> = {
     return () => { alive = false }
   }, [result])
   return html
+}
+
+/**
+ * 字段可能是 wiki raw，也可能是老站落库的已翻译 HTML（如皮肤简介 desc）。
+ * 以标签开头时按 HTML 走白名单清洗（sanitizeLegacyHtml），否则按 wiki 渲染。
+ * 与其它入口一样由这里产出可注入的 HTML，页面不直接调用清洗函数。
+ */
+export function useWikiOrLegacyHtml(raw: string, options: Partial<WikiRenderOptions> = {}): string {
+  const isHtml = looksLikeLegacyHtml(raw)
+  const wikiHtml = useWikiHtml(isHtml ? '' : raw, options)
+  return useMemo(
+    () => (isHtml ? sanitizeLegacyHtml(raw) : wikiHtml),
+    [isHtml, raw, wikiHtml],
+  )
 }
 
 /**

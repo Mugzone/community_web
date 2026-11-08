@@ -139,6 +139,82 @@ export const sanitizeRenderedHtml = (html: string): string =>
   String(html ?? '').replace(URL_ATTR, (_m, attr: string, dq?: string, sq?: string) =>
     `${attr}="${sanitizeUrl(dq ?? sq ?? '')}"`)
 
+/* ------------------------------------------------------------------ *
+ * 老站落库的「已翻译 HTML」（如皮肤简介 desc：woc2baka.translate() 的结果）。
+ * 接口没有对应的 raw，不能再按 wiki 渲染（会把标签整体转义成文本），
+ * 也不能直接塞进 innerHTML。这里用白名单重建：只保留渲染器会产出的
+ * 标签与属性，URL 再过 sanitizeUrl，其余（script / on* / 未知标签）一律丢弃。
+ * ------------------------------------------------------------------ */
+const LEGACY_ALLOWED_TAGS = new Set([
+  'a', 'b', 'blockquote', 'br', 'code', 'del', 'div', 'em', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+  'hr', 'i', 'iframe', 'img', 'li', 'ol', 'p', 'pre', 's', 'span', 'strong', 'sub', 'sup',
+  'table', 'tbody', 'td', 'th', 'thead', 'tr', 'u', 'ul',
+])
+/** 内容一并丢弃的标签（其余未知标签只去壳、保留文字） */
+const LEGACY_DROP_TAGS = new Set(['script', 'style', 'template', 'noscript', 'object', 'embed', 'frame', 'frameset', 'svg', 'math'])
+const LEGACY_ALLOWED_ATTRS = new Set([
+  'align', 'alt', 'class', 'colspan', 'height', 'href', 'rowspan', 'src', 'style', 'target', 'title', 'width',
+  'allowfullscreen', 'frameborder', 'scrolling',
+])
+const LEGACY_URL_ATTRS = new Set(['href', 'src'])
+/** 渲染器只为这两个站点生成 iframe（[video:...]），其它来源一律不保留 */
+const LEGACY_IFRAME_SRC = /^(?:https?:)?\/\/(?:www\.youtube\.com\/embed\/|player\.bilibili\.com\/player\.html\?)/i
+/** style 里禁止外部资源与旧 IE 表达式 */
+const LEGACY_UNSAFE_STYLE = /url\s*\(|expression\s*\(|@import|javascript:|behavior\s*:/i
+
+const isSafeLegacyUrl = (value: string): boolean => {
+  const trimmed = value.trim()
+  return trimmed !== '' && (trimmed === '#' || sanitizeUrl(trimmed) !== '#')
+}
+
+const cleanLegacyNode = (node: Node, doc: Document): Node | null => {
+  if (node.nodeType === Node.TEXT_NODE) return doc.createTextNode(node.textContent ?? '')
+  if (node.nodeType !== Node.ELEMENT_NODE) return null
+  const el = node as Element
+  const tag = el.tagName.toLowerCase()
+  if (LEGACY_DROP_TAGS.has(tag)) return null
+
+  const children = Array.from(el.childNodes)
+    .map((child) => cleanLegacyNode(child, doc))
+    .filter((child): child is Node => child !== null)
+
+  if (!LEGACY_ALLOWED_TAGS.has(tag)) {
+    // 未知标签去壳保留文字，避免正文丢失
+    const frag = doc.createDocumentFragment()
+    children.forEach((child) => frag.appendChild(child))
+    return frag
+  }
+  if (tag === 'iframe' && !LEGACY_IFRAME_SRC.test(el.getAttribute('src') ?? '')) return null
+
+  const out = doc.createElement(tag)
+  Array.from(el.attributes).forEach(({ name, value }) => {
+    const attr = name.toLowerCase()
+    if (!LEGACY_ALLOWED_ATTRS.has(attr)) return
+    if (LEGACY_URL_ATTRS.has(attr) && !isSafeLegacyUrl(value)) return
+    if (attr === 'style' && LEGACY_UNSAFE_STYLE.test(decodeHtmlEntities(value))) return
+    out.setAttribute(attr, value)
+  })
+  if (tag === 'a' && out.getAttribute('target') === '_blank') out.setAttribute('rel', 'noopener noreferrer')
+  children.forEach((child) => out.appendChild(child))
+  return out
+}
+
+/** 判断文本是否为老站已翻译好的 HTML（以标签开头），而不是 wiki raw */
+export const looksLikeLegacyHtml = (text: string): boolean => /^\s*<[a-z][a-z0-9]*[\s>/]/i.test(String(text ?? ''))
+
+export const sanitizeLegacyHtml = (html: string): string => {
+  if (typeof DOMParser === 'undefined') return escapeHtml(String(html ?? ''))
+  // DOMParser 生成的是惰性文档：其中的 <img>/<script> 不会加载或执行
+  const parsed = new DOMParser().parseFromString(String(html ?? ''), 'text/html')
+  const target = document.implementation.createHTMLDocument('')
+  const wrapper = target.createElement('div')
+  Array.from(parsed.body.childNodes).forEach((child) => {
+    const cleaned = cleanLegacyNode(child, target)
+    if (cleaned) wrapper.appendChild(cleaned)
+  })
+  return wrapper.innerHTML
+}
+
 const clamp = (value: number, max = 700, min = 0) => Math.min(Math.max(value, min), max)
 
 /* 按需求只移植 translate(raw, False)：任何 wiki 文本（含 """ 原文块）一律

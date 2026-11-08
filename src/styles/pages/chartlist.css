@@ -1,0 +1,88 @@
+/* chartlist.css — 老站样式，作用域名 "chartlist"。
+   规则以 html[data-styles~="chartlist"] 限定，
+   Shell 依据 variant / page / css prop 生成 <html data-styles="...">。
+ */
+html[data-styles~="chartlist"] .clear {
+  clear: both;
+  display: block;
+  height: 0;
+}
+html[data-styles~="chartlist"] .justfix {
+  display: inline-block;
+  width: 100%;
+  height: 0;
+  overflow: hidden;
+}
+html[data-styles~="chartlist"] .justfyHold {
+  visibility: hidden;
+  height: 0;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+}
+html[data-styles~="chartlist"] .textfix {
+  text-overflow: ellipsis;
+  overflow-x: hidden;
+  white-space: nowrap;
+}
+html[data-styles~="chartlist"] #content {
+  width: 1080px;
+}
+html[data-styles~="chartlist"] .g_cont #option > div {
+  text-align: left;
+  line-height: 32px;
+}
+html[data-styles~="chartlist"] .g_cont #option > div > span {
+  display: inline-block;
+  width: 80px;
+  height: 24px;
+  line-height: 24px;
+  background-color: #e3eefb;
+  text-align: center;
+}
+html[data-styles~="chartlist"] .g_cont #option > div .g_select {
+  display: inline-block;
+}
+html[data-styles~="chartlist"] .g_cont #option > div .sel_mode span.curr {
+  background: #4d4d4d;
+  border-color: #4d4d4d;
+}
+html[data-styles~="chartlist"] .g_cont #option > div:nth-child(1) .g_select span {
+  width: 32px;
+  height: 32px;
+  margin-top: 0;
+  line-height: 31px;
+}
+html[data-styles~="chartlist"] .g_cont #option > div:nth-child(1) img {
+  width: 28px;
+  height: 28px;
+  vertical-align: middle;
+}
+html[data-styles~="chartlist"] .g_cont #option > div:nth-child(2) .g_select span,
+html[data-styles~="chartlist"] .g_cont #option > div:nth-child(3) .g_select span {
+  width: 80px;
+  margin-top: 0;
+}
+html[data-styles~="chartlist"] .g_cont #option > div:nth-child(4) input,
+html[data-styles~="chartlist"] .g_cont #option > div:nth-child(5) input {
+  width: 364px;
+  height: 22px;
+  border: 1px solid #4190e7;
+}
+html[data-styles~="chartlist"] .g_cont #option > div #cl_search {
+  display: inline-block;
+  width: 100px;
+  text-align: center;
+  margin: 0;
+  height: 24px;
+  line-height: 24px;
+}
+html[data-styles~="chartlist"] .g_cont #maps {
+  border-top: 1px solid #4190e7;
+  padding-top: 10px;
+  margin-top: 10px;
+  text-align: left;
+}
+html[data-styles~="chartlist"] .g_cont .g_map {
+  margin: 0 16px 24px 0 !important;
+}

@@ -1,0 +1,183 @@
+/* wiki_edit.css — 老站样式，作用域名 "wiki_edit"。
+   规则以 html[data-styles~="wiki_edit"] 限定，
+   Shell 依据 variant / page / css prop 生成 <html data-styles="...">。
+ */
+html[data-styles~="wiki_edit"] .clear {
+  clear: both;
+  display: block;
+  height: 0;
+}
+html[data-styles~="wiki_edit"] .justfix {
+  display: inline-block;
+  width: 100%;
+  height: 0;
+  overflow: hidden;
+}
+html[data-styles~="wiki_edit"] .justfyHold {
+  visibility: hidden;
+  height: 0;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+}
+html[data-styles~="wiki_edit"] .textfix {
+  text-overflow: ellipsis;
+  overflow-x: hidden;
+  white-space: nowrap;
+}
+html[data-styles~="wiki_edit"] #center .g_cont {
+  padding: 10px 0 0;
+  text-align: left;
+}
+html[data-styles~="wiki_edit"] #center .g_cont .msg {
+  text-align: left;
+  padding: 10px;
+  font-size: 16px;
+}
+html[data-styles~="wiki_edit"] #center .g_cont .edit textarea,
+html[data-styles~="wiki_edit"] #center .g_cont .edit input {
+  width: 100%;
+  height: 450px;
+  line-height: 16px;
+  border: none;
+  border-top: 1px solid #4190e7;
+  border-bottom: 1px solid #4190e7;
+  font-size: 14px;
+  outline: 0;
+}
+html[data-styles~="wiki_edit"] #center .g_cont .edit #J_reason,
+html[data-styles~="wiki_edit"] #center .g_cont .edit #J_cate {
+  height: 24px;
+  line-height: 24px;
+  vertical-align: middle;
+  padding: 0;
+}
+html[data-styles~="wiki_edit"] #center .g_cont .edit .msg a {
+  margin-left: 10px;
+}
+html[data-styles~="wiki_edit"] #center .g_cont .button {
+  text-align: left;
+}
+html[data-styles~="wiki_edit"] #center .g_cont .button div,
+html[data-styles~="wiki_edit"] #center .g_cont .button a {
+  display: inline-block;
+  margin-left: 10px;
+}
+html[data-styles~="wiki_edit"] #center .g_cont .button .btn {
+  text-align: center;
+  width: 227.5px;
+  margin-bottom: 0;
+}
+html[data-styles~="wiki_edit"] #center .g_cont .button a {
+  line-height: 32px;
+  vertical-align: top;
+}
+html[data-styles~="wiki_edit"] #center .g_cont .temp {
+  margin: 0 0 24px 10px;
+}
+html[data-styles~="wiki_edit"] #center .g_cont .temp h2 input,
+html[data-styles~="wiki_edit"] #center .g_cont .temp h2 select {
+  background-color: #97c2f2;
+}
+html[data-styles~="wiki_edit"] #center .g_cont .preview {
+  display: none;
+}
+html[data-styles~="wiki_edit"] #center .g_cont .preview h1 {
+  font-size: 16px;
+  font-weight: bold;
+  color: #4190e7;
+}
+html[data-styles~="wiki_edit"] #center .g_cont .preview .g_wiki {
+  padding: 10px;
+}
+html[data-styles~="wiki_edit"] #center .g_cont .edit_tip a {
+  background: #e3eefb;
+  padding: 4px;
+  margin-left: 10px;
+}
+html[data-styles~="wiki_edit"] .g_cont2 .temp {
+  left: 50%;
+  top: 20px;
+  margin: 0 0 0 -300px;
+  position: relative;
+  text-align: left;
+}
+html[data-styles~="wiki_edit"] .g_cont2 .temp h2 {
+  display: block;
+  width: 640px;
+  height: 60px;
+  line-height: 60px;
+  border-bottom: 1px solid #ccc;
+}
+html[data-styles~="wiki_edit"] .g_cont2 .temp h2 label {
+  display: inline-block;
+  width: 160px;
+  text-align: left;
+  margin-right: 8px;
+}
+html[data-styles~="wiki_edit"] .g_cont2 .temp h2 input {
+  display: inline-block;
+  width: 200px;
+  height: 30px;
+  line-height: 30px;
+  text-indent: 4px;
+}
+html[data-styles~="wiki_edit"] .g_cont2 .temp h2 select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  outline: none;
+  border: 1px solid #4190e7;
+  width: 200px;
+  height: 30px;
+  line-height: 30px;
+  margin-left: -2px;
+}
+html[data-styles~="wiki_edit"] .g_cont2 .temp .g_btn {
+  display: inline-block;
+  width: 227px;
+  vertical-align: inherit;
+  text-align: center;
+}
+html[data-styles~="wiki_edit"] .g_cont2 .button {
+  text-align: left;
+  margin: 40px 0 0 388px;
+}
+html[data-styles~="wiki_edit"] .g_cont2 .button div,
+html[data-styles~="wiki_edit"] .g_cont2 .button a {
+  display: inline-block;
+  margin-left: 10px;
+}
+html[data-styles~="wiki_edit"] .g_cont2 .button .btn {
+  text-align: center;
+  width: 227.5px;
+  margin-bottom: 0;
+}
+html[data-styles~="wiki_edit"] .g_cont2 .button a {
+  line-height: 32px;
+  vertical-align: top;
+}
+html[data-styles~="wiki_edit"] .g_cont2 .g_tip {
+  padding: 20px;
+  margin-left: 378px;
+}
+html[data-styles~="wiki_edit"] .g_cont2 .tagh2 {
+  height: auto !important;
+}
+html[data-styles~="wiki_edit"] .g_cont2 .tagh2 label {
+  vertical-align: top;
+}
+html[data-styles~="wiki_edit"] .g_cont2 .tag_area {
+  width: 466px;
+  line-height: 40px;
+}
+html[data-styles~="wiki_edit"] .g_cont2 .tag_area span {
+  width: auto;
+  padding: 0 5px;
+}
+html[data-styles~="wiki_edit"] .g_cont2 .tag_area em {
+  display: block;
+  width: 100%;
+  height: 1px;
+  border-bottom: 1px solid #ccc;
+}

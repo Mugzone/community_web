@@ -1,66 +1,65 @@
-/* SkinList.css — 老站 skinlist.css，仅 skinlist 页使用。
-   与页面组件同目录（React colocation）；全部规则以 html[data-page="skinlist"]
-   作用域化，因此可以被打包进全局样式表而不影响其它页面。
-   注意：作用域前缀保留 attr 权重，用于还原老站「页面 CSS 在 main.css 之后」
-   的级联结果；统一改成 :where() 会让 #content 等宽度规则被 main.css 盖掉。
-   Shell 的 page prop 负责在 <html> 上写 data-page。 */
-html[data-page="skinlist"] .clear {
+/* SkinList.css — 老站 skinlist.css，作用域名 "skinlist"。
+   与页面组件同目录（React colocation）。所有规则以
+   html[data-styles~="skinlist"] 限定，由 src/styles/index.css 统一静态加载；
+   Shell 依据 variant / page / css prop 生成 <html data-styles="...">。
+   作用域前缀统一带 attr 权重，级联顺序由 index.css 的 @import 顺序保证。 */
+html[data-styles~="skinlist"] .clear {
   clear: both;
   display: block;
   height: 0;
 }
-html[data-page="skinlist"] .justfix {
+html[data-styles~="skinlist"] .justfix {
   display: inline-block;
   width: 100%;
   height: 0;
   overflow: hidden;
 }
-html[data-page="skinlist"] .justfyHold {
+html[data-styles~="skinlist"] .justfyHold {
   visibility: hidden;
   height: 0;
   overflow: hidden;
   margin: 0;
   padding: 0;
 }
-html[data-page="skinlist"] .textfix {
+html[data-styles~="skinlist"] .textfix {
   text-overflow: ellipsis;
   overflow-x: hidden;
   white-space: nowrap;
 }
-html[data-page="skinlist"] #content {
+html[data-styles~="skinlist"] #content {
   width: 1080px;
 }
-html[data-page="skinlist"] #content .mode-icons,
-html[data-page="skinlist"] #content .plat-icons {
+html[data-styles~="skinlist"] #content .mode-icons,
+html[data-styles~="skinlist"] #content .plat-icons {
   float: right;
   margin: 0 10px;
   width: 200px;
   text-align: center;
   color: #B7B7B7;
 }
-html[data-page="skinlist"] #content .skin-name {
+html[data-styles~="skinlist"] #content .skin-name {
   width: 400px !important;
   margin-left: 10px;
   display: inline-block;
 }
-html[data-page="skinlist"] #content .name a {
+html[data-styles~="skinlist"] #content .name a {
   width: 120px!important;
 }
-html[data-page="skinlist"] #option {
+html[data-styles~="skinlist"] #option {
   position: relative;
   background-color: #fff;
   border-radius: 5px;
   padding: 10px 10px 4px 10px;
 }
-html[data-page="skinlist"] #option div:first-child {
+html[data-styles~="skinlist"] #option div:first-child {
   margin-top: 0px;
 }
-html[data-page="skinlist"] #option > div {
+html[data-styles~="skinlist"] #option > div {
   overflow: hidden;
   margin-top: 8px;
   text-align: left;
 }
-html[data-page="skinlist"] #option > div > span {
+html[data-styles~="skinlist"] #option > div > span {
   display: inline-block;
   width: 80px;
   height: 24px;
@@ -69,34 +68,34 @@ html[data-page="skinlist"] #option > div > span {
   text-align: center;
   margin-right: 4px;
 }
-html[data-page="skinlist"] #option .g_select {
+html[data-styles~="skinlist"] #option .g_select {
   display: inline-block;
 }
-html[data-page="skinlist"] #option .icon-list span {
+html[data-styles~="skinlist"] #option .icon-list span {
   width: 32px;
   height: 32px;
   margin-top: 0;
   line-height: 31px;
 }
-html[data-page="skinlist"] #option .icon-list span.radio {
+html[data-styles~="skinlist"] #option .icon-list span.radio {
   min-width: 100px;
   height: 26px;
   line-height: 27px;
 }
-html[data-page="skinlist"] #option .icon-list img {
+html[data-styles~="skinlist"] #option .icon-list img {
   width: 28px;
   height: 28px;
   vertical-align: middle;
 }
-html[data-page="skinlist"] #option .icon-list1 span.curr {
+html[data-styles~="skinlist"] #option .icon-list1 span.curr {
   background-color: #4d4d4d;
 }
-html[data-page="skinlist"] #option .filter-input {
+html[data-styles~="skinlist"] #option .filter-input {
   width: 364px;
   height: 22px;
   border: 1px solid #4190e7;
 }
-html[data-page="skinlist"] #option .g_btn {
+html[data-styles~="skinlist"] #option .g_btn {
   margin-bottom: 4px;
   background-color: #4190e7;
   color: white;
@@ -108,43 +107,43 @@ html[data-page="skinlist"] #option .g_btn {
   -moz-border-radius: 20px;
   -webkit-border-radius: 20px;
 }
-html[data-page="skinlist"] #option .g_btn:hover {
+html[data-styles~="skinlist"] #option .g_btn:hover {
   box-shadow: 0 2px 1px rgba(0, 0, 0, 0.3);
 }
-html[data-page="skinlist"] #option .g_btn.fr {
+html[data-styles~="skinlist"] #option .g_btn.fr {
   float: right;
 }
-html[data-page="skinlist"] #option .g_btn.fl {
+html[data-styles~="skinlist"] #option .g_btn.fl {
   float: left;
 }
-html[data-page="skinlist"] #skin_table {
+html[data-styles~="skinlist"] #skin_table {
   margin-top: 10px;
 }
-html[data-page="skinlist"] #skin_table .icon {
+html[data-styles~="skinlist"] #skin_table .icon {
   width: 32px;
   height: 32px;
   display: inline-block;
   vertical-align: middle;
   margin-left: -4px;
 }
-html[data-page="skinlist"] #skin_header {
+html[data-styles~="skinlist"] #skin_header {
   border-bottom: 1px solid #4190e7;
 }
-html[data-page="skinlist"] #skin_header span {
+html[data-styles~="skinlist"] #skin_header span {
   line-height: 24px;
 }
-html[data-page="skinlist"] #skins span {
+html[data-styles~="skinlist"] #skins span {
   line-height: 48px;
 }
-html[data-page="skinlist"] #pager {
+html[data-styles~="skinlist"] #pager {
   display: inline-block;
   overflow: hidden;
   margin-top: 8px;
 }
-html[data-page="skinlist"] #pager .pager-btn:first-child {
+html[data-styles~="skinlist"] #pager .pager-btn:first-child {
   margin-left: 0;
 }
-html[data-page="skinlist"] #pager .pager-btn {
+html[data-styles~="skinlist"] #pager .pager-btn {
   margin-left: -1px;
   width: 32px;
   line-height: 32px;
@@ -154,23 +153,23 @@ html[data-page="skinlist"] #pager .pager-btn {
   float: left;
   cursor: pointer;
 }
-html[data-page="skinlist"] #pager .pager-btn.curr {
+html[data-styles~="skinlist"] #pager .pager-btn.curr {
   background: #4190e7;
   color: #fefefe;
   cursor: default;
 }
-html[data-page="skinlist"] .show-buy #option {
+html[data-styles~="skinlist"] .show-buy #option {
   display: none;
 }
-html[data-page="skinlist"] .show-buy #skin_table {
+html[data-styles~="skinlist"] .show-buy #skin_table {
   border: none;
 }
-html[data-page="skinlist"] #chead {
+html[data-styles~="skinlist"] #chead {
   margin-bottom: 64px!important;
 }
-html[data-page="skinlist"] #cl_search i,
-html[data-page="skinlist"] #cl_submit i,
-html[data-page="skinlist"] #cl_help i {
+html[data-styles~="skinlist"] #cl_search i,
+html[data-styles~="skinlist"] #cl_submit i,
+html[data-styles~="skinlist"] #cl_help i {
   display: inline-block;
   width: 20px;
   height: 20px;
@@ -178,18 +177,18 @@ html[data-page="skinlist"] #cl_help i {
   margin: -3px 10px 0 0;
   vertical-align: middle;
 }
-html[data-page="skinlist"] #cl_submit i {
+html[data-styles~="skinlist"] #cl_submit i {
   background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAA2UlEQVQ4T+2U4REBMRSEdztQghJcB3SgA1SCDnRAB0pABZRABzpYszfH5E4iOb9v/2Vm3zcv721CFEjSGcCB5CFnZ84gyZBF45uRNDypn0BJSwD7oPoJwNBbipgESpoDOEYK7wAqkoZ/KQqUNAFwAjBKdHIjWRUBJRlyBTDOzNdLWnU9rQ4bmDtzhyXaktyExi4w3GgJ0J5VGKcPUJKv6K2GWkeoD2cy3DzJ3fuci40iwAvJae/YuEDSAKwnN8ywHaDsf1j6XD7BluSQxvLWl1X7mQjvXzAXvQC/tWFNcSoHfwAAAABJRU5ErkJggg==");
 }
-html[data-page="skinlist"] #cl_search i {
+html[data-styles~="skinlist"] #cl_search i {
   background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABUAAAAUCAYAAABiS3YzAAABdklEQVQ4T62U4VHCQBSEdyvQDoQK1AqEDrQCsQKhAqECoQK1AukArUCtQOxAK1hnmXeZS7gAY3wz/CB392Xv7b4QjZLUA3ALYADgLJbfAbwAWJBcN880/zN/IGkK4G7PoTHJxa49FVTSI4DrbPNrqPMjq77I1qx43AbeQCVdAniOTR8ARiR95aokGewXn8TDK5LLEjhB3Sdv/gHQI/ld2hz99suOAKxJ9otQSTbjLRZvSFpNazX6ft68kQ9SkntzH5T+PndD7ecuEYZWjpOspaFNriTF2oykz9eqq9IJyXkJ+v89jUgl9+26+7rLfZt6DOCLpKdvq0o5dWScglJOHxy5g3Iaat0bz3wqz7p/Lg9H+g74v282JfnUqjQtNOLVZv4ki6AnyreqtWsrQpFDZ9djeRpkj65Vz51jSfmt3KZhDj4olyXJkgxLL7VSgzc+dIE6AVafg92K5Z+hYa7NM9gfmFTDTtAAu/erDDrrDA3wyCZG1Aa/Ne6l3HENb6cAAAAASUVORK5CYII=");
 }
-html[data-page="skinlist"] #cl_help {
+html[data-styles~="skinlist"] #cl_help {
   margin-right: 6px;
 }
-html[data-page="skinlist"] #cl_help i {
+html[data-styles~="skinlist"] #cl_help i {
   background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAABLElEQVQ4T62UYVEDQQxG3+cACXUAKIAqoCgAFIADwAEOAAWAAooCcECrAFAQJjPZTm67d71Om3+7m33Jl2RX7Nk0xDOzGXACHIXfFzCX9NZ3rwk0Mwc8JlB9fwGcS/IAHVsDmtkE+AQOkucS+AUO056vpzW0BXwFzuLiHzCTNPd1BPPzAnb505xiC2jJwWU5YGUB/S4bkjqMzsLMXOZNOE8kXdY1Cp+ftH+cZQ92udVJM3sCLkpJJOVasxWwgjlzrSSjgCHzvRqjK0me7fDY9Mj0LvuAF2vC/HBjhvFaXsbAxgLvgNsAPrc6PziHjTF5AK5j/16SB+i1MZL9XZfRWEjyd7wT8DQ1ZNnq7LaScw0/JHmAnTLMn8VegN6U1Qcrqbz1ZpYbmzIkr3X2D4JdbRVLXTnGAAAAAElFTkSuQmCC");
 }
-html[data-page="skinlist"] #head_btns {
+html[data-styles~="skinlist"] #head_btns {
   overflow: hidden;
 }

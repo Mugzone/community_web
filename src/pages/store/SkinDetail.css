@@ -1,52 +1,51 @@
-/* SkinDetail.css — 老站 skin_detail.css，仅 skin_detail 页使用。
-   与页面组件同目录（React colocation）；全部规则以 html[data-page="skin_detail"]
-   作用域化，因此可以被打包进全局样式表而不影响其它页面。
-   注意：作用域前缀保留 attr 权重，用于还原老站「页面 CSS 在 main.css 之后」
-   的级联结果；统一改成 :where() 会让 #content 等宽度规则被 main.css 盖掉。
-   Shell 的 page prop 负责在 <html> 上写 data-page。 */
-html[data-page="skin_detail"] .sub span {
+/* SkinDetail.css — 老站 skin_detail.css，作用域名 "skin_detail"。
+   与页面组件同目录（React colocation）。所有规则以
+   html[data-styles~="skin_detail"] 限定，由 src/styles/index.css 统一静态加载；
+   Shell 依据 variant / page / css prop 生成 <html data-styles="...">。
+   作用域前缀统一带 attr 权重，级联顺序由 index.css 的 @import 顺序保证。 */
+html[data-styles~="skin_detail"] .sub span {
   margin-right: 8px;
 }
-html[data-page="skin_detail"] .mode-list,
-html[data-page="skin_detail"] .platform-list {
+html[data-styles~="skin_detail"] .mode-list,
+html[data-styles~="skin_detail"] .platform-list {
   vertical-align: middle;
   display: inline-block;
 }
-html[data-page="skin_detail"] .mode-list img,
-html[data-page="skin_detail"] .platform-list img {
+html[data-styles~="skin_detail"] .mode-list img,
+html[data-styles~="skin_detail"] .platform-list img {
   width: 28px;
   height: 28px;
   display: inline-block;
 }
-html[data-page="skin_detail"] #tool_skin {
+html[data-styles~="skin_detail"] #tool_skin {
   position: absolute;
   right: 12px;
   top: 12px;
 }
-html[data-page="skin_detail"] #tool_skin .btn {
+html[data-styles~="skin_detail"] #tool_skin .btn {
   cursor: pointer;
 }
-html[data-page="skin_detail"] #btn_skin {
+html[data-styles~="skin_detail"] #btn_skin {
   position: absolute;
   right: 12px;
   bottom: 0;
 }
-html[data-page="skin_detail"] #btn_skin .g_btn {
+html[data-styles~="skin_detail"] #btn_skin .g_btn {
   width: 160px;
   text-align: center;
   display: inline-block;
   margin-left: 4px;
 }
-html[data-page="skin_detail"] .g_btn.disabled,
-html[data-page="skin_detail"] .g_btn:hover.disabled {
+html[data-styles~="skin_detail"] .g_btn.disabled,
+html[data-styles~="skin_detail"] .g_btn:hover.disabled {
   color: #fafafa;
   background: #666;
   border-color: #666;
 }
-html[data-page="skin_detail"] #preview {
+html[data-styles~="skin_detail"] #preview {
   overflow: hidden;
 }
-html[data-page="skin_detail"] #preview .img {
+html[data-styles~="skin_detail"] #preview .img {
   width: 150px;
   height: 150px;
   background-size: cover;
@@ -56,7 +55,7 @@ html[data-page="skin_detail"] #preview .img {
   margin-bottom: 16px;
   background-position: center;
 }
-html[data-page="skin_detail"] #preview_block h2 {
+html[data-styles~="skin_detail"] #preview_block h2 {
   font-size: 26px;
   margin: 26px 0 26px;
   padding-left: 10px;
@@ -65,6 +64,6 @@ html[data-page="skin_detail"] #preview_block h2 {
   font-weight: normal;
   text-align: left;
 }
-html[data-page="skin_detail"] #content .lang2 {
+html[data-styles~="skin_detail"] #content .lang2 {
   display: none;
 }

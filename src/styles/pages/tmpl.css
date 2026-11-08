@@ -1,42 +1,35 @@
-/*
-  1. 主背景 8d8d8d / 141 141 141
-2. 主字体 d5b9b9 / 255 221 221
-3. 链接字体 + 高亮效果 ff9d9d / 255 157 157
-4. 常规按钮 cc6666 / 204 102 102
-5. 主背景上用来加强的背景色块 535353 / 83 83 83
-6. 加强色块上用来更加加强的色块 474747 / 71 71 71
-7. 边框（现在使用了主题色）ef6666 / 239 102 102
-边框内线(二级?) 726464 / 114 100 100
-8.这东西，叫标题栏之类 ef6666 / 239 102 102
-*/
-.clear {
+/* tmpl.css — 老站样式，作用域名 "tmpl"。
+   规则以 html[data-styles~="tmpl"] 限定，
+   Shell 依据 variant / page / css prop 生成 <html data-styles="...">。
+ */
+html[data-styles~="tmpl"] .clear {
   clear: both;
   display: block;
   height: 0;
 }
-.justfix {
+html[data-styles~="tmpl"] .justfix {
   display: inline-block;
   width: 100%;
   height: 0;
   overflow: hidden;
 }
-.justfyHold {
+html[data-styles~="tmpl"] .justfyHold {
   visibility: hidden;
   height: 0;
   overflow: hidden;
   margin: 0;
   padding: 0;
 }
-.textfix {
+html[data-styles~="tmpl"] .textfix {
   text-overflow: ellipsis;
   overflow-x: hidden;
   white-space: nowrap;
 }
-.tmplpage {
+html[data-styles~="tmpl"] .tmplpage {
   text-align: left;
 }
-.tmplpage .org,
-.tmplpage .use {
+html[data-styles~="tmpl"] .tmplpage .org,
+html[data-styles~="tmpl"] .tmplpage .use {
   width: 100%;
   padding: 10px;
   background: #cacaca;
@@ -44,10 +37,10 @@
   box-sizing: border-box;
   margin-bottom: 24px;
 }
-.tmplpage .use {
+html[data-styles~="tmpl"] .tmplpage .use {
   margin-top: 10px;
 }
-.g_tmpl_activity {
+html[data-styles~="tmpl"] .g_tmpl_activity {
   width: 435px;
   height: 128px;
   border-radius: 4px;
@@ -58,7 +51,7 @@
   z-index: 1;
   margin: 0 0 10px 5px;
 }
-.g_tmpl_activity:before {
+html[data-styles~="tmpl"] .g_tmpl_activity:before {
   position: absolute;
   width: 96%;
   height: 50%;
@@ -71,10 +64,10 @@
   border-radius: 4px;
   z-index: -1;
 }
-.g_tmpl_activity:hover {
+html[data-styles~="tmpl"] .g_tmpl_activity:hover {
   box-shadow: 0 0 5px #222;
 }
-.g_tmpl_activity a {
+html[data-styles~="tmpl"] .g_tmpl_activity a {
   display: block;
   color: #333;
   background-color: white;
@@ -84,12 +77,12 @@
   -webkit-border-radius: 4px;
   border: 1px solid #4190e7;
 }
-.g_tmpl_activity a:hover {
+html[data-styles~="tmpl"] .g_tmpl_activity a:hover {
   text-decoration: none;
   background: white;
   color: #333;
 }
-.g_tmpl_activity .g_cover {
+html[data-styles~="tmpl"] .g_tmpl_activity .g_cover {
   width: 128px;
   height: 128px;
   border-top-left-radius: 3px;
@@ -101,7 +94,7 @@
   border-right: 1px solid #4190e7;
   background-image: url('/static/img/cover.png');
 }
-.g_tmpl_activity .right {
+html[data-styles~="tmpl"] .g_tmpl_activity .right {
   position: absolute;
   left: 129px;
   top: 0;
@@ -110,22 +103,22 @@
   overflow: hidden;
   padding-left: 4px;
 }
-.g_tmpl_activity .right:hover .desc {
+html[data-styles~="tmpl"] .g_tmpl_activity .right:hover .desc {
   right: 0px;
 }
-.g_tmpl_activity .right p {
+html[data-styles~="tmpl"] .g_tmpl_activity .right p {
   margin: 0;
 }
-.g_tmpl_activity .right p.sub {
+html[data-styles~="tmpl"] .g_tmpl_activity .right p.sub {
   font-size: 12px;
   color: #787878;
   line-height: 14px;
 }
-.g_tmpl_activity .right p.goal {
+html[data-styles~="tmpl"] .g_tmpl_activity .right p.goal {
   border-top: 1px solid #4190e7;
   color: #4190e7;
 }
-.g_tmpl_activity .right p.desc {
+html[data-styles~="tmpl"] .g_tmpl_activity .right p.desc {
   width: 296px;
   background: white;
   height: 128px;
@@ -135,14 +128,14 @@
   transition: right 0.2s;
   -webkit-transition: right 0.2s;
 }
-.g_tmpl_activity .right p span {
+html[data-styles~="tmpl"] .g_tmpl_activity .right p span {
   display: inline-block;
   max-width: 150px;
 }
-.g_tmpl_activity .right p span.name {
+html[data-styles~="tmpl"] .g_tmpl_activity .right p span.name {
   float: right;
 }
-.g_tmpl_event {
+html[data-styles~="tmpl"] .g_tmpl_event {
   width: 435px;
   height: 110px;
   border-radius: 4px;
@@ -155,7 +148,7 @@
   border: 1px solid #4190e7;
   vertical-align: middle;
 }
-.g_tmpl_event a {
+html[data-styles~="tmpl"] .g_tmpl_event a {
   width: 128px;
   height: 128px;
   position: absolute;
@@ -169,33 +162,33 @@
   background-position: center;
   background-size: cover;
 }
-.g_tmpl_event img {
+html[data-styles~="tmpl"] .g_tmpl_event img {
   width: 128px;
   height: 128px;
   padding: 0;
   margin: 0;
 }
-.g_tmpl_event .right {
+html[data-styles~="tmpl"] .g_tmpl_event .right {
   padding: 10px 0 0 150px;
   position: relative;
 }
-.g_tmpl_event .right .title {
+html[data-styles~="tmpl"] .g_tmpl_event .right .title {
   font-size: 16px;
   color: #787878;
   line-height: 28px;
 }
-.g_tmpl_event .right .title img {
+html[data-styles~="tmpl"] .g_tmpl_event .right .title img {
   width: 28px;
   height: 28px;
   vertical-align: top;
   background: none;
 }
-.g_tmpl_event .right .title span {
+html[data-styles~="tmpl"] .g_tmpl_event .right .title span {
   color: black;
   display: inline-block;
   vertical-align: top;
 }
-.g_tmpl_event .right .fin {
+html[data-styles~="tmpl"] .g_tmpl_event .right .fin {
   position: absolute;
   z-index: -1;
   font-size: 40px;
@@ -205,7 +198,7 @@
   left: 250px;
   top: 40px;
 }
-.g_tmpl_user {
+html[data-styles~="tmpl"] .g_tmpl_user {
   width: 194px;
   height: 52px;
   background: #97c2f2;
@@ -216,11 +209,11 @@
   margin: 0 0 10px 0;
   vertical-align: middle;
 }
-.g_tmpl_user .avatar {
+html[data-styles~="tmpl"] .g_tmpl_user .avatar {
   float: left;
   margin: 2px;
 }
-.g_tmpl_user .avatar img {
+html[data-styles~="tmpl"] .g_tmpl_user .avatar img {
   width: 48px;
   height: 48px;
   padding: 0;
@@ -232,44 +225,44 @@
   -moz-border-radius: 4px;
   -webkit-border-radius: 4px;
 }
-.g_tmpl_user a {
+html[data-styles~="tmpl"] .g_tmpl_user a {
   width: 140px;
   line-height: 52px;
   color: #333;
   display: inline-block;
 }
-.g_tmpl_user a:hover {
+html[data-styles~="tmpl"] .g_tmpl_user a:hover {
   color: #333;
   background-color: transparent;
 }
-.g_tmpl_login {
+html[data-styles~="tmpl"] .g_tmpl_login {
   border: 1px dotted #4190e7;
   padding: 5px;
   display: inline-block;
 }
-.g_tmpl_first {
+html[data-styles~="tmpl"] .g_tmpl_first {
   display: inline-block;
   width: 350px;
   height: 80px;
   position: relative;
   vertical-align: bottom;
 }
-.g_tmpl_first .avatar {
+html[data-styles~="tmpl"] .g_tmpl_first .avatar {
   position: absolute;
   left: 6px;
   top: -22px;
 }
-.g_tmpl_first .right {
+html[data-styles~="tmpl"] .g_tmpl_first .right {
   text-align: left;
   padding-left: 106px;
 }
-.g_tmpl_first img {
+html[data-styles~="tmpl"] .g_tmpl_first img {
   border-radius: 4px;
   -moz-border-radius: 4px;
   -webkit-border-radius: 4px;
   width: 96px;
 }
-.g_tmpl_first .logo {
+html[data-styles~="tmpl"] .g_tmpl_first .logo {
   position: absolute;
   right: 10px;
   top: 14px;
@@ -278,18 +271,18 @@
   -moz-border-radius: 0;
   -webkit-border-radius: 0;
 }
-.g_tmpl_first a {
+html[data-styles~="tmpl"] .g_tmpl_first a {
   font-size: 16px;
   font-weight: bold;
   line-height: 45px;
 }
-.g_tmpl_first .empty {
+html[data-styles~="tmpl"] .g_tmpl_first .empty {
   font-size: 32px;
   color: #787878;
   line-height: 80px;
   padding-left: 10px;
 }
-.g_tmpl_vote {
+html[data-styles~="tmpl"] .g_tmpl_vote {
   width: 120px;
   margin-left: 20px;
   display: inline-block;
@@ -304,26 +297,26 @@
   color: #4190e7;
   vertical-align: top;
 }
-.g_tmpl_vote:hover {
+html[data-styles~="tmpl"] .g_tmpl_vote:hover {
   background-color: #4190e7;
   color: white;
   text-decoration: none;
 }
-.g_tmpl_voted {
+html[data-styles~="tmpl"] .g_tmpl_voted {
   background-color: #4190e7;
   color: white !important;
   text-decoration: none;
   cursor: not-allowed;
 }
-.g_tmpl_votedlist {
+html[data-styles~="tmpl"] .g_tmpl_votedlist {
   line-height: 30px;
 }
-.g_tmpl_votedlist span {
+html[data-styles~="tmpl"] .g_tmpl_votedlist span {
   font-weight: bold;
   display: inline-block;
   width: 80px;
 }
-.g_tmpl_votedlist i {
+html[data-styles~="tmpl"] .g_tmpl_votedlist i {
   display: inline-block;
   height: 20px;
   background-color: #4190e7;

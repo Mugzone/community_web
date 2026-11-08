@@ -5,7 +5,7 @@ import App from './App'
 import { SessionProvider } from './components/SessionProvider'
 import { I18nProvider } from './i18n'
 import { installWindowUrls } from './lib/urls'
-import './skeleton.css'
+import './styles/index.css'
 
 installWindowUrls()
 

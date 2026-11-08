@@ -1,49 +1,42 @@
-/*
-  1. 主背景 8d8d8d / 141 141 141
-2. 主字体 d5b9b9 / 255 221 221
-3. 链接字体 + 高亮效果 ff9d9d / 255 157 157
-4. 常规按钮 cc6666 / 204 102 102
-5. 主背景上用来加强的背景色块 535353 / 83 83 83
-6. 加强色块上用来更加加强的色块 474747 / 71 71 71
-7. 边框（现在使用了主题色）ef6666 / 239 102 102
-边框内线(二级?) 726464 / 114 100 100
-8.这东西，叫标题栏之类 ef6666 / 239 102 102
-*/
-.clear {
+/* akari.css — 老站样式，作用域名 "akari"。
+   规则以 html[data-styles~="akari"] 限定，
+   Shell 依据 variant / page / css prop 生成 <html data-styles="...">。
+ */
+html[data-styles~="akari"] .clear {
   clear: both;
   display: block;
   height: 0;
 }
-.justfix {
+html[data-styles~="akari"] .justfix {
   display: inline-block;
   width: 100%;
   height: 0;
   overflow: hidden;
 }
-.justfyHold {
+html[data-styles~="akari"] .justfyHold {
   visibility: hidden;
   height: 0;
   overflow: hidden;
   margin: 0;
   padding: 0;
 }
-.textfix {
+html[data-styles~="akari"] .textfix {
   text-overflow: ellipsis;
   overflow-x: hidden;
   white-space: nowrap;
 }
-#content .p404 {
+html[data-styles~="akari"] #content .p404 {
   padding: 10px;
 }
-#content .p404 a {
+html[data-styles~="akari"] #content .p404 a {
   width: 160px;
   display: inline-block;
   margin: 0;
 }
-#content .p404 .search {
+html[data-styles~="akari"] #content .p404 .search {
   text-align: left;
 }
-#content .wiki_create .block {
+html[data-styles~="akari"] #content .wiki_create .block {
   background-color: #e3eefb;
   border-radius: 4px;
   -moz-border-radius: 4px;
@@ -51,31 +44,31 @@
   margin-top: 20px;
   padding: 10px;
 }
-#content .wiki_create p.dec {
+html[data-styles~="akari"] #content .wiki_create p.dec {
   text-align: left;
 }
-#content .wiki_create div.sec {
+html[data-styles~="akari"] #content .wiki_create div.sec {
   text-align: left;
   text-indent: 80px;
   font-size: 16px;
   color: #4190e7;
 }
-#content .wiki_create h1,
-#content .wiki_create h2 {
+html[data-styles~="akari"] #content .wiki_create h1,
+html[data-styles~="akari"] #content .wiki_create h2 {
   font-size: 14px;
   text-align: left;
 }
-#content .wiki_create h1 {
+html[data-styles~="akari"] #content .wiki_create h1 {
   line-height: 40px;
   vertical-align: middle;
 }
-#content .wiki_create h1 label {
+html[data-styles~="akari"] #content .wiki_create h1 label {
   width: 75px;
   display: inline-block;
   text-align: right;
   padding-right: 4px;
 }
-#content .wiki_create h1 input {
+html[data-styles~="akari"] #content .wiki_create h1 input {
   border: none;
   width: 520px;
   height: 24px;
@@ -83,82 +76,82 @@
   vertical-align: middle;
   font-size: 14px;
 }
-#content .wiki_create input.err {
+html[data-styles~="akari"] #content .wiki_create input.err {
   background-color: #6eaaed;
 }
-#content .wiki_create .sel label {
+html[data-styles~="akari"] #content .wiki_create .sel label {
   vertical-align: top;
 }
-#content .wiki_create .sel .g_select {
+html[data-styles~="akari"] #content .wiki_create .sel .g_select {
   width: 530px;
 }
-#content .wiki_create #J_tmpl_sel {
+html[data-styles~="akari"] #content .wiki_create #J_tmpl_sel {
   display: none;
 }
-#content .wiki_create #J_tmpl_sel span {
+html[data-styles~="akari"] #content .wiki_create #J_tmpl_sel span {
   width: auto !important;
   min-width: 144px;
   padding: 0 8px;
 }
-#content .wiki_create #J_charts a {
+html[data-styles~="akari"] #content .wiki_create #J_charts a {
   display: block;
 }
-#content .wiki_create .g_tip {
+html[data-styles~="akari"] #content .wiki_create .g_tip {
   margin-left: 110px;
 }
-#content .wiki_create .button {
+html[data-styles~="akari"] #content .wiki_create .button {
   margin: 24px 0 0 79px;
   text-align: left;
 }
-#content .wiki_create .button .btn {
+html[data-styles~="akari"] #content .wiki_create .button .btn {
   text-align: center;
   display: inline-block;
   width: 227.5px;
 }
-#content .wiki_create .button a {
+html[data-styles~="akari"] #content .wiki_create .button a {
   line-height: 32px;
   vertical-align: top;
   margin-left: 10px;
 }
-#content .wiki_create .help {
+html[data-styles~="akari"] #content .wiki_create .help {
   margin-left: 80px;
   line-height: 30px;
 }
-#content .wiki_create .help a {
+html[data-styles~="akari"] #content .wiki_create .help a {
   color: #4190e7;
 }
-#content .wiki_change {
+html[data-styles~="akari"] #content .wiki_change {
   text-align: left;
   padding-top: 10px;
 }
-#content .wiki_change .title {
+html[data-styles~="akari"] #content .wiki_change .title {
   font-size: 16px;
   line-height: 32px;
 }
-#content .wiki_change h1 {
+html[data-styles~="akari"] #content .wiki_change h1 {
   display: block;
   margin-bottom: 10px;
 }
-#content .wiki_change h1 .label {
+html[data-styles~="akari"] #content .wiki_change h1 .label {
   padding: 4px;
   font-size: 16px;
   background-color: #e3eefb;
 }
-#content .wiki_change h1 span {
+html[data-styles~="akari"] #content .wiki_change h1 span {
   padding: 4px;
 }
-#content .wiki_change h1 span.gray {
+html[data-styles~="akari"] #content .wiki_change h1 span.gray {
   color: #999;
 }
-#content .wiki_cate {
+html[data-styles~="akari"] #content .wiki_cate {
   text-align: justify;
   padding-top: 10px;
 }
-#content .wiki_cate h1 {
+html[data-styles~="akari"] #content .wiki_cate h1 {
   font-size: 16px;
   padding-bottom: 24px;
 }
-#content .wiki_cate a {
+html[data-styles~="akari"] #content .wiki_cate a {
   text-align: center;
   display: inline-block;
   width: 425px;
@@ -169,10 +162,10 @@
   -webkit-border-radius: 4px;
   margin-bottom: 10px;
 }
-#content .all_board {
+html[data-styles~="akari"] #content .all_board {
   text-align: left;
 }
-#content .all_board .item {
+html[data-styles~="akari"] #content .all_board .item {
   display: inline-block;
   margin: 0 5px 10px;
   font-size: 16px;
@@ -181,7 +174,7 @@
   position: relative;
   text-align: center;
 }
-#content .all_board .item:before {
+html[data-styles~="akari"] #content .all_board .item:before {
   position: absolute;
   width: 96%;
   height: 50%;
@@ -195,7 +188,7 @@
   width: 90%;
   margin-left: -45%;
 }
-#content .all_board .item .bg {
+html[data-styles~="akari"] #content .all_board .item .bg {
   position: relative;
   background-color: white;
   width: 207.5px;
@@ -205,72 +198,72 @@
   -webkit-border-radius: 4px;
   border: 1px solid #4190e7;
 }
-#content .all_board .item:hover {
+html[data-styles~="akari"] #content .all_board .item:hover {
   text-decoration: none;
   box-shadow: 0 0 5px #222;
 }
-#content .all_board .item i {
+html[data-styles~="akari"] #content .all_board .item i {
   background: url('/static/img/board.png') no-repeat top left;
   width: 120px;
   height: 122px;
   display: inline-block;
   margin: 10px;
 }
-#content .all_board .item i.icon-1 {
+html[data-styles~="akari"] #content .all_board .item i.icon-1 {
   background-position: 0 -366px;
 }
-#content .all_board .item i.icon-2 {
+html[data-styles~="akari"] #content .all_board .item i.icon-2 {
   background-position: 0 -117px;
 }
-#content .all_board .item i.icon-3 {
+html[data-styles~="akari"] #content .all_board .item i.icon-3 {
   background-position: 0 -245px;
 }
-#content .all_board .item i.icon-4 {
+html[data-styles~="akari"] #content .all_board .item i.icon-4 {
   background-position: 0 0;
 }
-#content .all_board .item .name {
+html[data-styles~="akari"] #content .all_board .item .name {
   font-size: 20px;
 }
-#content .all_board .item .des {
+html[data-styles~="akari"] #content .all_board .item .des {
   padding: 4px;
   color: #787878;
 }
-#content .notify .list {
+html[data-styles~="akari"] #content .notify .list {
   text-align: left;
 }
-#content .notify .item {
+html[data-styles~="akari"] #content .notify .item {
   line-height: 32px;
   border-bottom: 1px solid #4190e7;
 }
-#content .notify .item.new {
+html[data-styles~="akari"] #content .notify .item.new {
   font-weight: bold;
 }
-#content .notify .item:nth-child(even) {
+html[data-styles~="akari"] #content .notify .item:nth-child(even) {
   background-color: #e6e6e6;
 }
-#content .notify .title {
+html[data-styles~="akari"] #content .notify .title {
   max-width: 500px;
   color: #fbb;
   display: inline-block;
   vertical-align: bottom;
 }
-#content .notify .link {
+html[data-styles~="akari"] #content .notify .link {
   font-size: 16px;
   color: #4190e7;
   padding-left: 10px;
 }
-#content .user_avatar h1 {
+html[data-styles~="akari"] #content .user_avatar h1 {
   line-height: 46px;
   font-size: 14px;
   text-align: left;
 }
-#content .user_avatar h1 label {
+html[data-styles~="akari"] #content .user_avatar h1 label {
   width: 115px;
   display: inline-block;
   text-align: right;
   padding-right: 4px;
 }
-#content .user_avatar h1 input {
+html[data-styles~="akari"] #content .user_avatar h1 input {
   border: none;
   width: 192.5px;
   height: 24px;
@@ -278,24 +271,24 @@
   vertical-align: middle;
   background: none;
 }
-#content .user_avatar h1 a {
+html[data-styles~="akari"] #content .user_avatar h1 a {
   margin-left: 10px;
 }
-#content .user_avatar .btn {
+html[data-styles~="akari"] #content .user_avatar .btn {
   margin: 4px 0 0 119px;
   width: 227.5px;
   background: none;
 }
-#content .user_avatar .btn:hover {
+html[data-styles~="akari"] #content .user_avatar .btn:hover {
   background-color: #4190e7;
 }
-#content .all_friends {
+html[data-styles~="akari"] #content .all_friends {
   text-align: justify;
 }
-#content .all_friends .g_btn {
+html[data-styles~="akari"] #content .all_friends .g_btn {
   margin-left: 0;
 }
-#content .all_friends .item {
+html[data-styles~="akari"] #content .all_friends .item {
   display: inline-block;
   width: 240px;
   background-color: #e3eefb;
@@ -305,27 +298,27 @@
   padding: 2px;
   margin-bottom: 10px;
 }
-#content .all_friends .item img {
+html[data-styles~="akari"] #content .all_friends .item img {
   width: 64px;
   height: 64px;
 }
-#content .all_friends .item a {
+html[data-styles~="akari"] #content .all_friends .item a {
   display: inline-block;
   vertical-align: top;
   width: 150px;
 }
-#content .all_quest {
+html[data-styles~="akari"] #content .all_quest {
   text-align: justify;
 }
-#content .all_quest p {
+html[data-styles~="akari"] #content .all_quest p {
   line-height: 1.5em;
 }
-#content .all_quest .items {
+html[data-styles~="akari"] #content .all_quest .items {
   margin-top: 20px;
   border-top: 1px solid #4190e7;
   padding-top: 10px;
 }
-#content .all_quest .item {
+html[data-styles~="akari"] #content .all_quest .item {
   display: inline-block;
   width: 520px;
   height: 80px;
@@ -335,20 +328,20 @@
   vertical-align: top;
   position: relative;
 }
-#content .all_quest .item .top {
+html[data-styles~="akari"] #content .all_quest .item .top {
   height: 24px;
   line-height: 24px;
   border-bottom: 1px solid #4190e7;
   padding: 0 3px;
 }
-#content .all_quest .item .top i {
+html[data-styles~="akari"] #content .all_quest .item .top i {
   float: right;
   font-weight: bold;
 }
-#content .all_quest .item p {
+html[data-styles~="akari"] #content .all_quest .item p {
   padding: 3px;
 }
-#content .all_quest .item .status {
+html[data-styles~="akari"] #content .all_quest .item .status {
   width: 80px;
   height: 22px;
   border: 1px solid #4190e7;
@@ -360,10 +353,10 @@
   bottom: 0;
   margin: 0 4px 4px 0;
 }
-#content .all_quest .item .status:hover {
+html[data-styles~="akari"] #content .all_quest .item .status:hover {
   background-color: #4190e7;
 }
-#content .all_quest .item .status div {
+html[data-styles~="akari"] #content .all_quest .item .status div {
   height: 100%;
   border-top-left-radius: 4px;
   -moz-border-radius-topleft: 4px;
@@ -372,26 +365,26 @@
   -moz-border-radius-bottomleft: 4px;
   -webkit-border-bottom-left-radius: 4px;
 }
-#content .all_quest .item .status span {
+html[data-styles~="akari"] #content .all_quest .item .status span {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
 }
-#content .all_quest .item .status.comp {
+html[data-styles~="akari"] #content .all_quest .item .status.comp {
   background-color: #b8e986;
   color: #333;
 }
-#content .all_quest .item .status.do {
+html[data-styles~="akari"] #content .all_quest .item .status.do {
   background-color: #eee;
 }
-#content .all_quest .item .status.do div {
+html[data-styles~="akari"] #content .all_quest .item .status.do div {
   background-color: #b8e986;
 }
-#content .all_store {
+html[data-styles~="akari"] #content .all_store {
   text-align: justify;
 }
-#content .all_store .item {
+html[data-styles~="akari"] #content .all_store .item {
   display: inline-block;
   width: 435px;
   height: 100px;
@@ -400,27 +393,27 @@
   margin: 0 0 10px;
   vertical-align: top;
 }
-#content .all_store .item p {
+html[data-styles~="akari"] #content .all_store .item p {
   height: 30px;
   line-height: 30px;
 }
-#content .all_store .item p.des {
+html[data-styles~="akari"] #content .all_store .item p.des {
   padding: 0 4px;
   line-height: 20px;
   height: auto;
 }
-#content .all_store .item p.sub {
+html[data-styles~="akari"] #content .all_store .item p.sub {
   padding: 0 4px;
   color: #97c2f2;
   border-top: 1px solid #4190e7;
 }
-#content .all_store .item .name {
+html[data-styles~="akari"] #content .all_store .item .name {
   background-color: #67a6ec;
   display: inline-block;
   color: white;
   padding: 0 4px;
 }
-#content .all_store .item .price {
+html[data-styles~="akari"] #content .all_store .item .price {
   background-color: #8dbcf1;
   display: inline-block;
   padding: 0 4px;
@@ -428,7 +421,7 @@
   -moz-border-radius-bottomright: 4px;
   -webkit-border-bottom-right-radius: 4px;
 }
-#content .all_store .item .g_btn {
+html[data-styles~="akari"] #content .all_store .item .g_btn {
   float: right;
   display: inline-block;
   width: 100px;
@@ -437,24 +430,24 @@
   text-align: center;
   line-height: 24px;
 }
-#content .all_review .item {
+html[data-styles~="akari"] #content .all_review .item {
   background-color: #e3eefb;
   font-size: 16px;
   text-align: left;
   padding: 3px 4px;
   margin-bottom: 10px;
 }
-#content .all_review .item .sub {
+html[data-styles~="akari"] #content .all_review .item .sub {
   color: #aaa;
   font-size: 14px;
 }
-#content .all_review .item .sub span {
+html[data-styles~="akari"] #content .all_review .item .sub span {
   margin-right: 10px;
 }
-#content .quest_tabs {
+html[data-styles~="akari"] #content .quest_tabs {
   text-align: left;
 }
-#content .quest_tabs a {
+html[data-styles~="akari"] #content .quest_tabs a {
   display: inline-block;
   width: 180px;
   margin-left: 0;
@@ -462,63 +455,62 @@
   text-align: center;
   background-color: white;
 }
-#content .quest_tabs a:hover {
+html[data-styles~="akari"] #content .quest_tabs a:hover {
   color: #4190e7;
 }
-#content .quest_tabs a.curr {
+html[data-styles~="akari"] #content .quest_tabs a.curr {
   background-color: #4190e7;
   color: white;
   text-decoration: none;
 }
-#content .jail_table {
+html[data-styles~="akari"] #content .jail_table {
   margin-top: 24px;
   border-collapse: collapse;
 }
-#content .jail_table thead th {
+html[data-styles~="akari"] #content .jail_table thead th {
   text-align: center;
 }
-#content .jail_table tr {
+html[data-styles~="akari"] #content .jail_table tr {
   border-bottom: 1px solid #4190e7;
 }
-#content .invite{
+html[data-styles~="akari"] #content .invite {
   text-align: left;
 }
-#content .invite label{
+html[data-styles~="akari"] #content .invite label {
   margin-right: 10px;
 }
-#content .invite input{
+html[data-styles~="akari"] #content .invite input {
   height: 25px;
   width: 300px;
 }
-#content .invite .btn{
+html[data-styles~="akari"] #content .invite .btn {
   text-align: center;
   display: inline-block;
   width: 100px;
   vertical-align: middle;
   margin: 0 0 0 10px;
 }
-
-#sidebar .link {
+html[data-styles~="akari"] #sidebar .link {
   padding: 6px;
 }
-#sidebar .all_board.option span {
+html[data-styles~="akari"] #sidebar .all_board.option span {
   display: inline-block;
   font-size: 16px;
   padding-bottom: 5px;
 }
-#sidebar .all_quest {
+html[data-styles~="akari"] #sidebar .all_quest {
   padding: 0 10px;
 }
-#sidebar .all_quest p {
+html[data-styles~="akari"] #sidebar .all_quest p {
   text-align: left;
   line-height: 18px;
   padding-bottom: 10px;
 }
-#sidebar p.search {
+html[data-styles~="akari"] #sidebar p.search {
   text-align: left;
   padding: 6px;
 }
-#sidebar #___gcse_0 {
+html[data-styles~="akari"] #sidebar #___gcse_0 {
   width: 94%;
   margin: 0 auto;
 }

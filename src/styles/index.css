@@ -1,0 +1,27 @@
+/* 全站样式唯一入口：所有 CSS 都是构建时静态依赖，没有运行时 <link>/<style> 注入。
+   @import 的顺序就是级联顺序，与老站 base.html -> 页面 CSS 的顺序一致。
+   skeleton.css 放最后，其覆盖规则因此不需要依赖加载时序。 */
+@import './main.css';
+@import './simple.css';
+@import './pages/akari.css';
+@import './pages/board.css';
+@import './pages/chartlist.css';
+@import './pages/profile.css';
+@import './pages/score.css';
+@import './pages/store.css';
+@import './pages/tmpl.css';
+@import './pages/upload.css';
+@import './pages/user.css';
+@import './pages/wiki.css';
+@import './pages/wiki_edit.css';
+@import '../pages/account/AchievePage.css';
+@import '../pages/talk/UserMsg.css';
+@import '../pages/home/Index.css';
+@import '../pages/home/Intro.css';
+@import '../pages/wiki/AllPlayer.css';
+@import '../pages/account/AuthPage.css';
+@import '../pages/store/SkinDetail.css';
+@import '../pages/store/SkinEntry.css';
+@import '../pages/store/SkinList.css';
+@import '../pages/talk/ChartTalk.css';
+@import '../skeleton.css';

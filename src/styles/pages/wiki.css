@@ -1,38 +1,31 @@
-/*
-  1. 主背景 8d8d8d / 141 141 141
-2. 主字体 d5b9b9 / 255 221 221
-3. 链接字体 + 高亮效果 ff9d9d / 255 157 157
-4. 常规按钮 cc6666 / 204 102 102
-5. 主背景上用来加强的背景色块 535353 / 83 83 83
-6. 加强色块上用来更加加强的色块 474747 / 71 71 71
-7. 边框（现在使用了主题色）ef6666 / 239 102 102
-边框内线(二级?) 726464 / 114 100 100
-8.这东西，叫标题栏之类 ef6666 / 239 102 102
-*/
-.clear {
+/* wiki.css — 老站样式，作用域名 "wiki"。
+   规则以 html[data-styles~="wiki"] 限定，
+   Shell 依据 variant / page / css prop 生成 <html data-styles="...">。
+ */
+html[data-styles~="wiki"] .clear {
   clear: both;
   display: block;
   height: 0;
 }
-.justfix {
+html[data-styles~="wiki"] .justfix {
   display: inline-block;
   width: 100%;
   height: 0;
   overflow: hidden;
 }
-.justfyHold {
+html[data-styles~="wiki"] .justfyHold {
   visibility: hidden;
   height: 0;
   overflow: hidden;
   margin: 0;
   padding: 0;
 }
-.textfix {
+html[data-styles~="wiki"] .textfix {
   text-overflow: ellipsis;
   overflow-x: hidden;
   white-space: nowrap;
 }
-#chead .cover {
+html[data-styles~="wiki"] #chead .cover {
   position: absolute;
   top: 0px;
   width: 100%;
@@ -43,10 +36,10 @@
   filter: blur(10px);
   z-index: -1;
 }
-#center .g_cont .g_block.song {
+html[data-styles~="wiki"] #center .g_cont .g_block.song {
   margin-left: 50px;
 }
-#center .g_cont .g_block.song .left {
+html[data-styles~="wiki"] #center .g_cont .g_block.song .left {
   float: left;
   width: 200px;
   height: 200px;
@@ -55,45 +48,45 @@
   -moz-border-radius: 4px;
   -webkit-border-radius: 4px;
 }
-#center .g_cont .g_block.song .cover {
+html[data-styles~="wiki"] #center .g_cont .g_block.song .cover {
   background-size: cover;
   background-position: 50%;
 }
-#center .g_cont .g_block.song .empty {
+html[data-styles~="wiki"] #center .g_cont .g_block.song .empty {
   background-image: url('/static/img/cover.png');
 }
-#center .g_cont .g_block.song .right {
+html[data-styles~="wiki"] #center .g_cont .g_block.song .right {
   float: left;
   text-align: left;
   margin-left: 10px;
   line-height: 20px;
   color: #666666;
 }
-#center .g_cont .g_block.song .right .title {
+html[data-styles~="wiki"] #center .g_cont .g_block.song .right .title {
   font-size: 20px;
   color: black;
   line-height: 30px;
 }
-#center .g_cont .g_block.song .right .add {
+html[data-styles~="wiki"] #center .g_cont .g_block.song .right .add {
   margin-top: 58px;
 }
-#center .g_cont .g_block.song .right .add a {
+html[data-styles~="wiki"] #center .g_cont .g_block.song .right .add a {
   margin: 0;
   display: inline-block;
   width: 100px;
   text-align: center;
 }
-#center .g_cont .g_block.chart {
+html[data-styles~="wiki"] #center .g_cont .g_block.chart {
   margin: 0 0 32px 50px;
 }
-#center .g_cont .g_block.chart .left {
+html[data-styles~="wiki"] #center .g_cont .g_block.chart .left {
   float: left;
 }
-#center .g_cont .g_block.chart .left div {
+html[data-styles~="wiki"] #center .g_cont .g_block.chart .left div {
   width: 160px;
   line-height: 24px;
 }
-#center .g_cont .g_block.chart .left .cover {
+html[data-styles~="wiki"] #center .g_cont .g_block.chart .left .cover {
   width: 160px;
   height: 160px;
   border: 1px solid #4190e7;
@@ -103,20 +96,20 @@
   background-size: cover;
   background-position: 50%;
 }
-#center .g_cont .g_block.chart .left .empty {
+html[data-styles~="wiki"] #center .g_cont .g_block.chart .left .empty {
   background-image: url('/static/img/cover.png');
 }
-#center .g_cont .g_block.chart .right {
+html[data-styles~="wiki"] #center .g_cont .g_block.chart .right {
   float: left;
   text-align: left;
   margin-left: 10px;
 }
-#center .g_cont .g_block.chart .right .title {
+html[data-styles~="wiki"] #center .g_cont .g_block.chart .right .title {
   font-size: 20px;
   color: black;
   line-height: 30px;
 }
-#center .g_cont .g_block.chart .right .avatar {
+html[data-styles~="wiki"] #center .g_cont .g_block.chart .right .avatar {
   display: inline-block;
   width: 36px;
   height: 36px;
@@ -127,210 +120,210 @@
   background-size: contain;
   vertical-align: middle;
 }
-#center .g_cont .g_block.chart .right .avatar img {
+html[data-styles~="wiki"] #center .g_cont .g_block.chart .right .avatar img {
   width: 36px;
 }
-#center .g_cont .g_block.chart .right .mode img {
+html[data-styles~="wiki"] #center .g_cont .g_block.chart .right .mode img {
   width: 36px;
   height: 36px;
   vertical-align: middle;
 }
-#center .g_cont .g_block.chart .right .tip {
+html[data-styles~="wiki"] #center .g_cont .g_block.chart .right .tip {
   color: #666666;
   margin-top: 3px;
 }
-#center .g_cont .g_block.chart .right .tip span {
+html[data-styles~="wiki"] #center .g_cont .g_block.chart .right .tip span {
   font-weight: bold;
   color: #4190e7;
   padding: 0 6px;
 }
-#center .g_cont .temp {
+html[data-styles~="wiki"] #center .g_cont .temp {
   margin-bottom: 24px;
 }
-#center .g_cont .g_memo {
+html[data-styles~="wiki"] #center .g_cont .g_memo {
   margin-bottom: 24px;
 }
-#center .g_cont .g_wiki {
+html[data-styles~="wiki"] #center .g_cont .g_wiki {
   padding-top: 0;
 }
-#center .chartlist {
+html[data-styles~="wiki"] #center .chartlist {
   text-align: center;
   width: auto;
   margin-right: 28px;
 }
-#center .chartlist .tip {
+html[data-styles~="wiki"] #center .chartlist .tip {
   line-height: 20px;
   text-align: left;
 }
-#center .chartlist .tip span {
+html[data-styles~="wiki"] #center .chartlist .tip span {
   color: #4190e7;
   padding: 0 6px;
   font-weight: bold;
 }
-#center .chartlist .bg {
+html[data-styles~="wiki"] #center .chartlist .bg {
   text-align: left;
   margin-top: 10px;
 }
-#center .chartlist i {
+html[data-styles~="wiki"] #center .chartlist i {
   height: 24px;
   vertical-align: middle;
   overflow: hidden;
   display: inline-block;
 }
-#center .chartlist .item i {
+html[data-styles~="wiki"] #center .chartlist .item i {
   height: 32px;
   line-height: 32px;
 }
-#center .chartlist .item:nth-child(even) {
+html[data-styles~="wiki"] #center .chartlist .item:nth-child(even) {
   background-color: #e3eefb;
 }
-#center .chartlist .col1 {
+html[data-styles~="wiki"] #center .chartlist .col1 {
   width: 240px;
 }
-#center .chartlist .col1 img {
+html[data-styles~="wiki"] #center .chartlist .col1 img {
   width: 26px;
   padding: 2px;
   vertical-align: top;
 }
-#center .chartlist .col2 {
+html[data-styles~="wiki"] #center .chartlist .col2 {
   width: 70px;
 }
-#center .chartlist .col3 {
+html[data-styles~="wiki"] #center .chartlist .col3 {
   width: 70px;
 }
-#center .chartlist .col4 {
+html[data-styles~="wiki"] #center .chartlist .col4 {
   width: 70px;
 }
-#center .chartlist .col5 {
+html[data-styles~="wiki"] #center .chartlist .col5 {
   width: 150px;
   border: none;
 }
-#center .chartlist .col5 a {
+html[data-styles~="wiki"] #center .chartlist .col5 a {
   color: #4190e7;
 }
-#center .chartlist .col6 {
+html[data-styles~="wiki"] #center .chartlist .col6 {
   width: 150px;
 }
-#center .chartlist .col7 {
+html[data-styles~="wiki"] #center .chartlist .col7 {
   width: 150px;
 }
-#center h1.sec {
+html[data-styles~="wiki"] #center h1.sec {
   color: #4190e7;
   font-size: 20px;
   margin: 10px 0;
 }
-#center h1.sec:before,
-#center h1.sec:after {
+html[data-styles~="wiki"] #center h1.sec:before,
+html[data-styles~="wiki"] #center h1.sec:after {
   content: '';
   width: 50px;
   height: 1px;
   background-color: #4190e7;
   display: inline-block;
 }
-#center h1.sec:before {
+html[data-styles~="wiki"] #center h1.sec:before {
   margin-right: 5px;
 }
-#center h1.sec:after {
+html[data-styles~="wiki"] #center h1.sec:after {
   margin-left: 5px;
 }
-#center .like_area {
+html[data-styles~="wiki"] #center .like_area {
   padding: 12px !important;
   text-align: left;
 }
-#center .like_area div.num {
+html[data-styles~="wiki"] #center .like_area div.num {
   display: inline-block;
   font-size: 16px;
 }
-#center .like_area div.num img {
+html[data-styles~="wiki"] #center .like_area div.num img {
   height: 32px;
   vertical-align: middle;
   padding-right: 4px;
 }
-#center .like_area div.num span {
+html[data-styles~="wiki"] #center .like_area div.num span {
   vertical-align: middle;
 }
-#center .like_area div.num span.l {
+html[data-styles~="wiki"] #center .like_area div.num span.l {
   color: #4190e7;
   font-size: 20px;
   padding-left: 6px;
 }
-#center .like_area div.num:nth-child(2) {
+html[data-styles~="wiki"] #center .like_area div.num:nth-child(2) {
   margin: 0 30px;
 }
-#center .like_area .line {
+html[data-styles~="wiki"] #center .like_area .line {
   display: block;
   width: 100%;
   height: 1px;
   background-color: #787878;
   margin: 10px 0 12px;
 }
-#center .like_area a {
+html[data-styles~="wiki"] #center .like_area a {
   color: #4190e7;
   font-size: 20px;
 }
-#center .like_area a:hover {
+html[data-styles~="wiki"] #center .like_area a:hover {
   text-decoration: none;
 }
-#center .first_area {
+html[data-styles~="wiki"] #center .first_area {
   padding: 0 !important;
   margin: 44px 0 10px !important;
   text-align: justify;
 }
-#center .score_area .list_head,
-#center .score_area .list li {
+html[data-styles~="wiki"] #center .score_area .list_head,
+html[data-styles~="wiki"] #center .score_area .list li {
   border-bottom: 1px solid #4190e7;
   text-align: left;
   height: 32px;
   line-height: 32px;
   vertical-align: middle;
 }
-#center .score_area .list {
+html[data-styles~="wiki"] #center .score_area .list {
   margin: 0;
   list-style: none;
 }
-#center .score_area .list li {
+html[data-styles~="wiki"] #center .score_area .list li {
   position: relative;
   height: 50px;
   line-height: 50px;
 }
-#center .score_area .list li:hover {
+html[data-styles~="wiki"] #center .score_area .list li:hover {
   background-color: #e6e6e6;
 }
-#center .score_area .list li:hover .ranknum {
+html[data-styles~="wiki"] #center .score_area .list li:hover .ranknum {
   display: block;
 }
-#center .score_area .list li .g_mod {
+html[data-styles~="wiki"] #center .score_area .list li .g_mod {
   width: 32px;
   height: 32px;
   margin: 0;
 }
-#center .score_area .list li .acc {
+html[data-styles~="wiki"] #center .score_area .list li .acc {
   text-align: left;
   position: relative;
   height: 30px;
   line-height: 30px;
 }
-#center .score_area .list li .acc i {
+html[data-styles~="wiki"] #center .score_area .list li .acc i {
   display: block;
   height: 28px;
   position: absolute;
 }
-#center .score_area .list li .acc i.color-0 {
+html[data-styles~="wiki"] #center .score_area .list li .acc i.color-0 {
   background-color: #67f0ab;
 }
-#center .score_area .list li .acc i.color-1 {
+html[data-styles~="wiki"] #center .score_area .list li .acc i.color-1 {
   background-color: #d9f067;
 }
-#center .score_area .list li .acc i.color-2 {
+html[data-styles~="wiki"] #center .score_area .list li .acc i.color-2 {
   background-color: #f0c267;
 }
-#center .score_area .list li .acc i.color-3 {
+html[data-styles~="wiki"] #center .score_area .list li .acc i.color-3 {
   background-color: #f09567;
 }
-#center .score_area .list li .acc i.color-4 {
+html[data-styles~="wiki"] #center .score_area .list li .acc i.color-4 {
   background-color: #ef6666;
 }
-#center .score_area .list li .acc em {
+html[data-styles~="wiki"] #center .score_area .list li .acc em {
   display: block;
   font-style: normal;
   width: 100%;
@@ -338,7 +331,7 @@
   position: absolute;
   color: #222;
 }
-#center .score_area .list li .label {
+html[data-styles~="wiki"] #center .score_area .list li .label {
   width: 52px;
   height: 18px;
   background: url('/static/img/toplabel.png') no-repeat top left;
@@ -348,16 +341,16 @@
   top: 3px;
   left: -5px;
 }
-#center .score_area .list li .label.top-1 {
+html[data-styles~="wiki"] #center .score_area .list li .label.top-1 {
   background-position: 0 0px;
 }
-#center .score_area .list li .label.top-2 {
+html[data-styles~="wiki"] #center .score_area .list li .label.top-2 {
   background-position: 0 -21px;
 }
-#center .score_area .list li .label.top-3 {
+html[data-styles~="wiki"] #center .score_area .list li .label.top-3 {
   background-position: 0 -43px;
 }
-#center .score_area .list li .ranknum {
+html[data-styles~="wiki"] #center .score_area .list li .ranknum {
   display: none;
   width: 50px;
   height: 50px;
@@ -368,16 +361,16 @@
   color: white;
   text-align: center;
 }
-#center .score_area .list_head span,
-#center .score_area .list span {
+html[data-styles~="wiki"] #center .score_area .list_head span,
+html[data-styles~="wiki"] #center .score_area .list span {
   display: inline-block;
   text-align: center;
   vertical-align: middle;
 }
-#center .score_area span.rank {
+html[data-styles~="wiki"] #center .score_area span.rank {
   width: 50px;
 }
-#center .score_area span.rank img {
+html[data-styles~="wiki"] #center .score_area span.rank img {
   vertical-align: top;
   border-radius: 4px;
   -moz-border-radius: 4px;
@@ -386,56 +379,56 @@
   margin: 0;
   padding: 0;
 }
-#center .score_area span.name {
+html[data-styles~="wiki"] #center .score_area span.name {
   width: 120px;
 }
-#center .score_area span.score {
+html[data-styles~="wiki"] #center .score_area span.score {
   width: 120px;
 }
-#center .score_area span.combo {
+html[data-styles~="wiki"] #center .score_area span.combo {
   width: 80px;
 }
-#center .score_area span.acc {
+html[data-styles~="wiki"] #center .score_area span.acc {
   width: 120px;
 }
-#center .score_area span.mod {
+html[data-styles~="wiki"] #center .score_area span.mod {
   width: 240px;
 }
-#center .score_area span.time {
+html[data-styles~="wiki"] #center .score_area span.time {
   width: 120px;
 }
-#center .score_area span.chart {
+html[data-styles~="wiki"] #center .score_area span.chart {
   width: 170px;
 }
-#center .score_area span .g_mod {
+html[data-styles~="wiki"] #center .score_area span .g_mod {
   width: 34px;
   height: 34px;
   margin-left: -8px;
 }
-#center .donate_area {
+html[data-styles~="wiki"] #center .donate_area {
   text-align: justify;
 }
-#center .donate_area .g_tmpl_user {
+html[data-styles~="wiki"] #center .donate_area .g_tmpl_user {
   float: left;
   margin: 0 0 10px 10px;
 }
-#center .donate_area .g_tmpl_user a {
+html[data-styles~="wiki"] #center .donate_area .g_tmpl_user a {
   line-height: 28px;
 }
-#center .wiki_title {
+html[data-styles~="wiki"] #center .wiki_title {
   position: relative;
   text-align: left;
   margin: 0 0 26px 0;
   padding: 0 12px 12px 0;
 }
-#center .wiki_title .tail {
+html[data-styles~="wiki"] #center .wiki_title .tail {
   line-height: 24px;
   position: absolute;
   top: -12px;
   left: 40px;
   z-index: 10;
 }
-#center .wiki_title .tail a {
+html[data-styles~="wiki"] #center .wiki_title .tail a {
   background-color: #cccccc;
   border-radius: 12px;
   -moz-border-radius: 12px;
@@ -446,29 +439,29 @@
   padding: 0 8px;
   font-weight: normal;
 }
-#center .wiki_title .tail a:hover {
+html[data-styles~="wiki"] #center .wiki_title .tail a:hover {
   text-decoration: none;
   box-shadow: 0 2px 1px rgba(0, 0, 0, 0.3);
 }
-#center .wiki_title .title {
+html[data-styles~="wiki"] #center .wiki_title .title {
   font-size: 36px;
   padding: 48px 0 0 40px;
 }
-#center .wiki_title .tool {
+html[data-styles~="wiki"] #center .wiki_title .tool {
   text-align: right;
 }
-#center .g_cont2 {
+html[data-styles~="wiki"] #center .g_cont2 {
   padding: 12px 12px 40px 40px;
   box-sizing: border-box;
   margin-bottom: 26px;
 }
-#center .g_cont2 .tool {
+html[data-styles~="wiki"] #center .g_cont2 .tool {
   text-align: right;
 }
-#center .g_cont2 .g_btn {
+html[data-styles~="wiki"] #center .g_cont2 .g_btn {
   display: inline-block;
 }
-#center .lang2 {
+html[data-styles~="wiki"] #center .lang2 {
   display: inline-block;
   position: relative;
   width: 150px;
@@ -481,67 +474,67 @@
   cursor: pointer;
   vertical-align: middle;
 }
-#center .lang2:hover {
+html[data-styles~="wiki"] #center .lang2:hover {
   box-shadow: 0 2px 1px rgba(0, 0, 0, 0.3);
   background-color: #cccccc;
 }
-#center .lang2:hover .drop {
+html[data-styles~="wiki"] #center .lang2:hover .drop {
   display: block;
 }
-#center .lang2 span {
+html[data-styles~="wiki"] #center .lang2 span {
   line-height: 32px;
 }
-#center .lang2 .drop {
+html[data-styles~="wiki"] #center .lang2 .drop {
   display: none;
   position: absolute;
   top: 32px;
   width: 100%;
   z-index: 99;
 }
-#center .lang2 .drop .list {
+html[data-styles~="wiki"] #center .lang2 .drop .list {
   margin-top: 8px;
   background-color: #dddddd;
   border-radius: 20px;
   -moz-border-radius: 20px;
   -webkit-border-radius: 20px;
 }
-#center .lang2 .drop a {
+html[data-styles~="wiki"] #center .lang2 .drop a {
   text-align: center;
   display: block;
   padding: 3px 0;
   line-height: 24px;
 }
-#center .lang2 .drop a:hover {
+html[data-styles~="wiki"] #center .lang2 .drop a:hover {
   color: white;
   text-decoration: none;
 }
-#center .song_title {
+html[data-styles~="wiki"] #center .song_title {
   position: relative;
   text-align: left;
   margin: 20px 0 26px 0;
   padding: 0 12px 12px 0;
   height: 160px;
 }
-#center .song_title .coverb {
+html[data-styles~="wiki"] #center .song_title .coverb {
   position: absolute;
   bottom: 16px;
   left: 40px;
   width: 180px;
   height: 180px;
 }
-#center .song_title .coverb a {
+html[data-styles~="wiki"] #center .song_title .coverb a {
   position: absolute;
   bottom: 6px;
   right: 6px;
   box-shadow: none;
 }
-#center .song_title .coverb a:hover {
+html[data-styles~="wiki"] #center .song_title .coverb a:hover {
   background-color: #666 !important;
 }
-#center .song_title .coverb:hover a {
+html[data-styles~="wiki"] #center .song_title .coverb:hover a {
   display: block;
 }
-#center .song_title .cover {
+html[data-styles~="wiki"] #center .song_title .cover {
   width: 180px;
   height: 180px;
   border-radius: 4px;
@@ -550,20 +543,20 @@
   background-size: cover;
   background-position: center;
 }
-#center .song_title .right {
+html[data-styles~="wiki"] #center .song_title .right {
   padding: 32px 0 0 240px;
   position: relative;
 }
-#center .song_title .right .title {
+html[data-styles~="wiki"] #center .song_title .right .title {
   font-size: 30px;
   font-weight: normal;
 }
-#center .song_title .right .title .artist {
+html[data-styles~="wiki"] #center .song_title .right .title .artist {
   max-width: 300px;
   display: inline-block;
   vertical-align: bottom;
 }
-#center .song_title .right .title em {
+html[data-styles~="wiki"] #center .song_title .right .title em {
   font-style: normal;
   border: 1px solid #4190e7;
   color: white;
@@ -574,48 +567,48 @@
   padding: 2px 4px;
   vertical-align: middle;
 }
-#center .song_title .right .title em.t2 {
+html[data-styles~="wiki"] #center .song_title .right .title em.t2 {
   background-color: #62b69c;
   border-color: #62b69c;
 }
-#center .song_title .right .title em.t1 {
+html[data-styles~="wiki"] #center .song_title .right .title em.t1 {
   background-color: #d5d332;
   border-color: #d5d332;
 }
-#center .song_title .right .title em.t0 {
+html[data-styles~="wiki"] #center .song_title .right .title em.t0 {
   background-color: #cb665b;
   border-color: #cb665b;
 }
-#center .song_title .right .title em.mav {
+html[data-styles~="wiki"] #center .song_title .right .title em.mav {
   background-color: #10A6DB;
   border-color: #10A6DB;
 }
-#center .song_title .right .title em.w {
+html[data-styles~="wiki"] #center .song_title .right .title em.w {
   border-color: #ef6666;
   color: #ef6666;
 }
-#center .song_title .right .title em.h {
+html[data-styles~="wiki"] #center .song_title .right .title em.h {
   border-color: #7f7f7f;
   color: #7f7f7f;
 }
-#center .song_title .right .title em.p {
+html[data-styles~="wiki"] #center .song_title .right .title em.p {
   border-color: #4190e7;
   color: #4190e7;
 }
-#center .song_title .right h3 {
+html[data-styles~="wiki"] #center .song_title .right h3 {
   position: absolute;
   left: 242px;
   top: 20px;
   right: 0px;
 }
-#center .song_title .right .sub {
+html[data-styles~="wiki"] #center .song_title .right .sub {
   color: #787878;
 }
-#center .song_title .right .tags {
+html[data-styles~="wiki"] #center .song_title .right .tags {
   margin-top: 5px;
   line-height: 20px;
 }
-#center .song_title .right .tags a {
+html[data-styles~="wiki"] #center .song_title .right .tags a {
   padding-right: 5px;
   background-color: #f0f0f0;
   color: #505050;
@@ -626,34 +619,34 @@
   padding: 2px 4px;
   vertical-align: middle;
 }
-#center .song_title .right .tags a:hover {
+html[data-styles~="wiki"] #center .song_title .right .tags a:hover {
   text-decoration: none;
 }
-#center .song_title .right .mode {
+html[data-styles~="wiki"] #center .song_title .right .mode {
   white-space: nowrap;
   overflow: hidden;
 }
-#center .song_title .right .mode img {
+html[data-styles~="wiki"] #center .song_title .right .mode img {
   width: 32px;
   vertical-align: middle;
   border-radius: 3px;
   -moz-border-radius: 3px;
   -webkit-border-radius: 3px;
 }
-#center .song_title .tool {
+html[data-styles~="wiki"] #center .song_title .tool {
   float: right;
   position: absolute;
   right: 12px;
   bottom: 12px;
 }
-#center .song_title .tail {
+html[data-styles~="wiki"] #center .song_title .tail {
   line-height: 24px;
   position: absolute;
   top: -12px;
   left: 240px;
   z-index: 10;
 }
-#center .song_title .tail a {
+html[data-styles~="wiki"] #center .song_title .tail a {
   background-color: #cccccc;
   border-radius: 12px;
   -moz-border-radius: 12px;
@@ -664,14 +657,14 @@
   padding: 0 8px;
   font-weight: normal;
 }
-#center .song_title .tail a:hover {
+html[data-styles~="wiki"] #center .song_title .tail a:hover {
   text-decoration: none;
   box-shadow: 0 2px 1px rgba(0, 0, 0, 0.3);
 }
-#center .nochart {
+html[data-styles~="wiki"] #center .nochart {
   padding-bottom: 12px;
 }
-#center .nochart a {
+html[data-styles~="wiki"] #center .nochart a {
   width: 130px;
   margin: 0;
 }

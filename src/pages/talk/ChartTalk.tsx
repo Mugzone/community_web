@@ -5,6 +5,7 @@ import { useLoad, showNotify } from '../../lib/legacy'
 import { URLS } from '../../lib/urls'
 import { fetchChartTalk, saveTalk } from '../../network/legacy'
 import { t as i18nT } from '../../i18n'
+import './ChartTalk.css'
 
 /** talk/chart.html —— 客户端谱面评价留言（独立整页，自带内联样式） */
 type ChartTalkState = {
@@ -20,13 +21,6 @@ const unwrap = (res: any): any => {
   const d = (res as any).data
   return d !== undefined && d !== null ? d : res
 }
-
-/** talk/chart.html 的 <style>，附加 text-align 以抵消 simple.css 的 body 居中 */
-const PAGE_STYLE = `
-body { margin: 10px; text-align: left; }
-.btn { float: right; font-size: 20px; background-color: #ef6666; color: white; text-align: center; padding: 0 24px; -webkit-border-radius: 20px; border-radius: 20px; height: 40px; line-height: 40px; cursor: pointer; }
-#text { clear: both; margin-top: 20px; border: 1px solid black; width: 100%; height: 320px; font-size: 20px; resize: none; box-sizing: border-box; }
-`
 
 export default function ChartTalk() {
   const [sp] = useSearchParams()
@@ -67,8 +61,7 @@ export default function ChartTalk() {
   }
 
   return (
-    <Shell variant="simple" css={[]}>
-      <style>{PAGE_STYLE}</style>
+    <Shell variant="simple" page="chart_talk" css={[]}>
       <div className="edit">
         <div className="btn" onClick={(e) => { e.preventDefault(); void onSubmit() }}>{i18nT('Submit')}</div>
         <textarea

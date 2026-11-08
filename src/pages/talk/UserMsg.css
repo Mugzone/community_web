@@ -1,46 +1,45 @@
-/* UserMsg.css — 老站 discuss.css，仅 discuss 页使用。
-   与页面组件同目录（React colocation）；全部规则以 :where(html[data-page="discuss"]
-   作用域化，因此可以被打包进全局样式表而不影响其它页面。
-   注意：本文件用 :where(html[data-page="discuss"]) 保持原选择器权重（零增益）。
-   改成 html[data-page=...] 会压过 main.css 的 .g_btn.btn margin，已由全页视觉回归确认。
-   Shell 的 page prop 负责在 <html> 上写 data-page。 */
-:where(html[data-page="discuss"]) .clear {
+/* UserMsg.css — 老站 discuss.css，作用域名 "discuss"。
+   与页面组件同目录（React colocation）。所有规则以
+   html[data-styles~="discuss"] 限定，由 src/styles/index.css 统一静态加载；
+   Shell 依据 variant / page / css prop 生成 <html data-styles="...">。
+   作用域前缀统一带 attr 权重，级联顺序由 index.css 的 @import 顺序保证。 */
+html[data-styles~="discuss"] .clear {
   clear: both;
   display: block;
   height: 0;
 }
-:where(html[data-page="discuss"]) .justfix {
+html[data-styles~="discuss"] .justfix {
   display: inline-block;
   width: 100%;
   height: 0;
   overflow: hidden;
 }
-:where(html[data-page="discuss"]) .justfyHold {
+html[data-styles~="discuss"] .justfyHold {
   visibility: hidden;
   height: 0;
   overflow: hidden;
   margin: 0;
   padding: 0;
 }
-:where(html[data-page="discuss"]) .textfix {
+html[data-styles~="discuss"] .textfix {
   text-overflow: ellipsis;
   overflow-x: hidden;
   white-space: nowrap;
 }
-:where(html[data-page="discuss"]) #content {
+html[data-styles~="discuss"] #content {
   text-align: left;
 }
-:where(html[data-page="discuss"]) #content .g_cont {
+html[data-styles~="discuss"] #content .g_cont {
   padding: 10px 0 0;
 }
-:where(html[data-page="discuss"]) #content .g_actbar {
+html[data-styles~="discuss"] #content .g_actbar {
   padding-left: 10px;
 }
-:where(html[data-page="discuss"]) #content .editor h1 {
+html[data-styles~="discuss"] #content .editor h1 {
   font-size: 16px;
   margin: 0 0 10px 10px;
 }
-:where(html[data-page="discuss"]) #content .editor textarea {
+html[data-styles~="discuss"] #content .editor textarea {
   width: 100%;
   height: 200px;
   line-height: 16px;
@@ -50,48 +49,48 @@
   font-size: 14px;
   outline: 0;
 }
-:where(html[data-page="discuss"]) #content .editor .button {
+html[data-styles~="discuss"] #content .editor .button {
   text-align: left;
   margin: 10px 0 0 10px;
 }
-:where(html[data-page="discuss"]) #content .editor .button div,
-:where(html[data-page="discuss"]) #content .editor .button a {
+html[data-styles~="discuss"] #content .editor .button div,
+html[data-styles~="discuss"] #content .editor .button a {
   display: inline-block;
   margin-left: 10px;
 }
-:where(html[data-page="discuss"]) #content .editor .button .btn {
+html[data-styles~="discuss"] #content .editor .button .btn {
   text-align: center;
   width: 227.5px;
   margin-bottom: 0;
 }
-:where(html[data-page="discuss"]) #content .editor .button a {
+html[data-styles~="discuss"] #content .editor .button a {
   line-height: 32px;
   vertical-align: top;
 }
-:where(html[data-page="discuss"]) #content .editor .button#J_opr_new {
+html[data-styles~="discuss"] #content .editor .button#J_opr_new {
   text-align: center;
   margin-left: 0;
 }
-:where(html[data-page="discuss"]) #content .editor .g_tip {
+html[data-styles~="discuss"] #content .editor .g_tip {
   margin-left: 10px;
 }
-:where(html[data-page="discuss"]) #content .preview {
+html[data-styles~="discuss"] #content .preview {
   display: none;
 }
-:where(html[data-page="discuss"]) #content .preview h1 {
+html[data-styles~="discuss"] #content .preview h1 {
   margin-left: 10px;
   font-size: 16px;
   font-weight: bold;
   color: #4190e7;
 }
-:where(html[data-page="discuss"]) #content .preview .g_wiki {
+html[data-styles~="discuss"] #content .preview .g_wiki {
   padding: 10px;
 }
-:where(html[data-page="discuss"]) #g_talk {
+html[data-styles~="discuss"] #g_talk {
   border-top-left-radius: 0;
   border-top-right-radius: 0;
 }
-:where(html[data-page="discuss"]) #g_talk .g_btn {
+html[data-styles~="discuss"] #g_talk .g_btn {
   font-weight: bold;
   text-align: center;
   display: inline-block;

@@ -76,8 +76,6 @@ export default function Intro() {
 
   return (
     <Shell page="intro" variant="simple" css={[]}>
-      {/* 抵消 Shell simple 骨架自动引入的 simple.css（body 居中 / min-height） */}
-      <style>{`body { text-align: left; min-height: 0; }`}</style>
       <div id="top">
         <div id="top_body">
           <img src={staticUrl('img/icon-64.png')} />

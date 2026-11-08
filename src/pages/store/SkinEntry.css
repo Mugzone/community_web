@@ -1,51 +1,50 @@
-/* SkinEntry.css — 老站 skin_submit.css，仅 skin_submit 页使用。
-   与页面组件同目录（React colocation）；全部规则以 html[data-page="skin_submit"]
-   作用域化，因此可以被打包进全局样式表而不影响其它页面。
-   注意：作用域前缀保留 attr 权重，用于还原老站「页面 CSS 在 main.css 之后」
-   的级联结果；统一改成 :where() 会让 #content 等宽度规则被 main.css 盖掉。
-   Shell 的 page prop 负责在 <html> 上写 data-page。 */
-html[data-page="skin_submit"] .clear {
+/* SkinEntry.css — 老站 skin_submit.css，作用域名 "skin_submit"。
+   与页面组件同目录（React colocation）。所有规则以
+   html[data-styles~="skin_submit"] 限定，由 src/styles/index.css 统一静态加载；
+   Shell 依据 variant / page / css prop 生成 <html data-styles="...">。
+   作用域前缀统一带 attr 权重，级联顺序由 index.css 的 @import 顺序保证。 */
+html[data-styles~="skin_submit"] .clear {
   clear: both;
   display: block;
   height: 0;
 }
-html[data-page="skin_submit"] .justfix {
+html[data-styles~="skin_submit"] .justfix {
   display: inline-block;
   width: 100%;
   height: 0;
   overflow: hidden;
 }
-html[data-page="skin_submit"] .justfyHold {
+html[data-styles~="skin_submit"] .justfyHold {
   visibility: hidden;
   height: 0;
   overflow: hidden;
   margin: 0;
   padding: 0;
 }
-html[data-page="skin_submit"] .textfix {
+html[data-styles~="skin_submit"] .textfix {
   text-overflow: ellipsis;
   overflow-x: hidden;
   white-space: nowrap;
 }
-html[data-page="skin_submit"] #content {
+html[data-styles~="skin_submit"] #content {
   width: 1080px;
 }
-html[data-page="skin_submit"] .vtop {
+html[data-styles~="skin_submit"] .vtop {
   vertical-align: top!important;
 }
-html[data-page="skin_submit"] #option {
+html[data-styles~="skin_submit"] #option {
   position: relative;
 }
-html[data-page="skin_submit"] #option .hint {
+html[data-styles~="skin_submit"] #option .hint {
   color: #4190e7;
   text-align: left;
 }
-html[data-page="skin_submit"] #option .row {
+html[data-styles~="skin_submit"] #option .row {
   text-align: left;
   line-height: 32px;
   margin-top: 4px;
 }
-html[data-page="skin_submit"] #option .field {
+html[data-styles~="skin_submit"] #option .field {
   display: inline-block;
   width: 100px;
   height: 24px;
@@ -54,46 +53,46 @@ html[data-page="skin_submit"] #option .field {
   text-align: center;
   margin-right: 4px;
 }
-html[data-page="skin_submit"] #option .cb-wrap {
+html[data-styles~="skin_submit"] #option .cb-wrap {
   overflow: hidden;
   display: inline-block;
 }
-html[data-page="skin_submit"] #option .cb-wrap span {
+html[data-styles~="skin_submit"] #option .cb-wrap span {
   float: left;
   overflow: hidden;
 }
-html[data-page="skin_submit"] #option .cb-wrap label,
-html[data-page="skin_submit"] #option .cb-wrap input {
+html[data-styles~="skin_submit"] #option .cb-wrap label,
+html[data-styles~="skin_submit"] #option .cb-wrap input {
   vertical-align: middle;
 }
-html[data-page="skin_submit"] #option .cb-wrap label {
+html[data-styles~="skin_submit"] #option .cb-wrap label {
   margin-right: 8px;
 }
-html[data-page="skin_submit"] #option input[type=checkbox] {
+html[data-styles~="skin_submit"] #option input[type=checkbox] {
   line-height: 24px;
   -webkit-appearance: checkbox;
 }
-html[data-page="skin_submit"] #option .input-box,
-html[data-page="skin_submit"] #option textarea {
+html[data-styles~="skin_submit"] #option .input-box,
+html[data-styles~="skin_submit"] #option textarea {
   width: 364px;
   border: 1px solid #4190e7;
 }
-html[data-page="skin_submit"] #option .input-box {
+html[data-styles~="skin_submit"] #option .input-box {
   height: 22px;
   vertical-align: middle;
 }
-html[data-page="skin_submit"] #option .field,
-html[data-page="skin_submit"] #option .cb-wrap,
-html[data-page="skin_submit"] #option .input-box {
+html[data-styles~="skin_submit"] #option .field,
+html[data-styles~="skin_submit"] #option .cb-wrap,
+html[data-styles~="skin_submit"] #option .input-box {
   vertical-align: middle;
 }
-html[data-page="skin_submit"] #option .value {
+html[data-styles~="skin_submit"] #option .value {
   overflow: hidden;
   position: relative;
   display: inline-block;
 }
-html[data-page="skin_submit"] #option .upload-wrap,
-html[data-page="skin_submit"] #option .img-wrap {
+html[data-styles~="skin_submit"] #option .upload-wrap,
+html[data-styles~="skin_submit"] #option .img-wrap {
   float: left;
   margin-left: 8px;
   width: 96px;
@@ -102,10 +101,10 @@ html[data-page="skin_submit"] #option .img-wrap {
   border-radius: 4px;
   position: relative;
 }
-html[data-page="skin_submit"] #option .upload-wrap {
+html[data-styles~="skin_submit"] #option .upload-wrap {
   overflow: hidden;
 }
-html[data-page="skin_submit"] #option .upload-wrap input {
+html[data-styles~="skin_submit"] #option .upload-wrap input {
   opacity: 0;
   filter: alpha(opacity=0);
   font-size: 100px;
@@ -113,21 +112,21 @@ html[data-page="skin_submit"] #option .upload-wrap input {
   top: 0;
   right: 0;
 }
-html[data-page="skin_submit"] #option .upload-icon {
+html[data-styles~="skin_submit"] #option .upload-icon {
   background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAD5ElEQVRoQ+1YbVITQRB9nZT5a8YT4AmEExhOIJxAqGK2/CecwHAC5Z+1Q5XhBOAJiCcATyCeYOLfpNi2erKzWZL9DFkiVuZXCnZn3+vuef16CM980TPHjw2BdWdwk4FNBh4Zgf+nhGwQ8CODsdzrzCMAV2i3T9XXr3d1N0kysDYCHvGUyK4y5rYOiQUCKgyftKzshw9buL//AqJ3YP6ujNl7VgQErD046KLTsfK7bgDXngEfbV/CKydgg2APzB9B1APzEERnKgyv6qS5yrONEHDggcsMAPurJtEMAa1vQLQN4FSFYd8GQR/AJzD/UMb0qkS26jM2CJz6qDCU71VehWcgKyrLRqoyopoPFhPQWmr+LYA+Wq0LRNF797uBDNTEnTxeTODoqIdW63ph8yjaVefnw2U/WvSe1fobgD1MJq/VYCDNrXCVyqgVEkRS+1sA7sDcbwx8EBwD+OwQMw+VMbuPJlC2war+b7U+AJFE/2cs1x/BfKaMEVK5qzQDqwJYUjaiPNdMRDQeb0np2Nn5K5TsRxGwWm+D6BJixNrt/WXcZOyFbhx45p43c2IvuNO5I2ZGu72Tt/fSBBx44BpE3bhma7tJ54FevJA9ZK+FSLvzJyLCfKuM2cnK4lIE5sBLzY6c3E4t8YkyZlCl9KzWAl4symHeO1Zrcaq556E2gTnwFyoMDwSsDQIBLX1CFORYGXPm/u6jDIzSquLkkkjeTfbIIx136TdZWapFIA+8/3BKSYTEQBlzaL0dSTU/6+Wyov+Xc8JRdOvOw9zQU5nAA3AFURMDyMCAgJdxaXUZ+JNSl5lcjse9Ks0qzvDUWDLfYjLZ9e9VIlAVfCoT20w0FBIOfFpdtL5joq4nVHZWbBCIG344paX6QymBubIobSwJiWntSweXUkrmXFeG7fbIy6IrMXGhOSqTOaunSq/MzPl0S03nKkVZFAubWHwbkjWJ+VFTsvgqDKdyPbdyCcxFvhHwcW2765xMArM+kDt/LF6rjMfKtXJ/T9RQ5JNSK8rATK1yS3dGQOur+GpjgMnkBJ1OD1E0asp5ViLgMRXY9xkBr7Uif02tDEsgmc6qceeRougXmH8rY8TKZ64Hl1hxo+q7TDSzfqZn3tgM3mRNeImFiOfxSgSawZy/a3JJMAfSm7h0A/znCMQe6Vd6BnCq5C36dAIsvb550nvQuSY3tdEplbNB8B7M4j67VaYx2e/JCcTnTJyozABy03EJoj1nq4Gt2HqIm61kyddBwCZD0GJhX6DV6teZ7NZB4AuA2e0bkdx0DDGZXFV1pmneT05g1Uq3IbDqiNbdb5OBuhFb9fPPPgN/AZ8ul0/+pM8FAAAAAElFTkSuQmCC");
   height: 48px;
   width: 48px;
   margin: 0 auto;
   margin-top: 12px;
 }
-html[data-page="skin_submit"] #option .upload-text {
+html[data-styles~="skin_submit"] #option .upload-text {
   text-align: center;
 }
-html[data-page="skin_submit"] #option .img-wrap img {
+html[data-styles~="skin_submit"] #option .img-wrap img {
   width: 100%;
   height: 100%;
 }
-html[data-page="skin_submit"] #option .toolbar {
+html[data-styles~="skin_submit"] #option .toolbar {
   width: 100%;
   height: 36px;
   line-height: 36px;
@@ -137,48 +136,48 @@ html[data-page="skin_submit"] #option .toolbar {
   transition: all 0.3s linear;
   text-align: center;
 }
-html[data-page="skin_submit"] #option .toolbar.hover {
+html[data-styles~="skin_submit"] #option .toolbar.hover {
   background-color: rgba(55, 55, 55, 0.6);
   bottom: 0;
 }
-html[data-page="skin_submit"] #option .toolbar .icon {
+html[data-styles~="skin_submit"] #option .toolbar .icon {
   margin: 0 8px;
   vertical-align: middle;
   cursor: pointer;
 }
-html[data-page="skin_submit"] #option .icon {
+html[data-styles~="skin_submit"] #option .icon {
   width: 24px;
   height: 24px;
   display: inline-block;
   background-size: cover;
 }
-html[data-page="skin_submit"] #btn_bottom {
+html[data-styles~="skin_submit"] #btn_bottom {
   margin-top: 8px;
   line-height: 36px;
 }
-html[data-page="skin_submit"] #btn_bottom .btn {
+html[data-styles~="skin_submit"] #btn_bottom .btn {
   width: 225px;
   float: left;
   margin-left: 8px;
 }
-html[data-page="skin_submit"] .icon-delete {
+html[data-styles~="skin_submit"] .icon-delete {
   background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAABWElEQVRYR8WX0XECMQwFnzpIKZRAJwmVJVRCSqCVVGDGic34zpL1JMLA53HWrmXZ1gle/JMX86EKlFIOAA4i8vUfgqWUjxpHizcJNPgFwBuA06MSDf7ZJjLF2wjs4H3yaYkdXI13FzDgaQkDPsUbBeo69VRpS09nwoHX2GcR+auLkUQMdCWIGHf4JFAfEAFMCWLsBq4KZCUycFMgKpGFLwVYiVZDq+Kd0j7WnXsUE7NbHZZLuJuBHjkp4cJpAXI5xkxQ8JBAQIKGP0vAPaxCRZisA1rC3QWB1O93AyXhCiR3AH2LLgUI+BnA9yO3qCnAwPuVSrxrLofVE3q9wbTVshJaTxiGB3aK2xOm4VmJSEtGn3CR5RgF6jfAu3G10XAiEz8AjiJy1XpCTSIMX0hs4FZPOEqk4YrEBF/1hL+fZH2frzoO5r9WE9ee9tRlxIAy77h3QSZoZMwNBDjpIWOja/AAAAAASUVORK5CYII=");
 }
-html[data-page="skin_submit"] .icon-cover {
+html[data-styles~="skin_submit"] .icon-cover {
   background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAABeUlEQVRYR+1W7VHDMBSTJoANoBMAEwAbwAZsAJ0ENmAFNoBOAExAO0HbCcQp53DBZ5LaSVp+5N3ljy+29PQ+KekOwCOAY+zXNgDmlLQ+AHjt6sYEFDm+ArAcSYxTACfNt2MCtyRfRgKvng0hf64xmgRWJM1wdJNkhSslmgQWJK+a6JKcmGfh7JOkE6e3SXoDcNlKIFEdBr8m+dGXQSeB4PlXojqWJGf7IOBQvP4BdNFXhV0UODgBJ58z9ShSwYl4PnoIQr0ayD2hbhwLADdDVEJnCKJSrDzOjbskl5lD6fvxnPk5a+0DJVJLugfwAGCnpjYYgVC6rpysHBmEgCSDGjx7pDcJFDWZUs9Tw8hnM5JZo1jSe67sbePYfd79vnPoBM+9SXmjKrbUQmISc5KeWEmT5PIyeFbCpR5LEaj/MxE3IofEn8vKn8F/je1i96N9oM87xXfbFCh+NOfiRGBSYFLgXyjgvh/vfjml3OffrRXwMHk6AImtN6dv28EKU4hIBUIAAAAASUVORK5CYII=");
 }
-html[data-page="skin_submit"] #description {
+html[data-styles~="skin_submit"] #description {
   height: 80px;
 }
-html[data-page="skin_submit"] #skin_uploaded_hint,
-html[data-page="skin_submit"] #change_cover_hint {
+html[data-styles~="skin_submit"] #skin_uploaded_hint,
+html[data-styles~="skin_submit"] #change_cover_hint {
   display: block;
   line-height: 24px;
   margin-left: 6px;
 }
-html[data-page="skin_submit"] .g_cont {
+html[data-styles~="skin_submit"] .g_cont {
   overflow: hidden;
 }
-html[data-page="skin_submit"] form .error {
+html[data-styles~="skin_submit"] form .error {
   color: #4190e7;
 }

@@ -1,0 +1,64 @@
+/* profile.css — 老站样式，作用域名 "profile"。
+   规则以 html[data-styles~="profile"] 限定，
+   Shell 依据 variant / page / css prop 生成 <html data-styles="...">。
+ */
+html[data-styles~="profile"] .clear {
+  clear: both;
+  display: block;
+  height: 0;
+}
+html[data-styles~="profile"] .justfix {
+  display: inline-block;
+  width: 100%;
+  height: 0;
+  overflow: hidden;
+}
+html[data-styles~="profile"] .justfyHold {
+  visibility: hidden;
+  height: 0;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+}
+html[data-styles~="profile"] .textfix {
+  text-overflow: ellipsis;
+  overflow-x: hidden;
+  white-space: nowrap;
+}
+html[data-styles~="profile"] #content .g_cont h1 {
+  min-height: 60px;
+  line-height: 60px;
+  font-size: 14px;
+  text-align: left;
+  border-bottom: 1px solid #ccc;
+  width: 660px;
+}
+html[data-styles~="profile"] #content .g_cont h1 label {
+  width: 115px;
+  display: inline-block;
+  text-align: left;
+  padding-right: 4px;
+}
+html[data-styles~="profile"] #content .g_cont h1 input {
+  width: 227.5px;
+  height: 24px;
+  line-height: 24px;
+  vertical-align: middle;
+}
+html[data-styles~="profile"] #content .g_cont h1 input.lock {
+  color: #333;
+  background-color: white;
+}
+html[data-styles~="profile"] #content .g_cont h1.select label {
+  vertical-align: top;
+}
+html[data-styles~="profile"] #content .g_cont h1.select .g_select {
+  width: 530px;
+}
+html[data-styles~="profile"] #content .g_cont .btn {
+  margin: 4px 0 0 119px;
+  width: 227.5px;
+}
+html[data-styles~="profile"] #content .g_cont .g_tip {
+  margin-left: 109px;
+}

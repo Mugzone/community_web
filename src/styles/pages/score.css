@@ -1,0 +1,168 @@
+/* score.css — 老站样式，作用域名 "score"。
+   规则以 html[data-styles~="score"] 限定，
+   Shell 依据 variant / page / css prop 生成 <html data-styles="...">。
+ */
+html[data-styles~="score"] .clear {
+  clear: both;
+  display: block;
+  height: 0;
+}
+html[data-styles~="score"] .justfix {
+  display: inline-block;
+  width: 100%;
+  height: 0;
+  overflow: hidden;
+}
+html[data-styles~="score"] .justfyHold {
+  visibility: hidden;
+  height: 0;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+}
+html[data-styles~="score"] .textfix {
+  text-overflow: ellipsis;
+  overflow-x: hidden;
+  white-space: nowrap;
+}
+html[data-styles~="score"] #center .g_cont .temp {
+  margin-bottom: 24px;
+}
+html[data-styles~="score"] #center .g_cont .temp.song div {
+  display: inline-block;
+}
+html[data-styles~="score"] #center .g_cont .temp.song .left {
+  float: left;
+  width: 130px;
+  height: 124px;
+  border-right: 1px solid #4190e7;
+  border-top: 1px solid #4190e7;
+  border-bottom-left-radius: 4px;
+  -moz-border-radius-bottomleft: 4px;
+  -webkit-border-bottom-left-radius: 4px;
+}
+html[data-styles~="score"] #center .g_cont .temp.song .right {
+  float: right;
+}
+html[data-styles~="score"] #center .g_cont .msg {
+  background-color: #e3eefb;
+  padding: 4px;
+  display: inline-block;
+}
+html[data-styles~="score"] #center .g_cont .list_head,
+html[data-styles~="score"] #center .g_cont .list li {
+  border-bottom: 1px solid #4190e7;
+  text-align: left;
+  height: 32px;
+  line-height: 32px;
+  vertical-align: middle;
+}
+html[data-styles~="score"] #center .g_cont .list li {
+  position: relative;
+}
+html[data-styles~="score"] #center .g_cont .list li.top {
+  height: 50px;
+  line-height: 50px;
+}
+html[data-styles~="score"] #center .g_cont .list li.top .g_mod {
+  width: 44px;
+  height: 44px;
+  margin-left: -8px;
+}
+html[data-styles~="score"] #center .g_cont .list li .acc {
+  text-align: left;
+  position: relative;
+  height: 30px;
+  line-height: 30px;
+}
+html[data-styles~="score"] #center .g_cont .list li .acc i {
+  display: block;
+  height: 28px;
+  position: absolute;
+}
+html[data-styles~="score"] #center .g_cont .list li .acc i.color-0 {
+  background-color: #67f0ab;
+}
+html[data-styles~="score"] #center .g_cont .list li .acc i.color-1 {
+  background-color: #d9f067;
+}
+html[data-styles~="score"] #center .g_cont .list li .acc i.color-2 {
+  background-color: #f0c267;
+}
+html[data-styles~="score"] #center .g_cont .list li .acc i.color-3 {
+  background-color: #f09567;
+}
+html[data-styles~="score"] #center .g_cont .list li .acc i.color-4 {
+  background-color: #ef6666;
+}
+html[data-styles~="score"] #center .g_cont .list li .acc em {
+  display: block;
+  font-style: normal;
+  width: 100%;
+  text-align: center;
+  position: absolute;
+  color: #222;
+}
+html[data-styles~="score"] #center .g_cont .list li .label {
+  width: 52px;
+  height: 18px;
+  background: url('/static/img/toplabel.png') no-repeat top left;
+  background-size: cover;
+  display: block;
+  position: absolute;
+  top: 3px;
+  left: -5px;
+}
+html[data-styles~="score"] #center .g_cont .list li .label.top-1 {
+  background-position: 0 0px;
+}
+html[data-styles~="score"] #center .g_cont .list li .label.top-2 {
+  background-position: 0 -21px;
+}
+html[data-styles~="score"] #center .g_cont .list li .label.top-3 {
+  background-position: 0 -43px;
+}
+html[data-styles~="score"] #center .g_cont .list li:nth-child(odd) {
+  background-color: #e6e6e6;
+}
+html[data-styles~="score"] #center .g_cont .list_head span,
+html[data-styles~="score"] #center .g_cont .list span {
+  display: inline-block;
+  text-align: center;
+  vertical-align: middle;
+}
+html[data-styles~="score"] #center .g_cont span.rank {
+  width: 50px;
+}
+html[data-styles~="score"] #center .g_cont span.rank img {
+  vertical-align: top;
+  border-radius: 4px;
+  -moz-border-radius: 4px;
+  -webkit-border-radius: 4px;
+}
+html[data-styles~="score"] #center .g_cont span.name {
+  width: 120px;
+}
+html[data-styles~="score"] #center .g_cont span.score {
+  width: 120px;
+}
+html[data-styles~="score"] #center .g_cont span.combo {
+  width: 80px;
+}
+html[data-styles~="score"] #center .g_cont span.acc {
+  width: 120px;
+}
+html[data-styles~="score"] #center .g_cont span.mod {
+  width: 240px;
+}
+html[data-styles~="score"] #center .g_cont span.time {
+  width: 120px;
+}
+html[data-styles~="score"] #center .g_cont span.chart {
+  width: 170px;
+}
+html[data-styles~="score"] #center .g_cont span .g_mod {
+  width: 34px;
+  height: 34px;
+  margin-left: -8px;
+}

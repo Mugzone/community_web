@@ -30,8 +30,8 @@
    老站 CSS 是运行时动态插入的 link，.wb-skel-card .cover 与它优先级相同且排在前面，
    只设 background-color 会被盖掉、骨架露出「No Cover」图。这里提高选择器优先级
    并强制清掉背景图。 */
-.g_map.wb-skel-card .cover {
-  background-image: none !important;
+html[data-styles] .g_map.wb-skel-card .cover {
+  background-image: none;
   background-color: #e8edf4;
   border-radius: 4px;
 }
@@ -92,20 +92,20 @@
    bindHiddenToggles 给 .hidden 切 open class。老站 CSS 只写了
    .hidden .hide-body { display:none }，没有 open 态规则，导致点了展不开。
    老站样式表是运行时动态插入的，这里提高优先级并强制展开。 */
-.g_wiki .hidden.open > .hide-body {
-  display: block !important;
+html[data-styles] .g_wiki .hidden.open > .hide-body {
+  display: block;
 }
 
 /* 谱面页 Supporters / 推荐评价卡片：tmpl.css 的 .g_tmpl_user 固定 height:52px，
    但卡片里还有第二行 .msg 正文，长文本会溢出卡片框。改为高度自适应并让
    正文在固定宽度内换行；同时给 wiki/讨论正文加长单词换行兜底。 */
-#center .donate_area .g_tmpl_user {
-  height: auto !important;
+html[data-styles] #center .donate_area .g_tmpl_user {
+  height: auto;
   min-height: 52px;
   overflow: hidden;
 }
 
-#center .donate_area .g_tmpl_user .msg {
+html[data-styles] #center .donate_area .g_tmpl_user .msg {
   display: block;
   margin-left: 52px;
   width: 136px;

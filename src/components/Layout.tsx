@@ -2,16 +2,15 @@ import { isValidElement, useEffect, useState, type ReactNode } from 'react'
 import { Header } from './Header'
 import { Footer } from './Footer'
 import { setNotifyListener, setGlobalLoadingListener } from '../lib/legacy'
-import { LEGACY_GLOBAL_CSS, LEGACY_PAGE_CSS, LEGACY_SIMPLE_CSS } from '../styles/legacy'
 import { t as i18nT } from '../i18n'
 
 export type ShellProps = {
   /** base.html 两栏 / base_width.html 宽版 / base_simple.html 极简 */
   variant?: 'two-col' | 'wide' | 'simple'
   title?: string
-  /** 页面级样式名，对应 src/styles/legacy/ 下的模块（由 Shell 声明式注入） */
+  /** 共享样式名（src/styles/pages/*.css），会并入 <html data-styles> */
   css?: string[]
-  /** 页面标识，写到 <html data-page="...">，供同目录作用域样式（Xxx.css）使用 */
+  /** 页面独有用样式名，对应组件同目录的 Xxx.css */
   page?: string
   contCls?: string
   chead?: ReactNode
@@ -39,34 +38,25 @@ export function Shell({
   simpleFrame = false,
   children,
 }: ShellProps) {
-  /* 声明式样式表：CSS 是构建时静态依赖（?inline），由 React 渲染 <style> 并由
-     React 负责挂载/卸载，不再手写 link + 引用计数，也不再靠 link.disabled 关全局样式。
-     顺序固定：全局基础（main.css 或 simple.css）→ css 数组顺序，避免不确定的级联。 */
-  const stylesheets: Array<{ name: string; text: string }> = [
-    { name: variant === 'simple' ? 'simple.css' : 'main.css',
-      text: variant === 'simple' ? LEGACY_SIMPLE_CSS : LEGACY_GLOBAL_CSS },
-    ...css
-      .filter((name) => LEGACY_PAGE_CSS[name] !== undefined)
-      .map((name) => ({ name, text: LEGACY_PAGE_CSS[name] })),
-  ]
-  const styleNodes = stylesheets.map((sheet) => (
-    <style key={sheet.name} data-legacy-css={sheet.name}>{sheet.text}</style>
-  ))
+  /* 所有 CSS 都由 src/styles/index.css 静态打包，规则用
+     html[data-styles~="name"] 限定作用域。Shell 只负责把本页需要的样式名
+     写进 <html data-styles="...">，不再渲染 <style> 或操作 link。
+     ~= 支持一页同时激活多个样式（如 "main wiki tmpl"）。 */
+  const stylesAttr = [
+    variant === 'simple' ? 'simple' : 'main',
+    ...(page ? [page] : []),
+    ...css.map((name) => name.replace(/\.css$/, '')),
+  ].filter(Boolean).join(' ')
 
   useEffect(() => {
     document.title = title ? `Malody - ${title}` : SITE_TITLE
   }, [title])
 
-  /* 同目录的页面样式用 html[data-page="..."] 限定作用域；这里由 Shell 统一写入，
-     页面组件只需要声明 page prop，不各自操作 DOM。卸载时清掉，避免串到下一页。 */
   useEffect(() => {
     const root = document.documentElement
-    if (page) {
-      root.setAttribute('data-page', page)
-      return () => { root.removeAttribute('data-page') }
-    }
-    root.removeAttribute('data-page')
-  }, [page])
+    root.setAttribute('data-styles', stylesAttr)
+    return () => { root.removeAttribute('data-styles') }
+  }, [stylesAttr])
 
   const [notice, setNotice] = useState<{ msg: string; type: string } | null>(null)
   const [busy, setBusy] = useState(false)
@@ -116,7 +106,6 @@ export function Shell({
       : children
     return (
       <>
-        {styleNodes}
         {content}
         <NotifyLayer notice={notice} />
       </>
@@ -125,7 +114,6 @@ export function Shell({
 
   return (
     <>
-      {styleNodes}
       <Header />
       {variant === 'wide' && <div id="chead">{chead}</div>}
       <div id="center">

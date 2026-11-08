@@ -1,0 +1,31 @@
+/* ChartTalk.css — talk/chart.html 的页面样式，作用域名 "chart_talk"。
+   原先是组件里的内联 <style>，现随组件同目录静态加载。
+   body 规则用于抵消 simple.css 的 body 居中；本文件在 index.css 中排在
+   simple.css 之后，同权重时由此规则生效。 */
+html[data-styles~="chart_talk"] body {
+  margin: 10px;
+  text-align: left;
+}
+html[data-styles~="chart_talk"] .btn {
+  float: right;
+  font-size: 20px;
+  background-color: #ef6666;
+  color: white;
+  text-align: center;
+  padding: 0 24px;
+  -webkit-border-radius: 20px;
+  border-radius: 20px;
+  height: 40px;
+  line-height: 40px;
+  cursor: pointer;
+}
+html[data-styles~="chart_talk"] #text {
+  clear: both;
+  margin-top: 20px;
+  border: 1px solid black;
+  width: 100%;
+  height: 320px;
+  font-size: 20px;
+  resize: none;
+  box-sizing: border-box;
+}

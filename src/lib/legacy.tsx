@@ -19,8 +19,8 @@ export function JustifyRow({ children }: { children: ReactNode }) {
   )
 }
 
-/* 老站 CSS 已迁入 src/styles/legacy/，由 Shell 用声明式 <style> 渲染；
-   这里不再做动态 link 注入、版本号映射或引用计数。 */
+/* 全站样式由 src/styles/index.css 静态加载，Shell 只写 <html data-styles>；
+   这里不再做动态 link 注入、版本号映射、引用计数或 <style> 渲染。 */
 
 type LoadState<T> = {
   data: T

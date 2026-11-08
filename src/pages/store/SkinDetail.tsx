@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { Shell } from '../../components/Layout'
+import { SkeletonHead, SkeletonRows } from '../../components/Skeleton'
 import { asArray, formatTime, num, showNotify, useLoad } from '../../lib/legacy'
 import { staticUrl, URLS } from '../../lib/urls'
 import {
@@ -47,7 +48,7 @@ export default function SkinDetail() {
     ?? window.location.pathname.split('/').pop()
     ?? ''
 
-  const { data: detail } = useLoad<Record<string, any>>(
+  const { data: detail, loading } = useLoad<Record<string, any>>(
     async () => {
       const resp = await fetchSkinDetail(sid)
       return (resp?.data ?? resp ?? {}) as Record<string, any>
@@ -257,7 +258,10 @@ export default function SkinDetail() {
     <Shell page="skin_detail" variant="wide" title={`Skins - ${name}`} css={['wiki.css']}>
       <div className="song_title g_rblock">
         <div className="coverb">
-          <div className="cover" style={{ backgroundImage: `url(${coverBg})` }}></div>
+          {/* 加载中 cover 为空会回落到 cover.png（No Cover 图），先用骨架占位 */}
+          {loading
+            ? <div className="cover wb-skel"></div>
+            : <div className="cover" style={{ backgroundImage: `url(${coverBg})` }}></div>}
         </div>
         <div className="tail">
           <a href={URLS.skin}>{i18nT('Back to skin list')}</a>
@@ -290,40 +294,42 @@ export default function SkinDetail() {
             )}
           </div>
         )}
-        <div className="right">
-          <h2 className="textfix title">
-            {stat === 2 ? <em className="t2">Stable</em> : stat === 1 ? <em className="t1">Beta</em> : <em className="t0">Alpha</em>}
-            {mav && <em className="mav">MalodyV</em>}
-            {name}
-          </h2>
-          <h2 className="sub">
-            <label>{i18nT('Author')}</label>:<a href={URLS.user(authorId)}>{authorName}</a>
-            <label>{i18nT('Price')}</label>:<span>{price ? price : 'free'}</span>
-            <label>{i18nT('Status')}</label>:<span>{stat === 0 ? 'Draft' : stat === 1 ? 'Beta' : stat === 2 ? 'Stable' : ''}</span>
-          </h2>
-          <h2 className="sub">
-            <label>{i18nT('Version')}</label>:<span>{String(skin.version ?? '')}</span>
-            <label>{i18nT('Last update')}</label>:<span>{String(skin.update_str ?? '')}</span>
-            {!!skin.client && <><label>{i18nT('Required')}</label>:<span>{String(skin.client)}</span></>}
-            {!!skin.clientmax && <>&nbsp;-&nbsp;<span>{String(skin.clientmax)}</span></>}
-          </h2>
-          <h2 className="sub">
-            <label>Support platforms:</label>
-            <span className="platform-list">
-              {platArr.map((i) => (
-                <img data-index={i} className="platform" key={i} src={staticUrl(`img/platform/plat-${i}.png`)} title={PLATFORM_LABELS[i] ?? ''} alt="" />
-              ))}
-            </span>
-          </h2>
-          <h2 className="sub">
-            <label>{i18nT('Support modes')}</label>:
-            <span className="mode-list">
-              {modeArr.map((i) => (
-                <img data-index={i} className="mode" key={i} src={staticUrl(`img/mode/mode-${i}.png`)} title={MODE_LABELS[i] ?? ''} alt="" />
-              ))}
-            </span>
-          </h2>
-        </div>
+        {loading ? <SkeletonHead /> : (
+          <div className="right">
+            <h2 className="textfix title">
+              {stat === 2 ? <em className="t2">Stable</em> : stat === 1 ? <em className="t1">Beta</em> : <em className="t0">Alpha</em>}
+              {mav && <em className="mav">MalodyV</em>}
+              {name}
+            </h2>
+            <h2 className="sub">
+              <label>{i18nT('Author')}</label>:<a href={URLS.user(authorId)}>{authorName}</a>
+              <label>{i18nT('Price')}</label>:<span>{price ? price : 'free'}</span>
+              <label>{i18nT('Status')}</label>:<span>{stat === 0 ? 'Draft' : stat === 1 ? 'Beta' : stat === 2 ? 'Stable' : ''}</span>
+            </h2>
+            <h2 className="sub">
+              <label>{i18nT('Version')}</label>:<span>{String(skin.version ?? '')}</span>
+              <label>{i18nT('Last update')}</label>:<span>{String(skin.update_str ?? '')}</span>
+              {!!skin.client && <><label>{i18nT('Required')}</label>:<span>{String(skin.client)}</span></>}
+              {!!skin.clientmax && <>&nbsp;-&nbsp;<span>{String(skin.clientmax)}</span></>}
+            </h2>
+            <h2 className="sub">
+              <label>Support platforms:</label>
+              <span className="platform-list">
+                {platArr.map((i) => (
+                  <img data-index={i} className="platform" key={i} src={staticUrl(`img/platform/plat-${i}.png`)} title={PLATFORM_LABELS[i] ?? ''} alt="" />
+                ))}
+              </span>
+            </h2>
+            <h2 className="sub">
+              <label>{i18nT('Support modes')}</label>:
+              <span className="mode-list">
+                {modeArr.map((i) => (
+                  <img data-index={i} className="mode" key={i} src={staticUrl(`img/mode/mode-${i}.png`)} title={MODE_LABELS[i] ?? ''} alt="" />
+                ))}
+              </span>
+            </h2>
+          </div>
+        )}
       </div>
 
       {previewArr.length > 0 && (
@@ -346,9 +352,12 @@ export default function SkinDetail() {
           <a href="#" className="btn g_toolbtn e" data-type="edit" title={i18nT('Edit')} onClick={(e) => { e.preventDefault(); onDescEdit() }}><i></i></a>
         </div>
         <div className="g_wiki">
-          {desc
-            ? <div ref={descRef} dangerouslySetInnerHTML={{ __html: descHtml }} />
-            : <div className="g_wiki_new btn" data-type="edit" onClick={onDescEdit}>Add description</div>}
+          {/* 加载中 desc 也是空串，不能当成「没有简介」显示 Add description */}
+          {loading
+            ? <SkeletonRows count={3} />
+            : desc
+              ? <div ref={descRef} dangerouslySetInnerHTML={{ __html: descHtml }} />
+              : <div className="g_wiki_new btn" data-type="edit" onClick={onDescEdit}>Add description</div>}
           <span className="clear"></span>
         </div>
       </div>

@@ -2,13 +2,14 @@ import { useEffect, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { Shell } from '../../components/Layout'
 import { useSession } from '../../components/SessionProvider'
+import { SkeletonHead, SkeletonRows } from '../../components/Skeleton'
 import { useLoad, asArray, num, formatTime, showNotify, LoadingBlock, JustifyRow, floatFormat } from '../../lib/legacy'
 import { URLS, staticUrl } from '../../lib/urls'
 import { fetchChartInfo, fetchRankingList, fetchChartDonateList, fetchWiki } from '../../network/api'
-import { fetchChartPage, fetchWikiLang, operateWikiPage, operateScore } from '../../network/legacy'
+import { fetchChartPage, operateWikiPage, operateScore } from '../../network/legacy'
 import { bindHiddenToggles } from '../../utils/wiki'
 import { avatarUidUrl, coverUrl } from '../../utils/formatters'
-import { wikiToHtml, useWikiHtml } from '../../utils/wikiRender'
+import { useWikiHtml, useWikiLang } from '../../utils/wikiRender'
 import { LangTabs, TalkWidget } from './WikiPage'
 import { t as i18nT } from '../../i18n'
 
@@ -217,7 +218,7 @@ export default function ChartPage() {
     EMPTY_CHART,
   )
 
-  const { data: scores, reload: reloadScores } = useLoad<ScoreRow[]>(
+  const { data: scores, loading: scoresLoading, reload: reloadScores } = useLoad<ScoreRow[]>(
     async () => {
       // 老站 score/views.py:31 from_to_platform：0=Pro Judge(platform 0,1)、1=Standard(2,3,4)；
       // Go /ranking/list 的 pro 是「是否 Pro Judge」布尔（1=platform<2），故需反转。
@@ -250,23 +251,10 @@ export default function ChartPage() {
   )
 
   const wikiHtml = useWikiHtml(data.wikiRaw)
-  const [lang, setLang] = useState<string>('en')
-  const [langHtml, setLangHtml] = useState<string | null>(null)
+  const { lang, langHtml, changeLang } = useWikiLang(key)
   const bodyRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => bindHiddenToggles(bodyRef.current), [wikiHtml, langHtml])
-
-  const onChangeLang = async (code: string, label: string): Promise<void> => {
-    setLang(code)
-    try {
-      const resp: any = await fetchWikiLang(key, code)
-      const raw = String(resp?.data ?? resp ?? '')
-      setLangHtml(raw ? wikiToHtml(raw).html : '')
-    } catch {
-      setLangHtml(null)
-      showNotify('Server error', 'err')
-    }
-  }
 
   const onEdit = (): void => {
     window.location.href = `/wiki/edit?key=${encodeURIComponent(key)}&lang=${lang}&from=${encodeURIComponent(window.location.pathname + window.location.search)}`
@@ -324,7 +312,8 @@ export default function ChartPage() {
   const author: Record<string, any> = chart.author ?? {}
   const publisher: Record<string, any> = chart.publisher ?? {}
   const finalHtml = langHtml !== null ? langHtml : wikiHtml
-  const gWikiInner = finalHtml || '<div class="g_wiki_new btn" data-type="edit">Add description to the chart</div>'
+  // 加载中正文也是空串，此时只显示下方骨架，不能当成「还没有简介」
+  const gWikiInner = finalHtml || (loading ? '' : '<div class="g_wiki_new btn" data-type="edit">Add description to the chart</div>')
 
   return (
     <Shell
@@ -335,56 +324,61 @@ export default function ChartPage() {
     >
       <div className="song_title g_rblock">
         <div className="coverb">
-          <div className="cover" style={{ backgroundImage: `url(${cover})` }}></div>
+          {/* 加载中 cover 为空会回落到 cover.png（No Cover 图），先用骨架占位 */}
+          {loading
+            ? <div className="cover wb-skel"></div>
+            : <div className="cover" style={{ backgroundImage: `url(${cover})` }}></div>}
         </div>
 
         <div className="tail">
           <a href={URLS.song(data.sid)}>{i18nT('Back to song')}</a>
         </div>
 
-        <div className="right">
-          {data.songEx.hasOrg && (
-            <h3 className="textfix" style={{ left: 296 }}><span className="textfix artist">{songArtist}</span> - {songTitle}</h3>
-          )}
-          <h2 className="textfix title">
-            {chartType === 2 ? <em className="t2">Stable</em> : chartType === 1 ? <em className="t1">Beta</em> : <em className="t0">Alpha</em>}
-            {num(chart.pubmark, 0) === 1 && <em className="w" title={i18nT('Need further modification')}>Warn</em>}
-            {chart.hide === true && <em className="h">Hide</em>}
-            {num(chart.promote, 0) > 0 && <em className="p" title={i18nT('Promotion')}>PM</em>}
-            {num(chart.mcver, 0) === 1 && <em className="t2">Free</em>}
-            <span className="textfix artist">{data.songEx.artist}</span> - {data.songEx.title}
-          </h2>
-          <h2 className="mode">
-            <img src={staticUrl(`img/mode/mode-${chart.mode ?? 0}.png`)} alt="" />
-            <span>{chart.display_version ?? chart.version ?? ''}</span>
-            <span style={{ marginLeft: 24 }}>Created by: </span>
-            <span className="avatar"><img src={avatarUidUrl(Number(author.id ?? author.uid ?? chart.uid ?? 0))} alt="" /></span>
-            <a href={URLS.user(author.id ?? author.uid ?? chart.uid ?? 0)}>{author.username ?? chart.creator ?? ''}</a>
-            {chartType === 2 && publisher && (publisher.id || publisher.username) && (
-              <>
-                <span style={{ marginLeft: 8 }}>Stabled by: </span>
-                <span className="avatar"><img src={avatarUidUrl(Number(publisher.id ?? publisher.uid ?? 0))} alt="" /></span>
-                <a href={URLS.user(publisher.id ?? publisher.uid ?? 0)}>{publisher.username ?? ''}</a>
-              </>
+        {loading ? <SkeletonHead /> : (
+          <div className="right">
+            {data.songEx.hasOrg && (
+              <h3 className="textfix" style={{ left: 296 }}><span className="textfix artist">{songArtist}</span> - {songTitle}</h3>
             )}
-          </h2>
-          <h2 className="sub">
-            <label>ID</label>:c<span>{chartId}</span>&nbsp;&nbsp;
-            <label>{i18nT('Length')}</label>:<span>{song.length ?? chart.length ?? ''}s</span>&nbsp;&nbsp;
-            <label>{i18nT('BPM')}</label>:<span>{floatFormat(song.bpm)}</span>
-            <label>{i18nT('Last updated')}</label>:<span className="textfix">{chart.lastedit_str ?? ''}</span>
-          </h2>
-          <h2 className="tags">
-            {data.tags.length > 0 && (
-              <>
-                <span>Tags:</span>
-                {data.tags.map((t, i) => (
-                  <a key={`${t.id ?? 't'}-${i}`} href={`${URLS.chart}?tag=${t.id ?? 0}`}>{t.name ?? ''}</a>
-                ))}
-              </>
-            )}
-          </h2>
-        </div>
+            <h2 className="textfix title">
+              {chartType === 2 ? <em className="t2">Stable</em> : chartType === 1 ? <em className="t1">Beta</em> : <em className="t0">Alpha</em>}
+              {num(chart.pubmark, 0) === 1 && <em className="w" title={i18nT('Need further modification')}>Warn</em>}
+              {chart.hide === true && <em className="h">Hide</em>}
+              {num(chart.promote, 0) > 0 && <em className="p" title={i18nT('Promotion')}>PM</em>}
+              {num(chart.mcver, 0) === 1 && <em className="t2">Free</em>}
+              <span className="textfix artist">{data.songEx.artist}</span> - {data.songEx.title}
+            </h2>
+            <h2 className="mode">
+              <img src={staticUrl(`img/mode/mode-${chart.mode ?? 0}.png`)} alt="" />
+              <span>{chart.display_version ?? chart.version ?? ''}</span>
+              <span style={{ marginLeft: 24 }}>Created by: </span>
+              <span className="avatar"><img src={avatarUidUrl(Number(author.id ?? author.uid ?? chart.uid ?? 0))} alt="" /></span>
+              <a href={URLS.user(author.id ?? author.uid ?? chart.uid ?? 0)}>{author.username ?? chart.creator ?? ''}</a>
+              {chartType === 2 && publisher && (publisher.id || publisher.username) && (
+                <>
+                  <span style={{ marginLeft: 8 }}>Stabled by: </span>
+                  <span className="avatar"><img src={avatarUidUrl(Number(publisher.id ?? publisher.uid ?? 0))} alt="" /></span>
+                  <a href={URLS.user(publisher.id ?? publisher.uid ?? 0)}>{publisher.username ?? ''}</a>
+                </>
+              )}
+            </h2>
+            <h2 className="sub">
+              <label>ID</label>:c<span>{chartId}</span>&nbsp;&nbsp;
+              <label>{i18nT('Length')}</label>:<span>{song.length ?? chart.length ?? ''}s</span>&nbsp;&nbsp;
+              <label>{i18nT('BPM')}</label>:<span>{floatFormat(song.bpm)}</span>
+              <label>{i18nT('Last updated')}</label>:<span className="textfix">{chart.lastedit_str ?? ''}</span>
+            </h2>
+            <h2 className="tags">
+              {data.tags.length > 0 && (
+                <>
+                  <span>Tags:</span>
+                  {data.tags.map((t, i) => (
+                    <a key={`${t.id ?? 't'}-${i}`} href={`${URLS.chart}?tag=${t.id ?? 0}`}>{t.name ?? ''}</a>
+                  ))}
+                </>
+              )}
+            </h2>
+          </div>
+        )}
 
         <div className="tool">
           {data.canMark && <a href="#" className="btn g_toolbtn w" data-type="pubmark" title="Need modification" onClick={(e) => { e.preventDefault(); void onTool('pubmark') }}><i></i></a>}
@@ -400,16 +394,17 @@ export default function ChartPage() {
         </div>
       </div>
 
+      {/* 加载中只留图标和标签，数值先空着：否则会先闪出 N/A、0 再变成真实值 */}
       <div className="g_cont2 g_rblock like_area">
         <div className="num">
           <img src={staticUrl('img/icon-love.png')} alt="" />
-          <span>{percentLabel(data.percent)}</span>
+          <span>{loading ? '' : percentLabel(data.percent)}</span>
         </div>
         <div className="num" style={{ float: 'right' }}>
-          <img src={staticUrl('img/icon-donate.png')} alt="" />{i18nT('Donation')}<span className="l">{data.gold}</span>
+          <img src={staticUrl('img/icon-donate.png')} alt="" />{i18nT('Donation')}<span className="l">{loading ? '' : data.gold}</span>
         </div>
         <div className="num" style={{ float: 'right' }}>
-          <img src={staticUrl('img/icon-play.png')} alt="" /><span>{i18nT('Hot')}</span><span className="l">{chart.playcount ?? 0}</span>
+          <img src={staticUrl('img/icon-play.png')} alt="" /><span>{i18nT('Hot')}</span><span className="l">{loading ? '' : chart.playcount ?? 0}</span>
         </div>
       </div>
 
@@ -445,7 +440,8 @@ export default function ChartPage() {
           </select>
         </div>
         <div className="score_area">
-          <ScoreList rows={scores} />
+          {/* 只在首次加载（还没有任何行）时用骨架；切换筛选时保留旧列表直到新数据到达，避免闪烁 */}
+          {scoresLoading && scores.length === 0 ? <SkeletonRows /> : <ScoreList rows={scores} />}
         </div>
       </div>
 
@@ -473,7 +469,7 @@ export default function ChartPage() {
 
       <div className="g_cont2 g_rblock">
         <div className="tool">
-          <LangTabs value={lang} onChange={(c, l) => { void onChangeLang(c, l) }} />
+          <LangTabs value={lang} onChange={(c) => { void changeLang(c) }} />
           {data.canEdit && <a href="#" className="btn g_toolbtn e" data-type="edit" title={i18nT('Edit')} onClick={(e) => { e.preventDefault(); onEdit() }}><i></i></a>}
         </div>
         <div

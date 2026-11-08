@@ -1,5 +1,7 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { fetchWikiTemplate, type RespWikiTemplate } from '../network/api'
+import { fetchWikiLang } from '../network/legacy'
+import { showNotify } from '../lib/legacy'
 import { t as i18nT } from '../i18n'
 import {
   renderWiki, renderChat, wikiRenderOptions, escapeHtml, sanitizeUrl, sanitizeRenderedHtml,
@@ -95,13 +97,12 @@ export function useWikiHtml(raw: string, options: Partial<WikiRenderOptions> = {
     }),
     [raw, hiddenLabel, templateLabel, templateLoading, ignoreTemplates, literalTemplates],
   )
-  const [html, setHtml] = useState<string>(result.html)
+  // 补完后的 HTML 记下它对应的 result；raw 一变就先返回新 result 的 html
+  // （模板位为占位骨架），不再沿用上一份 raw 的内容直到模板全部取回。
+  const [filled, setFilled] = useState<{ src: typeof result; html: string } | null>(null)
   useEffect(() => {
     let alive = true
-    if (!result.templates.length) {
-      setHtml(result.html)
-      return
-    }
+    if (!result.templates.length) return
     void (async () => {
       const emptyResp: RespWikiTemplate = { code: 0, data: {} }
       const blocks = await Promise.all(result.templates.map(async (tmpl) => {
@@ -115,11 +116,48 @@ export function useWikiHtml(raw: string, options: Partial<WikiRenderOptions> = {
         }
       }))
       // 模板块是异步插入的，替换完成后再兜一次底（blocks 自身已在 renderTemplateHtml 出口过滤）
-      if (alive) setHtml(sanitizeRenderedHtml(applyTemplateHtml(result.html, blocks)))
+      if (alive) setFilled({ src: result, html: sanitizeRenderedHtml(applyTemplateHtml(result.html, blocks)) })
     })()
     return () => { alive = false }
   }, [result])
-  return html
+  return filled?.src === result ? filled.html : result.html
+}
+
+/**
+ * wiki / 歌曲 / 谱面页的多语言标签（LangTabs）。
+ * 切换后拉取该语言的 raw，同样经 useWikiHtml 渲染，模板块才会被补完；
+ * 早期直接用 wikiToHtml(raw).html，模板位一直停在占位状态（Loading template...）。
+ * langHtml 为 null 表示仍显示默认语言正文。连续切换时只采用最后一次请求的结果。
+ * 选择结果带上所属 key：页面 key 一变即视为初始状态，旧页面迟到的响应也不会套到新页面上。
+ */
+type LangSelection = { key: string; lang: string; raw: string | null }
+
+export function useWikiLang(key: string): {
+  lang: string
+  langHtml: string | null
+  changeLang: (code: string) => Promise<void>
+} {
+  const [selection, setSelection] = useState<LangSelection>({ key, lang: 'en', raw: null })
+  const current: LangSelection = selection.key === key ? selection : { key, lang: 'en', raw: null }
+  const reqRef = useRef(0)
+  const rendered = useWikiHtml(current.raw ?? '')
+
+  const changeLang = useCallback(async (code: string): Promise<void> => {
+    const req = ++reqRef.current
+    // 请求返回前沿用当前正文，只先切换标签
+    setSelection((prev) => ({ key, lang: code, raw: prev.key === key ? prev.raw : null }))
+    try {
+      const resp = await fetchWikiLang(key, code)
+      if (req !== reqRef.current) return
+      setSelection({ key, lang: code, raw: String(resp?.data ?? resp ?? '') })
+    } catch {
+      if (req !== reqRef.current) return
+      setSelection({ key, lang: code, raw: null })
+      showNotify('Server error', 'err')
+    }
+  }, [key])
+
+  return { lang: current.lang, langHtml: current.raw === null ? null : rendered, changeLang }
 }
 
 /**

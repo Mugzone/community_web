@@ -69,6 +69,41 @@ html[data-styles] .g_map.wb-skel-card .cover {
 .wb-skel-row:nth-child(3n) { width: 88%; }
 .wb-skel-row:nth-child(4n) { width: 72%; }
 
+/* wiki 模板块（{{ name:... }}）异步补完前的占位：与其它加载态一样显示骨架，
+   不把 "Template xxx / Loading template..." 文案露给读者。
+   占位 div 的结构由 applyTemplateHtml 按正则整段替换，这里只改样式不改结构；
+   文案仅视觉隐藏，读屏仍可读到。 */
+html[data-styles] .g_wiki .wiki-template-placeholder {
+  position: relative;
+  overflow: hidden;
+  height: 52px;
+  margin: 0 0 10px;
+  background-color: #e8edf4;
+  border-radius: 4px;
+}
+
+html[data-styles] .g_wiki .wiki-template-placeholder::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.65), rgba(255, 255, 255, 0));
+  animation: wb-skel-shimmer 1.5s ease-in-out infinite;
+}
+
+html[data-styles] .g_wiki .wiki-template-placeholder > p {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-styles] .g_wiki .wiki-template-placeholder::after { animation: none; }
+}
+
 /* type=1 自动消息（老站 talk/like.tmpl.html）：<p> 直接是 .g_wiki.meta 的
    子元素，和用户名、时间同处一行。老站 main.css 是运行时动态插入的 link，
    同权重规则会覆盖 Vite 打包的 CSS，这里提高优先级并清掉 .g_wiki p 的

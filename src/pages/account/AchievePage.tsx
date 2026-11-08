@@ -4,6 +4,7 @@ import { asArray, LoadingBlock, useLoad } from '../../lib/legacy'
 import { URLS } from '../../lib/urls'
 import { fetchAchieveList } from '../../network/legacy'
 import { t as i18nT } from '../../i18n'
+import './AchievePage.css'
 
 /* list/achieve.html：个人主页成就区「查看全部」的落地页。
  * 老站还有 Puzzle 拼图区，数据来自 player_evt；Go 的 /account/achieve/list
@@ -27,7 +28,7 @@ export default function AchievePage() {
   )
 
   return (
-    <Shell variant="wide" title={i18nT('Collection')} css={['achieve.css']}>
+    <Shell page="achieve" variant="wide" title={i18nT('Collection')} css={[]}>
       <div className="g_title">{i18nT('Collection')}</div>
       <div className="g_cont">
         <div className="g_actbar">

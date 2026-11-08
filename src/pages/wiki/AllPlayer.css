@@ -1,0 +1,172 @@
+/* AllPlayer.css — 老站 player.css，仅 player 页使用。
+   与页面组件同目录（React colocation）；全部规则以 html[data-page="player"]
+   作用域化，因此可以被打包进全局样式表而不影响其它页面。
+   注意：作用域前缀保留 attr 权重，用于还原老站「页面 CSS 在 main.css 之后」
+   的级联结果；统一改成 :where() 会让 #content 等宽度规则被 main.css 盖掉。
+   Shell 的 page prop 负责在 <html> 上写 data-page。 */
+html[data-page="player"] .clear {
+  clear: both;
+  display: block;
+  height: 0;
+}
+html[data-page="player"] .justfix {
+  display: inline-block;
+  width: 100%;
+  height: 0;
+  overflow: hidden;
+}
+html[data-page="player"] .justfyHold {
+  visibility: hidden;
+  height: 0;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+}
+html[data-page="player"] .textfix {
+  text-overflow: ellipsis;
+  overflow-x: hidden;
+  white-space: nowrap;
+}
+html[data-page="player"] #center .g_cont2 {
+  padding: 10px;
+}
+html[data-page="player"] #center .g_cont2 .list {
+  margin-top: 24px;
+}
+html[data-page="player"] #center .g_cont2 .mode {
+  margin: 24px 7px;
+}
+html[data-page="player"] #center .g_cont2 .mode a {
+  display: inline-block;
+  border-radius: 4px;
+  -moz-border-radius: 4px;
+  -webkit-border-radius: 4px;
+  margin: 0 5px;
+  padding: 4px;
+}
+html[data-page="player"] #center .g_cont2 .mode a img {
+  width: 64px;
+  height: 64px;
+}
+html[data-page="player"] #center .g_cont2 .mode a.curr {
+  background: #4d4d4d;
+}
+html[data-page="player"] #center .g_cont2 .list_head,
+html[data-page="player"] #center .g_cont2 .item {
+  border-bottom: 1px solid #4190e7;
+  text-align: left;
+  height: 52px;
+  line-height: 50px;
+}
+html[data-page="player"] #center .g_cont2 .list_head span.rank,
+html[data-page="player"] #center .g_cont2 .item span.rank {
+  width: 50px;
+}
+html[data-page="player"] #center .g_cont2 .list_head span.avatar img,
+html[data-page="player"] #center .g_cont2 .item span.avatar img {
+  width: 48px;
+  height: 48px;
+  vertical-align: top;
+  border-radius: 4px;
+  -moz-border-radius: 4px;
+  -webkit-border-radius: 4px;
+}
+html[data-page="player"] #center .g_cont2 .list_head span.avatar,
+html[data-page="player"] #center .g_cont2 .item span.avatar {
+  width: 50px;
+}
+html[data-page="player"] #center .g_cont2 .list_head span.name,
+html[data-page="player"] #center .g_cont2 .item span.name {
+  width: 120px;
+}
+html[data-page="player"] #center .g_cont2 .list_head span.lv,
+html[data-page="player"] #center .g_cont2 .item span.lv {
+  width: 50px;
+}
+html[data-page="player"] #center .g_cont2 .list_head span.exp,
+html[data-page="player"] #center .g_cont2 .item span.exp {
+  width: 120px;
+}
+html[data-page="player"] #center .g_cont2 .list_head span.acc,
+html[data-page="player"] #center .g_cont2 .item span.acc {
+  width: 80px;
+}
+html[data-page="player"] #center .g_cont2 .list_head span.combo,
+html[data-page="player"] #center .g_cont2 .item span.combo {
+  width: 100px;
+}
+html[data-page="player"] #center .g_cont2 .list_head span.pc,
+html[data-page="player"] #center .g_cont2 .item span.pc {
+  width: 100px;
+}
+html[data-page="player"] #center .g_cont2 .list_head {
+  margin-top: 32px;
+}
+html[data-page="player"] #center .g_cont2 .list_head span,
+html[data-page="player"] #center .g_cont2 .item span {
+  display: inline-block;
+  text-align: center;
+  vertical-align: middle;
+}
+html[data-page="player"] #center .g_cont2 .item:nth-child(even) {
+  background-color: #e6e6e6;
+}
+html[data-page="player"] #center .g_cont2 .item-top {
+  display: inline-block;
+  width: 286.66666667px;
+  height: 96px;
+  background-color: #4190e7;
+  position: relative;
+  color: white;
+}
+html[data-page="player"] #center .g_cont2 .item-top:nth-child(2) {
+  margin: 0 6px;
+}
+html[data-page="player"] #center .g_cont2 .item-top .right {
+  display: inline-block;
+  float: left;
+  text-align: left;
+  padding: 3px;
+}
+html[data-page="player"] #center .g_cont2 .item-top .right span {
+  display: block;
+  width: 128px;
+}
+html[data-page="player"] #center .g_cont2 .item-top .right .name {
+  font-weight: bold;
+  font-size: 16px;
+  padding-bottom: 3px;
+}
+html[data-page="player"] #center .g_cont2 .item-top .right .name a {
+  color: white;
+}
+html[data-page="player"] #center .g_cont2 .item-top .avatar {
+  float: left;
+  margin: 3px;
+}
+html[data-page="player"] #center .g_cont2 .item-top .avatar img {
+  width: 90px;
+  height: 90px;
+  border-radius: 4px;
+  -moz-border-radius: 4px;
+  -webkit-border-radius: 4px;
+}
+html[data-page="player"] #center .g_cont2 .item-top .label {
+  width: 70px;
+  height: 24px;
+  background: url('/static/img/toplabel.png') no-repeat top left;
+  background-size: cover;
+  display: block;
+  position: absolute;
+  top: 8px;
+  left: -2px;
+}
+html[data-page="player"] #center .g_cont2 .item-top .label.top-1 {
+  background-position: 0 0px;
+}
+html[data-page="player"] #center .g_cont2 .item-top .label.top-2 {
+  background-position: 0 -29px;
+}
+html[data-page="player"] #center .g_cont2 .item-top .label.top-3 {
+  background-position: 0 -58px;
+}

@@ -1,21 +1,24 @@
-import { isValidElement, useEffect, useLayoutEffect, useState, type ReactNode } from 'react'
+import { isValidElement, useEffect, useState, type ReactNode } from 'react'
 import { Header } from './Header'
 import { Footer } from './Footer'
-import { useLegacyCss, setNotifyListener, setGlobalLoadingListener } from '../lib/legacy'
+import { setNotifyListener, setGlobalLoadingListener } from '../lib/legacy'
+import { LEGACY_GLOBAL_CSS, LEGACY_PAGE_CSS, LEGACY_SIMPLE_CSS } from '../styles/legacy'
 import { t as i18nT } from '../i18n'
 
 export type ShellProps = {
   /** base.html 两栏 / base_width.html 宽版 / base_simple.html 极简 */
   variant?: 'two-col' | 'wide' | 'simple'
   title?: string
-  /** 页面级 CSS 文件名，对应老站 static/css/xxx.css */
+  /** 页面级样式名，对应 src/styles/legacy/ 下的模块（由 Shell 声明式注入） */
   css?: string[]
+  /** 页面标识，写到 <html data-page="...">，供同目录作用域样式（Xxx.css）使用 */
+  page?: string
   contCls?: string
   chead?: ReactNode
   sidebar?: ReactNode
   ad?: ReactNode
   footerExtra?: ReactNode
-  /** base_simple.html 的 #center > #content 骨架；挂载期间禁用全局 main.css */
+  /** base_simple.html 的 #center > #content 骨架（该变体不加载 main.css） */
   simpleFrame?: boolean
   children: ReactNode
 }
@@ -27,6 +30,7 @@ export function Shell({
   variant = 'two-col',
   title,
   css = [],
+  page,
   contCls = '',
   chead,
   sidebar,
@@ -35,11 +39,34 @@ export function Shell({
   simpleFrame = false,
   children,
 }: ShellProps) {
-  useLegacyCss(variant === 'simple' ? [...css, 'simple.css'] : css)
+  /* 声明式样式表：CSS 是构建时静态依赖（?inline），由 React 渲染 <style> 并由
+     React 负责挂载/卸载，不再手写 link + 引用计数，也不再靠 link.disabled 关全局样式。
+     顺序固定：全局基础（main.css 或 simple.css）→ css 数组顺序，避免不确定的级联。 */
+  const stylesheets: Array<{ name: string; text: string }> = [
+    { name: variant === 'simple' ? 'simple.css' : 'main.css',
+      text: variant === 'simple' ? LEGACY_SIMPLE_CSS : LEGACY_GLOBAL_CSS },
+    ...css
+      .filter((name) => LEGACY_PAGE_CSS[name] !== undefined)
+      .map((name) => ({ name, text: LEGACY_PAGE_CSS[name] })),
+  ]
+  const styleNodes = stylesheets.map((sheet) => (
+    <style key={sheet.name} data-legacy-css={sheet.name}>{sheet.text}</style>
+  ))
 
   useEffect(() => {
     document.title = title ? `Malody - ${title}` : SITE_TITLE
   }, [title])
+
+  /* 同目录的页面样式用 html[data-page="..."] 限定作用域；这里由 Shell 统一写入，
+     页面组件只需要声明 page prop，不各自操作 DOM。卸载时清掉，避免串到下一页。 */
+  useEffect(() => {
+    const root = document.documentElement
+    if (page) {
+      root.setAttribute('data-page', page)
+      return () => { root.removeAttribute('data-page') }
+    }
+    root.removeAttribute('data-page')
+  }, [page])
 
   const [notice, setNotice] = useState<{ msg: string; type: string } | null>(null)
   const [busy, setBusy] = useState(false)
@@ -81,18 +108,6 @@ export function Shell({
     }
   }, [variant])
 
-  // base_simple.html 不引 main.css；挂载期间禁用全局 main.css，卸载恢复。
-  // useLayoutEffect 在绘制前同步生效，link.disabled 即时切换、不重新请求，避免闪烁。
-  useLayoutEffect(() => {
-    if (!simpleFrame) return
-    const link = document.querySelector<HTMLLinkElement>('link[data-global-main]')
-    if (!link) return
-    link.disabled = true
-    return () => {
-      link.disabled = false
-    }
-  }, [simpleFrame])
-
   if (variant === 'simple') {
     // children 已自带 #center 骨架（如 DDoS 沿用旧写法）时不再重复包裹，避免同名 id 嵌套。
     const framed = simpleFrame && !(isValidElement(children) && (children.props as { id?: string })?.id === 'center')
@@ -101,6 +116,7 @@ export function Shell({
       : children
     return (
       <>
+        {styleNodes}
         {content}
         <NotifyLayer notice={notice} />
       </>
@@ -109,6 +125,7 @@ export function Shell({
 
   return (
     <>
+      {styleNodes}
       <Header />
       {variant === 'wide' && <div id="chead">{chead}</div>}
       <div id="center">

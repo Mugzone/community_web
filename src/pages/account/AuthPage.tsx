@@ -12,6 +12,7 @@ import {
 } from '../../network/legacy'
 import { md5 } from '../../utils/md5'
 import { t as i18nT } from '../../i18n'
+import './AuthPage.css'
 
 /* reg.html 是「多模式单页」：按 URL 切换 5 套表单，全部保留。 */
 type Mode = 'login' | 'reg' | 'forget' | 'reset_psw' | 'change_email'
@@ -300,7 +301,7 @@ export default function AuthPage() {
   }
 
   return (
-    <Shell variant="wide" title="Account" css={['reg.css']} contCls="g_reg">
+    <Shell page="reg" variant="wide" title="Account" css={[]} contCls="g_reg">
       {content}
     </Shell>
   )

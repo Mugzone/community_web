@@ -113,7 +113,7 @@
 #center .g_cont .list li .label {
   width: 52px;
   height: 18px;
-  background: url('../img/toplabel.png') no-repeat top left;
+  background: url('/static/img/toplabel.png') no-repeat top left;
   background-size: cover;
   display: block;
   position: absolute;

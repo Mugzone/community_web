@@ -3,6 +3,7 @@ import { Shell } from '../../components/Layout'
 import { asArray, num, showNotify, useLoad } from '../../lib/legacy'
 import { fetchUploadSign, removeSkinPreview, setSkinStatus, submitSkin } from '../../network/legacy'
 import { t as i18nT } from '../../i18n'
+import './SkinEntry.css'
 
 /** const.MODE_BITS，老站 skin_submit.html 排除位值 2 / 4 */
 const MODE_BITS: { bit: number; label: string }[] = [
@@ -166,7 +167,7 @@ export default function SkinEntry() {
   const ossHost: string = ossParams.host ?? OSS_HOST
 
   return (
-    <Shell variant="two-col" title={i18nT('Submit my skin')} css={['skin_submit.css']}>
+    <Shell page="skin_submit" variant="two-col" title={i18nT('Submit my skin')} css={[]}>
       <div className="g_title">{i18nT('Submit my skin')}</div>
       <div className="g_cont">
         <div id="option">

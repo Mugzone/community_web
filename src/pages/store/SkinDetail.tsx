@@ -10,6 +10,7 @@ import {
 import { t as i18nT } from '../../i18n'
 import { avatarUrl, coverUrl } from '../../utils/formatters'
 import { renderTalkHtml, renderTalkSmallHtml, useWikiHtml } from '../../utils/wikiRender'
+import './SkinDetail.css'
 
 const MODE_LABELS = ['Key', 'Step', 'DJ', 'Catch', 'Pad', 'Taiko', 'Ring', 'Slide', 'Live', 'Cube']
 const PLATFORM_LABELS = ['PC', i18nT('Pad Horizontal'), i18nT('Pad Portrait'), i18nT('Phone Horizontal'), i18nT('Phone Portrait')]
@@ -247,7 +248,7 @@ export default function SkinDetail() {
   }
 
   return (
-    <Shell variant="wide" title={`Skins - ${name}`} css={['skin_detail.css', 'wiki.css']}>
+    <Shell page="skin_detail" variant="wide" title={`Skins - ${name}`} css={['wiki.css']}>
       <div className="song_title g_rblock">
         <div className="coverb">
           <div className="cover" style={{ backgroundImage: `url(${coverBg})` }}></div>

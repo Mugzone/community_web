@@ -60,7 +60,7 @@
   background-position: 50%;
 }
 #center .g_cont .g_block.song .empty {
-  background-image: url('../img/cover.png');
+  background-image: url('/static/img/cover.png');
 }
 #center .g_cont .g_block.song .right {
   float: left;
@@ -104,7 +104,7 @@
   background-position: 50%;
 }
 #center .g_cont .g_block.chart .left .empty {
-  background-image: url('../img/cover.png');
+  background-image: url('/static/img/cover.png');
 }
 #center .g_cont .g_block.chart .right {
   float: left;
@@ -123,7 +123,7 @@
   border-radius: 4px;
   -moz-border-radius: 4px;
   -webkit-border-radius: 4px;
-  background: url("../img/avatar.png");
+  background: url("/static/img/avatar.png");
   background-size: contain;
   vertical-align: middle;
 }
@@ -341,7 +341,7 @@
 #center .score_area .list li .label {
   width: 52px;
   height: 18px;
-  background: url('../img/toplabel.png') no-repeat top left;
+  background: url('/static/img/toplabel.png') no-repeat top left;
   background-size: cover;
   display: block;
   position: absolute;

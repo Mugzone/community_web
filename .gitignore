@@ -1,5 +1,6 @@
 node_modules/
 dist/
+dist-refactor/
 smoke.cjs
 .env.local
 .env.*.local

@@ -5,6 +5,7 @@ import { URLS, staticUrl } from '../../lib/urls'
 import { fetchGlobalRank } from '../../network/api'
 import { avatarUrl } from '../../utils/formatters'
 import { t as i18nT } from '../../i18n'
+import './AllPlayer.css'
 
 type PlayerItem = {
   uid?: number | string
@@ -79,10 +80,10 @@ export default function AllPlayer() {
   )
 
   return (
-    <Shell
+    <Shell page="player"
       variant="wide"
       title="Player ranking"
-      css={['player.css']}
+      css={[]}
       sidebar={<DefaultSidebar />}
     >
       <div className="g_cont2 g_rblock all_chart">

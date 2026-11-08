@@ -33,7 +33,7 @@
   white-space: nowrap;
 }
 #chead {
-  background: url('../img/home/banner-1.png') no-repeat;
+  background: url('/static/img/home/banner-1.png') no-repeat;
   background-size: cover;
   height: 280px;
   position: relative;
@@ -62,7 +62,7 @@
   top: -50px;
 }
 #chead .cont .logo i {
-  background: url('../img/board.png') no-repeat top left;
+  background: url('/static/img/board.png') no-repeat top left;
   width: 120px;
   height: 122px;
   display: inline-block;
@@ -441,7 +441,7 @@
   display: inline-block;
   width: 20px;
   height: 20px;
-  background: url(../img/edit/tool-add.png);
+  background: url(/static/img/edit/tool-add.png);
   background-size: cover;
   margin: -3px 10px 0 0;
   vertical-align: middle;

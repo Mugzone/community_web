@@ -5,6 +5,7 @@ import { staticUrl, URLS } from '../../lib/urls'
 import { fetchSkinList } from '../../network/legacy'
 import { avatarUidUrl } from '../../utils/formatters'
 import { t as i18nT } from '../../i18n'
+import './SkinList.css'
 
 /** const_json.MODE_BITS / PLATFORM_BITS 的英文原文（lib/enum.py） */
 const MODE_LABELS = ['Key', 'Step', 'DJ', 'Catch', 'Pad', 'Taiko', 'Ring', 'Slide', 'Live', 'Cube']
@@ -105,10 +106,10 @@ export default function SkinList() {
   }
 
   return (
-    <Shell
+    <Shell page="skinlist"
       variant="two-col"
       title="Skins"
-      css={['skinlist.css', 'board.css']}
+      css={['board.css']}
       contCls={showBuy ? 'show-buy' : ''}
     >
       <div className="g_cont2">

@@ -210,7 +210,7 @@
   box-shadow: 0 0 5px #222;
 }
 #content .all_board .item i {
-  background: url('../img/board.png') no-repeat top left;
+  background: url('/static/img/board.png') no-repeat top left;
   width: 120px;
   height: 122px;
   display: inline-block;

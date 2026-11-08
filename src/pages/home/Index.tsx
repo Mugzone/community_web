@@ -7,6 +7,7 @@ import { fetchBasicInfo } from '../../network/api'
 import { t as i18nT } from '../../i18n'
 import { coverUrl } from '../../utils/formatters'
 import { skeletonCardNodes } from '../../components/Skeleton'
+import './Index.css'
 
 /* 老站 index.html 的数据结构（homepage.views.index） */
 type Banner = { img?: string; image?: string; url?: string; link?: string }
@@ -180,7 +181,7 @@ export default function Index() {
   )
 
   return (
-    <Shell variant="two-col" css={['home.css']} contCls="gb_index" footerExtra={<FooterExtra />}>
+    <Shell page="home" variant="two-col" css={[]} contCls="gb_index" footerExtra={<FooterExtra />}>
       <BannerSlider items={data.banner} />
 
       <div id="top">

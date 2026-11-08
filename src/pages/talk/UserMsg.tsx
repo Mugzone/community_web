@@ -13,6 +13,7 @@ import {
 import { t as i18nT } from '../../i18n'
 import { avatarUrl } from '../../utils/formatters'
 import { renderTalkHtml, renderTalkSmallHtml } from '../../utils/wikiRender'
+import './UserMsg.css'
 
 /** talk/usermsg.html + widget/talk.html + widget/edittool_simple.html + module/talk/src/init.js */
 type TalkMessageItem = {
@@ -305,7 +306,7 @@ export default function UserMsg() {
   }
 
   return (
-    <Shell variant="wide" title={`Message - ${data.title || data.msg}`} css={['discuss.css']}>
+    <Shell page="discuss" variant="wide" title={`Message - ${data.title || data.msg}`} css={[]}>
       <div className="g_cont2 g_talk usermsg" id="g_talk">
         <div id="g_talk_input" style={{ display: editorShow ? 'block' : undefined }}>
           <div className="wrap">

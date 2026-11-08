@@ -59,8 +59,8 @@ i {
 }
 @font-face {
   font-family: 'latoregular';
-  src: url('../font/lato-regular-webfont.eot');
-  src: url('../font/lato-regular-webfont.eot?#iefix') format('embedded-opentype'), url('../font/lato-regular-webfont.woff') format('woff'), url('../font/lato-regular-webfont.ttf') format('truetype'), url('../font/lato-regular-webfont.svg#latoregular') format('svg');
+  src: url('/static/font/lato-regular-webfont.eot');
+  src: url('/static/font/lato-regular-webfont.eot?#iefix') format('embedded-opentype'), url('/static/font/lato-regular-webfont.woff') format('woff'), url('/static/font/lato-regular-webfont.ttf') format('truetype'), url('/static/font/lato-regular-webfont.svg#latoregular') format('svg');
   font-weight: normal;
   font-style: normal;
 }
@@ -106,7 +106,7 @@ h3 {
   font-size: 14px;
 }
 .g_icon {
-  background: url('../img/small/icon.png') no-repeat top left;
+  background: url('/static/img/small/icon.png') no-repeat top left;
 }
 .g_icon.g_icon_ipad {
   background-position: 0 0;
@@ -469,7 +469,7 @@ h3 {
   display: block;
   width: 24px;
   height: 24px;
-  background: url('../img/edit/tool.png') no-repeat top left;
+  background: url('/static/img/edit/tool.png') no-repeat top left;
   background-size: 24px;
 }
 .g_edittool a .tool-B {
@@ -563,7 +563,7 @@ h3 {
   border-top-right-radius: 3px;
   -moz-border-radius-topright: 3px;
   -webkit-border-top-right-radius: 3px;
-  background-image: url('../img/cover.png');
+  background-image: url('/static/img/cover.png');
   background-position: 50%;
 }
 .g_map .meta {
@@ -608,13 +608,13 @@ h3 {
   background-size: contain;
 }
 .g_map .status.status-0 {
-  background-image: url('../img/status-0.png');
+  background-image: url('/static/img/status-0.png');
 }
 .g_map .status.status-1 {
-  background-image: url('../img/status-1.png');
+  background-image: url('/static/img/status-1.png');
 }
 .g_map .status.status-2 {
-  background-image: url('../img/status-2.png');
+  background-image: url('/static/img/status-2.png');
 }
 .g_temp {
   text-align: left;
@@ -775,34 +775,34 @@ h3 {
   vertical-align: middle;
 }
 .g_mod.g_mod_0 {
-  background-image: url('../img/mod/mod-0.png');
+  background-image: url('/static/img/mod/mod-0.png');
 }
 .g_mod.g_mod_1 {
-  background-image: url('../img/mod/mod-1.png');
+  background-image: url('/static/img/mod/mod-1.png');
 }
 .g_mod.g_mod_2 {
-  background-image: url('../img/mod/mod-2.png');
+  background-image: url('/static/img/mod/mod-2.png');
 }
 .g_mod.g_mod_3 {
-  background-image: url('../img/mod/mod-3.png');
+  background-image: url('/static/img/mod/mod-3.png');
 }
 .g_mod.g_mod_4 {
-  background-image: url('../img/mod/mod-4.png');
+  background-image: url('/static/img/mod/mod-4.png');
 }
 .g_mod.g_mod_5 {
-  background-image: url('../img/mod/mod-5.png');
+  background-image: url('/static/img/mod/mod-5.png');
 }
 .g_mod.g_mod_6 {
-  background-image: url('../img/mod/mod-6.png');
+  background-image: url('/static/img/mod/mod-6.png');
 }
 .g_mod.g_mod_7 {
-  background-image: url('../img/mod/mod-7.png');
+  background-image: url('/static/img/mod/mod-7.png');
 }
 .g_mod.g_mod_8 {
-  background-image: url('../img/mod/mod-8.png');
+  background-image: url('/static/img/mod/mod-8.png');
 }
 .g_mod.g_mod_9 {
-  background-image: url('../img/mod/mod-9.png');
+  background-image: url('/static/img/mod/mod-9.png');
 }
 .g_toolbtn {
   background-color: #cccccc;
@@ -841,52 +841,52 @@ h3 {
   background-color: #4190e7;
 }
 .g_toolbtn.m i {
-  background-image: url(../img/edit/tool-move.png);
+  background-image: url(/static/img/edit/tool-move.png);
 }
 .g_toolbtn.r i {
-  background-image: url(../img/edit/tool-reply.png);
+  background-image: url(/static/img/edit/tool-reply.png);
 }
 .g_toolbtn.e i {
-  background-image: url(../img/edit/tool-edit.png);
+  background-image: url(/static/img/edit/tool-edit.png);
 }
 .g_toolbtn.d i {
-  background-image: url(../img/edit/tool-del.png);
+  background-image: url(/static/img/edit/tool-del.png);
 }
 .g_toolbtn.s i {
-  background-image: url(../img/edit/tool-stick.png);
+  background-image: url(/static/img/edit/tool-stick.png);
 }
 .g_toolbtn.us i {
-  background-image: url(../img/edit/tool-unstick.png);
+  background-image: url(/static/img/edit/tool-unstick.png);
 }
 .g_toolbtn.l i {
-  background-image: url(../img/edit/tool-lock.png);
+  background-image: url(/static/img/edit/tool-lock.png);
 }
 .g_toolbtn.ul i {
-  background-image: url(../img/edit/tool-unlock.png);
+  background-image: url(/static/img/edit/tool-unlock.png);
 }
 .g_toolbtn.w i {
-  background-image: url(../img/edit/tool-warn.png);
+  background-image: url(/static/img/edit/tool-warn.png);
 }
 .g_toolbtn.lk i {
-  background-image: url(../img/edit/tool-like.png);
+  background-image: url(/static/img/edit/tool-like.png);
 }
 .g_toolbtn.ulk i {
-  background-image: url(../img/edit/tool-unlike.png);
+  background-image: url(/static/img/edit/tool-unlike.png);
 }
 .g_toolbtn.ulk2 i {
-  background-image: url(../img/edit/tool-unlike2.png);
+  background-image: url(/static/img/edit/tool-unlike2.png);
 }
 .g_toolbtn.ml i {
-  background-image: url(../img/edit/tool-mail.png);
+  background-image: url(/static/img/edit/tool-mail.png);
 }
 .g_toolbtn.f i {
-  background-image: url(../img/edit/tool-fri.png);
+  background-image: url(/static/img/edit/tool-fri.png);
 }
 .g_toolbtn.in i {
-  background-image: url(../img/edit/tool-inv.png);
+  background-image: url(/static/img/edit/tool-inv.png);
 }
 .g_toolbtn.log i{
-  background-image: url(../img/edit/tool-log.png);
+  background-image: url(/static/img/edit/tool-log.png);
 }
 .g_talk {
   min-height: 10px !important;
@@ -1031,7 +1031,7 @@ h3 {
   display: inline-block;
   width: 20px;
   height: 20px;
-  background: url(../img/edit/tool-reply.png);
+  background: url(/static/img/edit/tool-reply.png);
   background-size: cover;
   margin: -3px 10px 0 0;
   vertical-align: middle;
@@ -1131,7 +1131,7 @@ h3 {
   -moz-border-radius: 8px;
   -webkit-border-radius: 8px;
   margin-top: 5px;
-  background: url("../img/avatar.png");
+  background: url("/static/img/avatar.png");
   background-size: contain;
 }
 .g_talk #g_talk_list .item div.right {
@@ -1301,7 +1301,7 @@ h3 {
   border-radius: 4px;
   -moz-border-radius: 4px;
   -webkit-border-radius: 4px;
-  background: url('../img/avatar.png') no-repeat;
+  background: url('/static/img/avatar.png') no-repeat;
   background-size: contain;
 }
 #header .center span {
@@ -1339,7 +1339,7 @@ h3 {
   height: 20px;
   vertical-align: middle;
   margin-right: 3px;
-  background: url('../img/top-tool.png') no-repeat;
+  background: url('/static/img/top-tool.png') no-repeat;
 }
 #header .center .menu a i.icon-ta {
   background-position: -65px -35px;
@@ -1399,7 +1399,7 @@ h3 {
   width: 24px;
   height: 24px;
   border: none;
-  background-image: url(../img/search.png);
+  background-image: url(/static/img/search.png);
   background-position: center center;
   background-repeat: no-repeat;
   cursor: pointer;

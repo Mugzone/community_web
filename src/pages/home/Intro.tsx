@@ -3,6 +3,7 @@ import { Shell } from '../../components/Layout'
 import { useLoad } from '../../lib/legacy'
 import { URLS, staticUrl } from '../../lib/urls'
 import { fetchIntroData } from '../../network/legacy'
+import './Intro.css'
 
 /** homepage.views.intro —— WebConfig(type=0) 的 key/value */
 type IntroState = {
@@ -74,7 +75,7 @@ export default function Intro() {
   )
 
   return (
-    <Shell variant="simple" css={['intro.css']}>
+    <Shell page="intro" variant="simple" css={[]}>
       {/* 抵消 Shell simple 骨架自动引入的 simple.css（body 居中 / min-height） */}
       <style>{`body { text-align: left; min-height: 0; }`}</style>
       <div id="top">

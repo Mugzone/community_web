@@ -77,7 +77,7 @@
   -moz-border-radius: 4px;
   -webkit-border-radius: 4px;
   margin: 2px;
-  background: url("../img/avatar.png");
+  background: url("/static/img/avatar.png");
   background-size: contain;
 }
 .item .right {

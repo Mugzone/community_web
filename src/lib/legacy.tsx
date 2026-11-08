@@ -19,72 +19,8 @@ export function JustifyRow({ children }: { children: ReactNode }) {
   )
 }
 
-/** 老站模板 `<link href="{{ STATIC_URL }}css/xxx.css?v=N"/>` 的版本号映射。
- *  同名 css 在不同模板有不同 v 时取主页面版本；无版本的文件保持无后缀。 */
-const CSS_VERSIONS: Record<string, number> = {
-  'achieve.css': 5,
-  'akari.css': 5,
-  'board.css': 11,
-  'chartlist.css': 10,
-  'discuss.css': 9,
-  'home.css': 15,
-  'intro.css': 6,
-  'main.css': 31,
-  'narrow.css': 1,
-  'player.css': 5,
-  'profile.css': 4,
-  'reg.css': 4,
-  'score.css': 3,
-  'simple.css': 4,
-  'skin_detail.css': 6,
-  'skin_submit.css': 5,
-  'skinlist.css': 8,
-  'store.css': 1,
-  'tmpl.css': 16,
-  'upload.css': 4,
-  'user.css': 16,
-  'wiki.css': 28,
-  'wiki_edit.css': 9,
-}
-
-/** 同一 href 被多个页面同时挂载时的引用计数，避免其中一个卸载误删 link。 */
-const cssRefs = new Map<string, number>()
-
-/** 按老站方式动态引入页面级 CSS；卸载时移除本组件注入的 link，避免路由切换后样式累积。 */
-export function useLegacyCss(files: string[]) {
-  const key = files.join('|')
-  useEffect(() => {
-    const hrefs = files.map((file) => {
-      const v = CSS_VERSIONS[file]
-      return `/static/css/${file}${v ? `?v=${v}` : ''}`
-    })
-    hrefs.forEach((href) => {
-      const existing = document.querySelector<HTMLLinkElement>(`link[data-legacy-css="${href}"]`)
-      if (existing) {
-        cssRefs.set(href, (cssRefs.get(href) ?? 1) + 1)
-        return
-      }
-      const link = document.createElement('link')
-      link.rel = 'stylesheet'
-      link.type = 'text/css'
-      link.href = href
-      link.setAttribute('data-legacy-css', href)
-      document.head.appendChild(link)
-      cssRefs.set(href, 1)
-    })
-    return () => {
-      hrefs.forEach((href) => {
-        const next = (cssRefs.get(href) ?? 1) - 1
-        if (next > 0) {
-          cssRefs.set(href, next)
-          return
-        }
-        cssRefs.delete(href)
-        document.querySelector(`link[data-legacy-css="${href}"]`)?.remove()
-      })
-    }
-  }, [key])
-}
+/* 老站 CSS 已迁入 src/styles/legacy/，由 Shell 用声明式 <style> 渲染；
+   这里不再做动态 link 注入、版本号映射或引用计数。 */
 
 type LoadState<T> = {
   data: T

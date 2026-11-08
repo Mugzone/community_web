@@ -12,7 +12,7 @@ import {
 } from '../../network/legacy'
 import { t as i18nT } from '../../i18n'
 import { avatarUrl } from '../../utils/formatters'
-import { renderTalkHtml } from '../../utils/wikiRender'
+import { renderTalkHtml, renderTalkSmallHtml } from '../../utils/wikiRender'
 
 /** talk/usermsg.html + widget/talk.html + widget/edittool_simple.html + module/talk/src/init.js */
 type TalkMessageItem = {
@@ -109,15 +109,18 @@ function TalkItemView({
 
   // type == 1 为 like.tmpl.html 的精简样式
   if (item.type === 1) {
+    // talk/like.tmpl.html：<p> 必须是 .g_wiki.meta 的直接子元素
     return (
       <li className="item small" data-id={item.tid} data-time={item.time ?? ''}>
         <div className="bg right">
-          <div className="g_wiki meta">
-            <a href={href} className="name">{item.name ?? ''}</a>
-            <div dangerouslySetInnerHTML={{ __html: talkBodyHtml(item) }} />
-            <span className="time">{time}</span>
-            <span className="clear"></span>
-          </div>
+          <div
+            className="g_wiki meta"
+            dangerouslySetInnerHTML={{
+              __html: renderTalkSmallHtml(String(item.content ?? ''), item.renderer, {
+                name: String(item.name ?? ''), userUrl: href, time,
+              }),
+            }}
+          />
         </div>
       </li>
     )

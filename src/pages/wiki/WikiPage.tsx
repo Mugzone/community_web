@@ -11,7 +11,7 @@ import {
   fetchWikiLang, fetchTalkList, saveTalk, operateTalk, fetchTalkRaw, submitVote,
 } from '../../network/legacy'
 import { bindHiddenToggles } from '../../utils/wiki'
-import { wikiToHtml, useWikiHtml, renderTalkHtml } from '../../utils/wikiRender'
+import { wikiToHtml, useWikiHtml, renderTalkHtml, renderTalkSmallHtml } from '../../utils/wikiRender'
 import { t as i18nT } from '../../i18n'
 import { avatarUrl } from '../../utils/formatters'
 
@@ -175,15 +175,19 @@ export function TalkWidget({ talkKey, hasOwner }: { talkKey: string; hasOwner: b
     const showTime = formatTime(t.time)
     const bodyHtml = renderTalkHtml(String(t.content ?? ''), t.renderer)
     if (t.type === 1) {
+      // talk/like.tmpl.html：<p> 必须是 .g_wiki.meta 的直接子元素，
+      // 否则块级 wrapper 会把固定高度的白块撑塌，时间掉到灰底上。
       return (
         <li className="item small" data-id={tid} data-time={t.time} key={`${tid}-${idx}`}>
           <div className="bg right">
-            <div className="g_wiki meta">
-              <a href={URLS.user(uid)} className="name">{showName}</a>
-              <div dangerouslySetInnerHTML={{ __html: bodyHtml }} />
-              <span className="time">{showTime}</span>
-              <span className="clear"></span>
-            </div>
+            <div
+              className="g_wiki meta"
+              dangerouslySetInnerHTML={{
+                __html: renderTalkSmallHtml(String(t.content ?? ''), t.renderer, {
+                  name: showName, userUrl: URLS.user(uid), time: showTime,
+                }),
+              }}
+            />
           </div>
         </li>
       )
@@ -278,9 +282,12 @@ export default function WikiPage() {
   const bodyRef = useRef<HTMLDivElement>(null)
 
   const title = titleOverride || String(page.title ?? '') || `Wiki #${id}`
-  const locked = lockedOverride ?? Boolean(page.locked)
   const limit = num(page.limit, 0)
-  const isorg = page.isorg !== false
+  // 老站 wiki_page.html 用 object.limit >= 16 判定「团队维护 / 已锁定」，
+  // 用 conf["isorg"]（is_commu）露出 Lock / Change title / Delete / Edit 按钮。
+  // 后端 GetWiki 现下发这两个字段；缺省一律收起，避免旧接口下按钮对所有人可见。
+  const locked = lockedOverride ?? (page.limit !== undefined ? limit >= 16 : Boolean(page.locked))
+  const isorg = page.isorg === true
 
   useEffect(() => bindHiddenToggles(bodyRef.current), [wikiHtml, langHtml])
 
@@ -374,8 +381,12 @@ export default function WikiPage() {
             ? <a href="#" className="btn g_toolbtn ul" data-type="unlock" title={i18nT('Unlock Page')} onClick={(e) => { e.preventDefault(); void onLock(false) }}><i></i></a>
             : <a href="#" className="btn g_toolbtn l" data-type="lock" title={i18nT('Lock Page')} onClick={(e) => { e.preventDefault(); void onLock(true) }}><i></i></a>
           )}
-          <a href="#" className="btn g_toolbtn e" data-type="title" title={i18nT('Change title')} onClick={(e) => { e.preventDefault(); void onChangeTitle() }}><i></i></a>
-          <a href="#" className="btn g_toolbtn d" data-type="del" title={i18nT('Delete')} onClick={(e) => { e.preventDefault(); void onDelete() }}><i></i></a>
+          {isorg && (
+            <>
+              <a href="#" className="btn g_toolbtn e" data-type="title" title={i18nT('Change title')} onClick={(e) => { e.preventDefault(); void onChangeTitle() }}><i></i></a>
+              <a href="#" className="btn g_toolbtn d" data-type="del" title={i18nT('Delete')} onClick={(e) => { e.preventDefault(); void onDelete() }}><i></i></a>
+            </>
+          )}
         </div>
       </div>
 
@@ -388,7 +399,9 @@ export default function WikiPage() {
       <div className="g_cont2 g_rblock">
         <div className="tool">
           <LangTabs value={lang} onChange={(c, l) => { void onChangeLang(c, l) }} />
-          <a href="#" className="btn g_toolbtn e" data-type="edit" title={i18nT('Edit')} onClick={(e) => { e.preventDefault(); onEdit() }}><i></i></a>
+          {isorg && (
+            <a href="#" className="btn g_toolbtn e" data-type="edit" title={i18nT('Edit')} onClick={(e) => { e.preventDefault(); onEdit() }}><i></i></a>
+          )}
         </div>
         <div
           className="g_wiki"

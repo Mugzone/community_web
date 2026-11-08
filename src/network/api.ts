@@ -368,6 +368,12 @@ export type RespPlayerAllRankItem = {
   acc?: number
   combo?: number
   level?: number
+  /** /ranking/player/all 的实际字段名（老站模板叫 playcount / exp_rank） */
+  pc?: number
+  playcount?: number
+  exp?: number
+  exp_rank?: number
+  grade?: number
 }
 
 export type RespPlayerAllRank = {
@@ -596,6 +602,11 @@ export type RespChartInfo = {
   dislike?: number
   hot?: number
   likeState?: number
+  /** 老站 general_meta 的四个 UI 露出标志，缺省即无权限 */
+  isAss?: boolean
+  isPub?: boolean
+  isSelf?: boolean
+  canHide?: boolean
 }
 
 export type RespRankingItem = {
@@ -676,6 +687,10 @@ export type RespWiki = {
   wiki?: string
   title?: string
   locked?: boolean
+  /** 老站 conf["isorg"]（is_commu），控制 Lock/Unlock 按钮露出 */
+  isorg?: boolean
+  /** 老站 object.limit，>= 16 表示页面由 Malody 团队维护 */
+  limit?: number
 }
 
 export type RespWikiSearchItem = {
@@ -955,6 +970,13 @@ export const clearChartRanking = (payload: { cid: number }) =>
     body: {
       cid: payload.cid,
     },
+  })
+
+/** 老站 wikipage/views.py:promote：作者花金币给自己的非 Stable 谱买广告位。
+ *  与商店侧栏已下线的 Chart Promotion（竞价活动）不是同一个功能。 */
+export const promoteChart = (payload: { cid: number }) =>
+  postForm<PackBase>('/community/chart/promote', {
+    body: { cid: payload.cid },
   })
 
 export const saveChartInfo = (payload: {

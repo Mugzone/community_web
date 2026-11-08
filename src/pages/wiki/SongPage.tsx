@@ -51,10 +51,10 @@ const EMPTY_SONG: SongState = {
   charts: [],
   tags: [],
   wikiRaw: '',
-  canCover: true,
-  canDel: true,
-  canMerge: true,
-  canEdit: true,
+  canCover: false,
+  canDel: false,
+  canMerge: false,
+  canEdit: false,
 }
 
 const TYPE_LABELS = ['Alpha', 'Beta', 'Stable']
@@ -143,10 +143,11 @@ export default function SongPage() {
         charts,
         tags,
         wikiRaw: String((wikiR as any)?.wiki ?? p.content ?? ''),
-        canCover: p.canCover !== false,
-        canDel: p.canDel !== false,
-        canMerge: p.canMerge !== false,
-        canEdit: p.canEdit !== false,
+        // 老站 JSON 只在有权限时写 canXxx，缺省即 False；接口失败时保持收起
+        canCover: p.canCover === true,
+        canDel: p.canDel === true,
+        canMerge: p.canMerge === true,
+        canEdit: p.canEdit === true,
       }
     },
     [id],

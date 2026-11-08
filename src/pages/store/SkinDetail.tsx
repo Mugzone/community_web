@@ -5,10 +5,11 @@ import { asArray, formatTime, num, showNotify, useLoad } from '../../lib/legacy'
 import { staticUrl, URLS } from '../../lib/urls'
 import {
   deleteSkin, fetchSkinDetail, fetchTalkList, purchaseSkin, saveTalk,
+  operateTalk, fetchTalkRaw,
 } from '../../network/legacy'
 import { t as i18nT } from '../../i18n'
 import { avatarUrl, coverUrl } from '../../utils/formatters'
-import { renderTalkHtml } from '../../utils/wikiRender'
+import { renderTalkHtml, renderTalkSmallHtml } from '../../utils/wikiRender'
 
 const MODE_LABELS = ['Key', 'Step', 'DJ', 'Catch', 'Pad', 'Taiko', 'Ring', 'Slide', 'Live', 'Cube']
 const PLATFORM_LABELS = ['PC', i18nT('Pad Horizontal'), i18nT('Pad Portrait'), i18nT('Phone Horizontal'), i18nT('Phone Portrait')]
@@ -68,6 +69,8 @@ export default function SkinDetail() {
   const [bought, setBought] = useState(false)
   const [editorOpen, setEditorOpen] = useState(false)
   const [content, setContent] = useState('')
+  const [replyId, setReplyId] = useState<number | string>(0)
+  const [editId, setEditId] = useState<number | string>(0)
 
   const skin: any = detail?.skin ?? detail ?? {}
   const id = skin.id ?? sid
@@ -123,19 +126,53 @@ export default function SkinDetail() {
     window.location.href = `/wiki/edit?key=${key}`
   }
 
-  const openEditor = (text = '') => {
+  const openEditor = (text = '', rId: number | string = 0, eId: number | string = 0) => {
     setContent(text)
+    setReplyId(rId)
+    setEditId(eId)
     setEditorOpen(true)
+  }
+
+  const closeEditor = () => {
+    setContent('')
+    setReplyId(0)
+    setEditId(0)
+    setEditorOpen(false)
   }
 
   const onSaveTalk = async () => {
     const text = content.trim()
     if (!text) return
+    // 与 WikiPage / UserMsg 的讨论组件一致：编辑带 tid、回复带 rep_id，
+    // 否则点「Edit」会变成新发一条评论。
+    const payload: Record<string, string | number | undefined> = { key: talkKey, content: text }
+    if (replyId) payload.rep_id = replyId
+    if (editId) payload.tid = editId
+    payload.hasOwner = 1
     try {
-      await saveTalk({ key: talkKey, content: text, hasOwner: 1 })
-      setContent('')
-      setEditorOpen(false)
+      await saveTalk(payload)
+      closeEditor()
       reloadTalk()
+    } catch {
+      showNotify('Server error', 'err')
+    }
+  }
+
+  const onDeleteTalk = async (tid: number | string): Promise<void> => {
+    try {
+      await operateTalk({ tid, type: 'del' })
+      showNotify('Delete success!', 'succ')
+      reloadTalk()
+    } catch {
+      showNotify('Delete failed', 'err')
+    }
+  }
+
+  const onEditTalk = async (tid: number | string): Promise<void> => {
+    try {
+      const resp: any = await fetchTalkRaw(tid)
+      const raw = String(resp?.data?.raw ?? resp?.raw ?? '')
+      openEditor(raw, 0, tid)
     } catch {
       showNotify('Server error', 'err')
     }
@@ -158,16 +195,18 @@ export default function SkinDetail() {
     const bodyRaw = String(t.content ?? '')
     const bodyHtml = renderTalkHtml(bodyRaw, t.renderer)
     if (t.type === 1) {
-      // talk/like.tmpl.html
+      // talk/like.tmpl.html：<p> 必须是 .g_wiki.meta 的直接子元素
       return (
         <li className="item small" data-id={tid} data-time={t.time} key={`${tid}-${idx}`}>
           <div className="bg right">
-            <div className="g_wiki meta">
-              <a href={URLS.user(uid)} className="name">{showName}</a>
-              <div dangerouslySetInnerHTML={{ __html: bodyHtml }} />
-              <span className="time">{showTime}</span>
-              <span className="clear"></span>
-            </div>
+            <div
+              className="g_wiki meta"
+              dangerouslySetInnerHTML={{
+                __html: renderTalkSmallHtml(bodyRaw, t.renderer, {
+                  name: showName, userUrl: URLS.user(uid), time: showTime,
+                }),
+              }}
+            />
           </div>
         </li>
       )
@@ -186,13 +225,13 @@ export default function SkinDetail() {
               <a href={URLS.user(uid)} className="name">{showName}</a>
               <span className="time">{showTime}</span>
               {!t.isOwn && (
-                <a href="#" data-type="reply" title={i18nT('Reply')} className="tool" onClick={(e) => { e.preventDefault(); openEditor(`@${showName} `) }}>{i18nT('Reply')}</a>
+                <a href="#" data-type="reply" title={i18nT('Reply')} className="tool" onClick={(e) => { e.preventDefault(); openEditor(`@${showName} `, tid) }}>{i18nT('Reply')}</a>
               )}
               {t.canEdit && (
-                <a href="#" data-type="edit" title={i18nT('Edit')} className="tool" onClick={(e) => { e.preventDefault(); openEditor(bodyRaw) }}>{i18nT('Edit')}</a>
+                <a href="#" data-type="edit" title={i18nT('Edit')} className="tool" onClick={(e) => { e.preventDefault(); void onEditTalk(tid) }}>{i18nT('Edit')}</a>
               )}
               {t.canDel && (
-                <a href="#" data-type="del" title={i18nT('Delete')} className="tool" onClick={(e) => { e.preventDefault(); showNotify('Delete success!', 'succ') }}>{i18nT('Delete')}</a>
+                <a href="#" data-type="del" title={i18nT('Delete')} className="tool" onClick={(e) => { e.preventDefault(); void onDeleteTalk(tid) }}>{i18nT('Delete')}</a>
               )}
             </p>
             <div dangerouslySetInnerHTML={{ __html: bodyHtml }} />
@@ -317,7 +356,7 @@ export default function SkinDetail() {
                 ))}
                 <em className="clear"></em>
               </div>
-              <a href="#" className="btn" data-type="cancel" id="J_cancel" onClick={(e) => { e.preventDefault(); setEditorOpen(false) }}>X</a>
+              <a href="#" className="btn" data-type="cancel" id="J_cancel" onClick={(e) => { e.preventDefault(); closeEditor() }}>X</a>
             </div>
             <textarea cols={80} rows={30} dir="ltr" value={content} onChange={(e) => setContent(e.target.value)}></textarea>
             <p>

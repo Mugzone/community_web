@@ -1,7 +1,12 @@
 import { avatarUidUrl, avatarUrl, coverUrl } from "./formatters";
 import { URLS } from "../lib/urls";
 import type { RespWikiTemplate } from "../network/api";
-import type { WikiTemplate } from "./wiki";
+import {
+  sanitizeUrl,
+  sanitizeCssUrl,
+  sanitizeRenderedHtml,
+  type WikiTemplate,
+} from "./wiki";
 
 type TranslateFn = (
   key: string,
@@ -31,16 +36,16 @@ const field = (d: Loose, p: Record<string, string>, key: string): string => {
   return dv === undefined || dv === null || dv === "" ? p[key] ?? "" : String(dv);
 };
 
-/** CSS url() 里用的 URL：转义并去掉可能闭合 url() 的圆括号 */
-const cssUrl = (v: string) => escapeHtml(v).replace(/[()]/g, "");
-const chartLink = (id: string) => escapeHtml(URLS.chartPage(id));
-const userLink = (uid: string) => escapeHtml(URLS.user(uid));
+/** CSS url() 与 href/src 一律过协议白名单，不再只靠 escapeHtml 防属性逃逸 */
+const cssUrl = (v: string) => sanitizeCssUrl(v);
+const chartLink = (id: string) => sanitizeUrl(URLS.chartPage(id));
+const userLink = (uid: string) => sanitizeUrl(URLS.user(uid));
 
 /** 老站 {% avatar %}：按 uid 取头像，无 uid 时留空（由 CSS 背景兜底） */
 const avatarImg = (uid: string, username: string, avatar?: string): string => {
   if (!uid) return "";
   const src = avatar && avatar.length ? avatarUrl(avatar, uid) : avatarUidUrl(n2(uid));
-  return `<img src="${escapeHtml(src)}" alt="${escapeHtml(username)}"/>`;
+  return `<img src="${sanitizeUrl(src)}" alt="${escapeHtml(username)}"/>`;
 };
 
 /**
@@ -48,7 +53,7 @@ const avatarImg = (uid: string, username: string, avatar?: string): string => {
  * 名字先归一化（去前导下划线），数据优先取 resp.data，缺失字段用 tmpl.params 兜底，
  * 空数据也返回完整骨架，绝不返回空串。用户可控文本一律 escapeHtml。
  */
-export const renderTemplateHtml = (
+const buildTemplateHtml = (
   t: TranslateFn,
   tmpl: WikiTemplate,
   resp: RespWikiTemplate
@@ -80,7 +85,9 @@ export const renderTemplateHtml = (
 
   // 1. action —— 数据全在 params，本地合成，不发请求
   if (n === "action") {
-    return `<a href="${escapeHtml(g("link") || "#")}" class="g_round g_action">${escapeHtml(
+    // link 直接来自 wiki 正文 {{name:action / link:...}}，必须过协议白名单，
+    // 否则 javascript: 会变成可点击的存储型 XSS。
+    return `<a href="${sanitizeUrl(g("link") || "#")}" class="g_round g_action">${escapeHtml(
       g("title")
     )}</a>`;
   }
@@ -217,7 +224,7 @@ export const renderTemplateHtml = (
 
   // 8. first
   if (n === "first") {
-    const logoSrc = escapeHtml(`/static/img/${g("pic")}`);
+    const logoSrc = sanitizeUrl(`/static/img/${g("pic")}`);
     const time = g("time");
     const ru = obj.user ?? p.user ?? obj.uid ?? p.uid ?? obj.id ?? p.id;
     let uid = "";
@@ -341,6 +348,13 @@ export const renderTemplateHtml = (
     t("wiki.template.unknown")
   )}</div>`;
 };
+
+/** 模板块是异步插入 wiki 正文的，出口统一再过一次 URL 白名单兜底 */
+export const renderTemplateHtml = (
+  t: TranslateFn,
+  tmpl: WikiTemplate,
+  resp: RespWikiTemplate
+): string => sanitizeRenderedHtml(buildTemplateHtml(t, tmpl, resp));
 
 /** 总是替换每个 data-template-idx 占位（含空串也清空），移除 "Loading template..." 文案 */
 export const applyTemplateHtml = (

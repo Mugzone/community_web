@@ -26,9 +26,27 @@
 
 /* 卡片骨架：复用老站 .g_map / .cover / .meta 的尺寸，
    首页 192x240、谱面列表按各自页面 CSS，自动对齐真实卡片。 */
-.wb-skel-card .cover {
+/* 老站 main.css 的 .g_map .cover 带 background-image: url(cover.png)（No Cover 占位图）。
+   老站 CSS 是运行时动态插入的 link，.wb-skel-card .cover 与它优先级相同且排在前面，
+   只设 background-color 会被盖掉、骨架露出「No Cover」图。这里提高选择器优先级
+   并强制清掉背景图。 */
+.g_map.wb-skel-card .cover {
+  background-image: none !important;
   background-color: #e8edf4;
   border-radius: 4px;
+}
+
+/* 真实卡片的白底来自 .g_map .link 子元素，骨架没有该结构；
+   补一个白底让灰块封面 + 灰条文字仍是完整的一张卡片。 */
+.g_map.wb-skel-card {
+  background-color: #fff;
+  border-radius: 4px;
+}
+
+/* .g_map:before/:after 是老站给真实卡片加的双层底部投影，骨架不需要 */
+.g_map.wb-skel-card::before,
+.g_map.wb-skel-card::after {
+  display: none;
 }
 
 .wb-skel-card .wb-skel-line {
@@ -50,3 +68,20 @@
 
 .wb-skel-row:nth-child(3n) { width: 88%; }
 .wb-skel-row:nth-child(4n) { width: 72%; }
+
+/* type=1 自动消息（老站 talk/like.tmpl.html）：<p> 直接是 .g_wiki.meta 的
+   子元素，和用户名、时间同处一行。老站 main.css 是运行时动态插入的 link，
+   同权重规则会覆盖 Vite 打包的 CSS，这里提高优先级并清掉 .g_wiki p 的
+   20px 行高 / 5px 下边距，保证整行都落在白色卡片内。 */
+.g_talk #g_talk_list .item.small div.right .g_wiki.meta {
+  height: auto;
+  min-height: 16px;
+  line-height: 16px;
+}
+
+.g_talk #g_talk_list .item.small div.right .g_wiki.meta > p {
+  display: inline-block;
+  margin: 0 0 0 10px;
+  line-height: 16px;
+  vertical-align: middle;
+}

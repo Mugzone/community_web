@@ -1,9 +1,10 @@
-import { useState, type ChangeEvent, type FormEvent } from 'react'
+import { useRef, useState, type ChangeEvent } from 'react'
 import { Shell } from '../../components/Layout'
-import { num, showNotify, useLoad } from '../../lib/legacy'
+import { num, useLoad } from '../../lib/legacy'
 import { URLS } from '../../lib/urls'
-import { fetchUploadPage, fetchUploadSign } from '../../network/legacy'
+import { fetchUploadPage } from '../../network/legacy'
 import { coverUrl } from '../../utils/formatters'
+import { onUpyunSubmit } from './upyunSubmit'
 import { t as i18nT } from '../../i18n'
 
 const IMG_HOST = 'http://v0.api.upyun.com/ma-img'
@@ -11,6 +12,7 @@ const IMG_HOST = 'http://v0.api.upyun.com/ma-img'
 export default function UploadCover() {
   const sid = new URLSearchParams(window.location.search).get('sid') ?? ''
   const [file, setFile] = useState<File | null>(null)
+  const formRef = useRef<HTMLFormElement>(null)
 
   const { data } = useLoad<Record<string, any>>(
     async () => {
@@ -33,18 +35,6 @@ export default function UploadCover() {
     setFile(f)
   }
 
-  const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    if (!file) {
-      return
-    }
-    try {
-      await fetchUploadSign({ type: 2, sid: num(songId, 0) })
-    } catch {
-      showNotify('Upload failed', 'err')
-    }
-  }
-
   return (
     <Shell variant="two-col" title={i18nT('Change Cover')} css={['upload.css']}>
       <div className="g_title">{i18nT('Change Cover')}</div>
@@ -57,7 +47,17 @@ export default function UploadCover() {
         ) : (
           <h1><label htmlFor="">{i18nT('Current')}</label><span>No cover</span></h1>
         )}
-        <form action={IMG_HOST} method="post" encType="multipart/form-data" onSubmit={(e) => void onSubmit(e)}>
+        <form
+          ref={formRef}
+          action={IMG_HOST}
+          method="post"
+          encType="multipart/form-data"
+          onSubmit={(e) => onUpyunSubmit(e, {
+            form: formRef.current, file,
+            signParams: { type: 2, sid: num(songId, 0) },
+            defaultHost: IMG_HOST,
+          })}
+        >
           <h1><label htmlFor="file">{i18nT('New cover')}</label><input type="file" name="file" accept="image/png, image/jpeg" onChange={onFile} /></h1>
           <input name="policy" type="hidden" value={policy} readOnly />
           <input name="signature" type="hidden" value={signature} readOnly />

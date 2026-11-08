@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { fetchWikiTemplate, type RespWikiTemplate } from '../network/api'
 import { t as i18nT } from '../i18n'
 import {
-  renderWiki, renderChat, wikiRenderOptions,
+  renderWiki, renderChat, wikiRenderOptions, escapeHtml, sanitizeUrl, sanitizeRenderedHtml,
   type WikiTemplate, type WikiRenderOptions,
 } from './wiki'
 import { renderTemplateHtml, applyTemplateHtml } from './wikiTemplates'
@@ -63,14 +63,21 @@ export function wikiToHtml(
 ): { html: string; templates: WikiTemplate[] } {
   const text = String(raw ?? '')
   const r = renderWiki(text, wikiRenderOptions({ ...RENDER_OPTIONS, ...options }))
-  if (r.html.startsWith(FEISHU_PREFIX)) {
-    const url = r.html.replace(/<\/?p>/g, '').trim()
+  // 输出兜底：所有 URL 型属性再过一次协议白名单，覆盖未来新增的语法分支
+  const html = sanitizeRenderedHtml(r.html)
+  if (html.startsWith(FEISHU_PREFIX)) {
+    const url = sanitizeUrl(html.replace(/<\/?p>/g, '').trim())
+    // 只允许固定飞书域名的干净路径；正文里夹带的引号/空白会让 src 失效，
+    // 虽然 escapeHtml 已保证不能逃逸属性，但不应把垃圾 URL 塞进 iframe。
+    if (!/^https:\/\/cbo17ty22x\.feishu\.cn\/wiki\/[A-Za-z0-9_?=&%#./-]*$/.test(url)) {
+      return { html, templates: [] }
+    }
     return {
       html: `<iframe width="100%" height="1145px" frameborder="0" seamless src="${url}"></iframe>`,
       templates: [],
     }
   }
-  return { html: r.html, templates: r.templates }
+  return { html, templates: r.templates }
 }
 
 /** 用渲染器输出正文，并把 {{...}} 模板占位异步补成真实内容块 */
@@ -106,7 +113,8 @@ export function useWikiHtml(raw: string, options: Partial<WikiRenderOptions> = {
           return renderTemplateHtml(tr, tmpl, emptyResp)
         }
       }))
-      if (alive) setHtml(applyTemplateHtml(result.html, blocks))
+      // 模板块是异步插入的，替换完成后再兜一次底（blocks 自身已在 renderTemplateHtml 出口过滤）
+      if (alive) setHtml(sanitizeRenderedHtml(applyTemplateHtml(result.html, blocks)))
     })()
     return () => { alive = false }
   }, [result])
@@ -121,9 +129,35 @@ export function useWikiHtml(raw: string, options: Partial<WikiRenderOptions> = {
 export const renderTalkHtml = (raw: string, renderer?: string): string => {
   const text = String(raw ?? '')
   if (!text) return ''
-  if (renderer === 'chat') return renderChat(text)
-  return renderWiki(text, wikiRenderOptions({
-    ...RENDER_OPTIONS,
-    literalTemplates: true,
-  })).html
+  const html = renderer === 'chat'
+    ? renderChat(text)
+    : renderWiki(text, wikiRenderOptions({
+      ...RENDER_OPTIONS,
+      literalTemplates: true,
+    })).html
+  return sanitizeRenderedHtml(html)
+}
+
+/**
+ * type=1 自动消息（点赞/推荐、活动提示）对应老站 talk/like.tmpl.html：
+ * 模板把 translate() 的结果（单个 <p>…</p>）直接插进 .g_wiki.meta，
+ * main.css 再把这个 p 设为 inline-block，与用户名、时间同处一行。
+ *
+ * v3 早期用 <div dangerouslySetInnerHTML> 包了一层，div 是块级元素：
+ * 用户名 / 描述 / 时间被拆成三行，而 .meta 只有固定 16px 高，
+ * 描述和时间就溢到白块外的灰底上。这里按老站结构一次拼好 innerHTML，
+ * 用户名、时间、链接全部先转义，正文仍只来自前端可信渲染器。
+ */
+export const renderTalkSmallHtml = (
+  raw: string,
+  renderer: string | undefined,
+  meta: { name: string; userUrl: string; time: string },
+): string => {
+  const body = renderTalkHtml(raw, renderer)
+  return sanitizeRenderedHtml(
+    `<a href="${sanitizeUrl(meta.userUrl)}" class="name">${escapeHtml(meta.name)}</a>`
+    + body
+    + `<span class="time">${escapeHtml(meta.time)}</span>`
+    + '<span class="clear"></span>',
+  )
 }

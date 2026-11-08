@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { Shell } from '../../components/Layout'
+import { useSession } from '../../components/SessionProvider'
 import { asArray, num, Pager, showNotify, useLoad, floatFormat } from '../../lib/legacy'
 import { URLS, staticUrl } from '../../lib/urls'
 import { fetchScorePage, operateScore } from '../../network/legacy'
@@ -28,6 +29,7 @@ const coverSrc = (v: unknown): string => {
 }
 
 export default function ScorePage() {
+  const { isLogin } = useSession()
   const { pathname, search } = useLocation()
   const m = pathname.match(/^\/score\/(\d+)/)
   const chartId = m ? Number(m[1]) : 0
@@ -115,7 +117,8 @@ export default function ScorePage() {
           {data.isAdmin && (
             <a href="#" className="g_btn btn" data-type="del" onClick={(e) => { e.preventDefault(); void clearAll() }}>{i18nT('Clear All Records')}</a>
           )}
-          <a href="#" className="g_btn btn" data-type="delmy" onClick={(e) => { e.preventDefault(); void deleteMy() }}>{i18nT('Remove score')}</a>
+          {/* 后端 OperateScore(delmy) 要求 uid != 0，游客不露出 */}
+          {isLogin && <a href="#" className="g_btn btn" data-type="delmy" onClick={(e) => { e.preventDefault(); void deleteMy() }}>{i18nT('Remove score')}</a>}
         </div>
 
         {/* score/chart.html */}

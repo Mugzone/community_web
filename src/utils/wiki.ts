@@ -60,6 +60,85 @@ export const escapeHtml = (input: string) =>
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#039;')
 
+/* ------------------------------------------------------------------ *
+ * URL 协议白名单 —— 存储型 XSS 的主防线
+ *
+ * wiki 语法会把用户提供的字符串直接拼进 href/src，例如
+ *   [video:javascript:...]            → <iframe src="javascript:...">
+ *   {{name:action / link:javascript:...}} → <a href="javascript:...">
+ * escapeHtml 只能防属性逃逸，挡不住危险协议。这里统一走
+ * 「实体解码 → 剥离控制字符 → scheme 白名单 → 重新转义」，
+ * 返回值可直接放进 HTML 属性。采用白名单而非黑名单，覆盖大小写、
+ * 命名/数字实体、多重编码、Tab/换行等常见绕过。
+ * ------------------------------------------------------------------ */
+
+const NAMED_ENTITIES: Record<string, string> = {
+  amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: '\u00a0',
+  colon: ':', sol: '/', tab: '\t', newline: '\n', lpar: '(', rpar: ')',
+  semi: ';', num: '#', equals: '=', percnt: '%', quest: '?', comma: ',',
+  period: '.', hyphen: '-', lowbar: '_', plus: '+', ast: '*', excl: '!',
+}
+
+/** 反复解码实体，覆盖 &amp;#x6a;avascript: 之类的多重编码 */
+const decodeHtmlEntities = (input: string): string => {
+  let out = input
+  for (let pass = 0; pass < 3; pass += 1) {
+    const codePoint = (text: string, radix: number) => {
+      const cp = parseInt(text, radix)
+      return Number.isFinite(cp) && cp >= 0 && cp <= 0x10ffff ? String.fromCodePoint(cp) : ''
+    }
+    const next = out
+      .replace(/&#x([0-9a-f]+);?/gi, (_m, hex: string) => codePoint(hex, 16))
+      .replace(/&#(\d+);?/gi, (_m, dec: string) => codePoint(dec, 10))
+      .replace(/&([a-z][a-z0-9]*);?/gi, (m, name: string) =>
+        NAMED_ENTITIES[name.toLowerCase()] ?? m)
+    if (next === out) break
+    out = next
+  }
+  return out
+}
+
+/** 浏览器解析 URL 时会忽略这些字符，攻击者常用它们拆开 javascript: */
+const URL_IGNORABLE = /[\u0000-\u0020\u007f-\u009f\u00ad\u200b-\u200f\u2028\u2029\u2060\ufeff]/g
+
+export type UrlSchemeOptions = { allowMailto?: boolean }
+
+/** 只放行 http/https（可选 mailto）与无 scheme 的相对/协议相对 URL */
+export const sanitizeUrl = (raw: string, options: UrlSchemeOptions = {}): string => {
+  const value = String(raw ?? '')
+  if (!value) return '#'
+  const decoded = decodeHtmlEntities(value).replace(URL_IGNORABLE, '')
+  if (!decoded) return '#'
+  const scheme = /^([a-z][a-z0-9+.-]*):/i.exec(decoded)?.[1]?.toLowerCase()
+  if (scheme) {
+    const allowed = scheme === 'http' || scheme === 'https'
+      || (options.allowMailto === true && scheme === 'mailto')
+    if (!allowed) return '#'
+  }
+  return escapeHtml(decoded)
+}
+
+/** CSS url(...) 上下文：先过协议白名单，再去掉能闭合/改写 CSS 的字符 */
+export const sanitizeCssUrl = (raw: string): string =>
+  sanitizeUrl(raw).replace(/[()'"\\;\u0000-\u0020\u007f]/g, '')
+
+/** 外链视频 code 只能作为固定域名的路径片段 */
+export const safePathSegment = (raw: string): string =>
+  decodeHtmlEntities(String(raw ?? '')).replace(/[^A-Za-z0-9_-]/g, '').slice(0, 128)
+
+/**
+ * 输出兜底：渲染器生成的 HTML 在注入 DOM 之前，把所有 URL 型属性再过一遍
+ * 白名单。即使某个语法分支漏了 sanitizeUrl，这里也不会漏出 javascript:/data:。
+ * 全站 14 处 dangerouslySetInnerHTML 的输入都由 wikiRender.tsx 提供，
+ * 因此这一层能覆盖所有注入点。
+ */
+// 渲染器生成的属性一律带引号；只匹配带引号形式，避免误改正文里出现的 src=xxx 文本
+const URL_ATTR = /\b(href|src|poster|background|action|formaction)\s*=\s*(?:"([^"]*)"|'([^']*)')/gi
+
+export const sanitizeRenderedHtml = (html: string): string =>
+  String(html ?? '').replace(URL_ATTR, (_m, attr: string, dq?: string, sq?: string) =>
+    `${attr}="${sanitizeUrl(dq ?? sq ?? '')}"`)
+
 const clamp = (value: number, max = 700, min = 0) => Math.min(Math.max(value, min), max)
 
 /* 按需求只移植 translate(raw, False)：任何 wiki 文本（含 """ 原文块）一律
@@ -69,9 +148,9 @@ const clamp = (value: number, max = 700, min = 0) => Math.min(Math.max(value, mi
 export const renderChat = (raw: string): string => {
   let line = escapeHtml(String(raw ?? ''))
   line = line.replace(/\[img:([^\s\]]+)\]/gi, (_m, url: string) =>
-    `<img src="${url.replace(/&amp;/g, '&')}" style="width:300px"/>`)
+    `<img src="${sanitizeUrl(url)}" style="width:300px"/>`)
   line = line.replace(/\[((?:https?):\/\/[^\s\]]+)\s+([^\]]+)\]/gi, (_m, href: string, label: string) =>
-    `<a href="${href.replace(/&amp;/g, '&')}">${label}</a>`)
+    `<a href="${sanitizeUrl(href)}">${label}</a>`)
   // 同 w2b_chat.py:8-12，字符类允许内容含标记字符本身
   line = line.replace(/\*\*\s*([\s\S]+?)\s*\*\*/g, '<b>$1</b>')
   line = line.replace(/http:\/\//g, '____http____').replace(/https:\/\//g, '____https____')
@@ -88,8 +167,8 @@ const parseInnerMark = (rawLine: string, { newLine = false, autoFloat = true } =
   const imageRegex = /\[img:([^@\s\]]+)(@(left|right|center))?(@(\d{1,3}))?\]/i
   let imageMatch = line.match(imageRegex)
   while (imageMatch) {
-    // 老站 Python str.replace 替换全部；JS 传字符串只替换首个，URL 多 & 时会残留 &amp;
-    const url = imageMatch[1].replace(/&amp;/g, '&')
+    // sanitizeUrl 统一解码实体、校验协议并重新转义，顺带修掉老站 &amp; 只替换首个的 bug
+    const url = sanitizeUrl(imageMatch[1])
     let align = imageMatch[3] ?? ''
     let size = imageMatch[5]
     if (align && /^\d+$/.test(align)) {
@@ -116,7 +195,7 @@ const parseInnerMark = (rawLine: string, { newLine = false, autoFloat = true } =
   const videoRegex = /\[video:([^@\s\]]+)(@(left|right|center))?(@(\d{1,3}))?(@(\d{1,3}))?\]/i
   let videoMatch = line.match(videoRegex)
   while (videoMatch) {
-    const url = videoMatch[1].replace(/&amp;/g, '&')
+    const url = sanitizeUrl(videoMatch[1])
     let align = videoMatch[3] ?? ''
     let width = videoMatch[5]
     let height = videoMatch[7]
@@ -146,7 +225,8 @@ const parseInnerMark = (rawLine: string, { newLine = false, autoFloat = true } =
   let exLinkMatch = line.match(exLinkRegex)
   while (exLinkMatch) {
     const type = exLinkMatch[1].toLowerCase()
-    const code = exLinkMatch[2]
+    // code 会被拼进固定域名的路径，收紧成安全路径片段，防止改写 URL / 属性逃逸
+    const code = safePathSegment(exLinkMatch[2])
     let replacement = ''
     if (type === 'xiami') {
       const src = `http://www.xiami.com/widget/0_${code}/singlePlayer.swf`
@@ -166,7 +246,7 @@ const parseInnerMark = (rawLine: string, { newLine = false, autoFloat = true } =
   const linkRegex = /\[((?:https?):\/\/[^\s]+)\s+([^\]]+)\]/i
   let linkMatch = line.match(linkRegex)
   while (linkMatch) {
-    const href = linkMatch[1].replace(/&amp;/g, '&')
+    const href = sanitizeUrl(linkMatch[1])
     const label = linkMatch[2] || href
     const replacement = `<a href="${href}" target="_blank" rel="noreferrer">${label}</a>`
     line = line.replace(linkRegex, replacement)

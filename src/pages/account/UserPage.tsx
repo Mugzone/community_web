@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { Shell } from '../../components/Layout'
 import { useSession } from '../../components/SessionProvider'
-import { asArray, formatTime, JustifyRow, num, useLoad, floatFormat } from '../../lib/legacy'
+import { asArray, formatTime, JustifyRow, num, useLoad, floatFormat, showNotify } from '../../lib/legacy'
 import { URLS, staticUrl } from '../../lib/urls'
 import {
   fetchPlayerInfo,
@@ -162,14 +162,24 @@ export default function UserPage() {
     setTab(t)
   }
 
-  /* module/user：好友切换 */
-  const toggleFriend = async (add: boolean) => {
+  /* module/user：好友切换
+   * 后端是 /player/friend/toggle（不是 /account/friend/toggle），参数 touid，
+   * 且为 toggle 语义、没有 add 参数；返回 code 就是切换后的关系：
+   * 0=非好友 / 1=单向关注 / 2=互粉。老站加好友失败时必须保持原状态。 */
+  const toggleFriend = async () => {
     try {
-      await postForm('/account/friend/toggle', { body: { uid: String(uid), add: add ? '1' : '0' } })
+      const resp = await postForm<Record<string, unknown> | string>('/player/friend/toggle', {
+        body: { touid: String(uid) },
+      })
+      const code = typeof resp === 'object' && resp !== null ? Number(resp.code) : NaN
+      if (!Number.isFinite(code) || code < 0 || code > 2) throw new Error('bad response')
+      setFriendType(code)
+      showNotify(code > 0 ? 'Friend added' : 'Friend removed', 'succ')
     } catch {
-      /* 接口不可用时仍保留本地反馈 */
+      // 失败不乐观更新：提示错误并重新拉取，保证界面与服务端一致
+      showNotify(i18nT('Operation failed'), 'err')
+      reload()
     }
-    setFriendType(add ? 1 : 0)
   }
 
   /* module/user：ban / active 等操作 */
@@ -256,10 +266,10 @@ export default function UserPage() {
             friendType > 0 ? (
               <a href="#" id="J_friend" className="btn g_toolbtn ulk2" data-type="unf"
                 title={friendType === 2 ? 'Revoke mutual friend' : 'Revoke friend'}
-                onClick={(e) => { e.preventDefault(); void toggleFriend(false) }}><i></i></a>
+                onClick={(e) => { e.preventDefault(); void toggleFriend() }}><i></i></a>
             ) : (
               <a href="#" id="J_friend" className="btn g_toolbtn lk" data-type="addf" title="Add friend"
-                onClick={(e) => { e.preventDefault(); void toggleFriend(true) }}><i></i></a>
+                onClick={(e) => { e.preventDefault(); void toggleFriend() }}><i></i></a>
             )
           )}
           {isMe && (
@@ -285,12 +295,17 @@ export default function UserPage() {
                 <img src={staticUrl(`img/mode/mode-${n(item.mode)}.png`)} alt="mode" />
                 <div className="right">
                   <p className="rank">#{s(item.exp_rank ?? item.rank ?? item.gradeRank)}</p>
+                  {/* /ranking/player/all 返回 pc（游玩次数）与 exp；老站模板字段名是
+                      playcount / exp，两者都兼容。JSX 会吞掉标签间换行，必须显式补空格，
+                      否则两列会粘成 Exp.123Playcount:456、Acc.97.96%Combo:3544。 */}
                   <p>
-                    <span>Exp.{s(item.exp ?? item.value)}</span>
-                    <span>Playcount:{s(item.playcount)}</span>
+                    <span>Exp.{s(item.exp ?? item.value ?? 0)}</span>
+                    {' '}
+                    <span>Playcount:{s(item.playcount ?? item.pc ?? 0)}</span>
                   </p>
                   <p>
                     <span>Acc.{fmt2(item.acc)}%</span>
+                    {' '}
                     <span>Combo:{s(item.combo)}</span>
                   </p>
                 </div>
@@ -376,6 +391,9 @@ export default function UserPage() {
             <div className={`chart ${tab === 2 ? 'curr' : ''}`}>
               {data.charts.map((item: Rec, i: number) => {
                 const song: Rec = (item.song ?? item) as Rec
+                // Go 的 hot 字段带 omitempty，playcount=0 时整个字段不返回；
+                // 0 或缺失都不展示 Hot 标签，避免只留一个空的「Hot:」。
+                const hot = n(item.hot ?? item.playcount, 0)
                 return (
                   <div className="item g_rblock" key={i}>
                     <div className="cover" style={{ backgroundImage: `url(${bgCover(song.cover_url ?? song.cover)})` }}></div>
@@ -384,7 +402,10 @@ export default function UserPage() {
                         <img src={staticUrl(`img/mode/mode-${n(item.mode)}.png`)} alt="mode" />
                         <a href={URLS.chartPage(item.id ?? item.cid)}>{s(song.title)} - {s(item.display_version ?? item.version)}</a>
                       </p>
-                      <p>Length: {s(item.length)}s&nbsp;&nbsp; Hot: {s(item.playcount ?? item.hot)}</p>
+                      <p>
+                        Length: {s(item.length)}s
+                        {hot > 0 && <>&nbsp;&nbsp; Hot: {hot}</>}
+                      </p>
                       <p><span className="time">{s(item.lastedit_str ?? formatTime(item.lastedit))}</span></p>
                     </div>
                   </div>

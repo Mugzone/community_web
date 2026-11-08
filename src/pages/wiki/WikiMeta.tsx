@@ -1,8 +1,7 @@
 import { Fragment, useEffect, useState } from 'react'
 import { Shell } from '../../components/Layout'
 import { useLoad, asArray, num, showNotify, LoadingBlock } from '../../lib/legacy'
-import { fetchSongInfo, fetchChartInfo, saveSongInfo, saveChartInfo } from '../../network/api'
-import { operateWikiPage } from '../../network/legacy'
+import { fetchSongInfo, fetchChartInfo, saveSongInfo, saveChartInfo, promoteChart } from '../../network/api'
 import { t as i18nT } from '../../i18n'
 
 /* ------------------------------------------------------------------ *
@@ -52,6 +51,19 @@ export default function WikiMeta() {
   const [form, setForm] = useState<Record<string, string>>({})
   const [currTags, setCurrTags] = useState<(number | string)[]>([])
 
+  /* 老站 wiki/chart.html 由 general_meta 注入四个权限标志：
+       isAss   = 非作者 && is_assistent  → 整个 Status 下拉
+       isPub   = is_pub                  → Status 里的 "Stable - Done" 选项
+       isSelf  = 作者本人                → Promotion 按钮
+       canHide = is_commu               → Hide 下拉（后端改 author 也是这个权限）
+     标志由后端 GET /community/chart/info 下发，缺省一律视为无权限（fail-closed），
+     并且最终写入仍由 SaveChartInfo 逐字段二次校验。 */
+  const isAss = Boolean(data.info.isAss)
+  const isPub = Boolean(data.info.isPub)
+  const isSelf = Boolean(data.info.isSelf)
+  const canHide = Boolean(data.info.canHide)
+  const chartType = num(form.type, 0)
+
   useEffect(() => {
     const f: Record<string, string> = {}
     Object.entries(data.info).forEach(([k, v]) => { f[k] = v === undefined || v === null ? '' : String(v) })
@@ -87,19 +99,25 @@ export default function WikiMeta() {
           tags: currTags.map((t) => Number(t)).filter((n) => Number.isFinite(n)),
         })
       } else {
-        await saveChartInfo({
+        // 与老站一致：模板里被权限隐藏的控件根本不会出现在表单里，
+        // 后端 reader.getInt("type", -1) 等拿到缺省值后保持原值。
+        // 前端同样只在有权限时提交这些字段，避免把当前值误写回去。
+        const payload: Parameters<typeof saveChartInfo>[0] = {
           cid: id,
           version: form.version,
-          creator: num(form.creator, 0),
           length: num(form.length, 0),
           level: num(form.level, 0),
           mode: num(form.mode, 0),
           free: num(form.free, 0),
-          type: num(form.type, 0),
-          hide: form.hide === 'True',
           offset: num(form.offset, 0),
           tags: currTags.map((t) => Number(t)).filter((n) => Number.isFinite(n)),
-        })
+        }
+        if (canHide) {
+          payload.creator = num(form.uid, 0)
+          payload.hide = form.hide === 'True'
+        }
+        if (isAss) payload.type = num(form.type, 0)
+        await saveChartInfo(payload)
       }
       window.history.back()
     } catch {
@@ -112,9 +130,11 @@ export default function WikiMeta() {
   }
 
   const onPromote = async (): Promise<void> => {
-    if (!window.confirm(`Pay ${data.pm} gold for the promotion?`)) return
+    // 老站 general_meta: pm = 12000，mode != 0 时减半（PromoteChart 同样口径）
+    const price = num(form.mode, 0) === 0 ? 12000 : 6000
+    if (!window.confirm(`Pay ${price} gold for the promotion?`)) return
     try {
-      await operateWikiPage('promote', { key })
+      await promoteChart({ cid: id })
       showNotify('Success', 'succ')
     } catch {
       showNotify('System error', 'err')
@@ -158,7 +178,10 @@ export default function WikiMeta() {
   const chartTemp = (
     <div className="temp" data-type="chart" data-id={id}>
       <h2><label>{i18nT('Version')}</label><input type="text" name="version" value={form.version ?? ''} onChange={(e) => setField('version', e.target.value)} /></h2>
-      <h2><label>{i18nT('Creator')}</label><input type="text" name="creator" value={form.creator ?? ''} onChange={(e) => setField('creator', e.target.value)} /></h2>
+      {/* 老站这里填的是 t.author.id（数字）。后端 RespChartInfo.creator 是用户名字符串、
+          uid 才是作者 ID；旧实现 num(form.creator, 0) 恒为 0，导致作者永远改不了。
+          后端 update_chart_owner 要求 is_commu，故无权限时只读，避免误导。 */}
+      <h2><label>{i18nT('Creator')}</label><input type="text" name="creator" value={form.uid ?? ''} disabled={!canHide} onChange={(e) => setField('uid', e.target.value)} /></h2>
       <h2><label>{i18nT('Chart Length')}</label><input type="text" name="length" title="in second" value={form.length ?? ''} onChange={(e) => setField('length', e.target.value)} /></h2>
       <h2><label>{i18nT('Level')}</label><input type="text" name="level" title="1-30" value={form.level ?? ''} onChange={(e) => setField('level', e.target.value)} /></h2>
       <h2><label>{i18nT('Mode')}</label>
@@ -172,22 +195,32 @@ export default function WikiMeta() {
           <option value="1">RM Style</option>
         </select>
       </h2>
-      <h2><label>{i18nT('Status')}</label>
-        <select name="type" value={form.type ?? '0'} onChange={(e) => setField('type', e.target.value)}>
-          <option value="0">Alpha - Work in progress</option>
-          <option value="1">Beta - Ready for test</option>
-          <option value="2">Stable - Done</option>
-        </select>
-      </h2>
-      <h2><label>Hide</label>
-        <select name="hide" value={form.hide ?? 'False'} onChange={(e) => setField('hide', e.target.value)}>
-          <option value="False">No</option>
-          <option value="True">Yes</option>
-        </select>
-      </h2>
+      {/* 老站 {% if isAss %} 才渲染整个 Status 下拉，{% if isPub %} 才追加 Stable 选项 */}
+      {isAss && (
+        <h2><label>{i18nT('Status')}</label>
+          <select name="type" value={form.type ?? '0'} onChange={(e) => setField('type', e.target.value)}>
+            <option value="0">Alpha - Work in progress</option>
+            <option value="1">Beta - Ready for test</option>
+            {/* 当前已是 Stable 但不是 publisher 时，保留只读的当前值以免 select 失去选中项 */}
+            {(isPub || chartType === 2) && <option value="2" disabled={!isPub}>Stable - Done</option>}
+          </select>
+        </h2>
+      )}
+      {/* 老站 {% if canHide %}（is_commu）才渲染 Hide */}
+      {canHide && (
+        <h2><label>Hide</label>
+          <select name="hide" value={form.hide ?? 'False'} onChange={(e) => setField('hide', e.target.value)}>
+            <option value="False">No</option>
+            <option value="True">Yes</option>
+          </select>
+        </h2>
+      )}
       <h2><label>Offset</label><input type="text" name="offset" title="audio offset" value={form.offset ?? ''} onChange={(e) => setField('offset', e.target.value)} /></h2>
       <h2><label>{i18nT('Checksum')}</label><input type="text" className="disable" style={{ width: 400 }} name="checksum" disabled value={form.checksum ?? ''} /></h2>
-      <h2><label>{i18nT('Promotion')}</label><div className="g_btn btn" data-type="pm" onClick={() => { void onPromote() }}>{i18nT('Promote now')}</div></h2>
+      {/* 老站 {% if isSelf and t.type != 2 %} 才渲染推广按钮；且 Chart Promotion 功能已下线 */}
+      {isSelf && chartType !== 2 && (
+        <h2><label>{i18nT('Promotion')}</label><div className="g_btn btn" data-type="pm" onClick={() => { void onPromote() }}>{i18nT('Promote now')}</div></h2>
+      )}
       {tagArea}
     </div>
   )

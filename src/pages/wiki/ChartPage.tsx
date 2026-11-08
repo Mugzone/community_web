@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { Shell } from '../../components/Layout'
+import { useSession } from '../../components/SessionProvider'
 import { useLoad, asArray, num, formatTime, showNotify, LoadingBlock, JustifyRow, floatFormat } from '../../lib/legacy'
 import { URLS, staticUrl } from '../../lib/urls'
 import { fetchChartInfo, fetchRankingList, fetchChartDonateList, fetchWiki } from '../../network/api'
@@ -54,6 +55,8 @@ type ChartState = {
   canDel: boolean
   canMerge: boolean
   canEdit: boolean
+  /** Clear All Records：老站 perms.score.delete_scoremodelkey / Go webHIsAdmin */
+  isAdmin: boolean
   sid: number | string
 }
 const EMPTY_CHART: ChartState = {
@@ -66,11 +69,12 @@ const EMPTY_CHART: ChartState = {
   gold: 0,
   stat: null,
   wikiRaw: '',
-  canMark: true,
-  canTop: true,
-  canDel: true,
-  canMerge: true,
-  canEdit: true,
+  canMark: false,
+  canTop: false,
+  canDel: false,
+  canMerge: false,
+  canEdit: false,
+  isAdmin: false,
   sid: 0,
 }
 
@@ -152,6 +156,7 @@ function ScoreList({ rows }: { rows: ScoreRow[] }) {
 }
 
 export default function ChartPage() {
+  const { isLogin } = useSession()
   const params = useParams<{ id?: string }>()
   const id = params.id
     ?? new URLSearchParams(window.location.search).get('id')
@@ -197,11 +202,14 @@ export default function ChartPage() {
         gold: num(p.gold, 0),
         stat: (p.stat ?? null) as Record<string, any> | null,
         wikiRaw: String((wikiR as any)?.wiki ?? p.content ?? ''),
-        canMark: p.canMark !== false,
-        canTop: p.canTop !== false,
-        canDel: p.canDel !== false,
-        canMerge: p.canMerge !== false,
-        canEdit: p.canEdit !== false,
+        // 老站 JSON 只在有权限时写 canXxx 字段，缺省即 False。
+        // 这里必须显式 === true：接口失败被 .catch(() => ({})) 吞掉时不能把管理按钮全露出。
+        canMark: p.canMark === true,
+        canTop: p.canTop === true,
+        canDel: p.canDel === true,
+        canMerge: p.canMerge === true,
+        canEdit: p.canEdit === true,
+        isAdmin: p.isAdmin === true,
         sid: chart.sid ?? song.id ?? 0,
       }
     },
@@ -413,8 +421,10 @@ export default function ChartPage() {
       <div className="g_cont2 g_rblock">
         <h1 className="sec">{i18nT('Ranking')}</h1>
         <div className="g_actbar" id="score_actbar">
-          <a href="#" className="g_btn btn" data-type="delall" onClick={(e) => { e.preventDefault(); void onTool('delall') }}>{i18nT('Clear All Records')}</a>
-          <a href="#" className="g_btn btn" data-type="delmy" onClick={(e) => { e.preventDefault(); void onTool('delmy') }}>{i18nT('Remove score')}</a>
+          {/* 老站 {% if perms.score.delete_scoremodelkey %} / {% if user.is_authenticated %}；
+              后端 OperateScore 分别要求 webHIsAdmin 与 uid != 0，缺省一律收起 */}
+          {data.isAdmin && <a href="#" className="g_btn btn" data-type="delall" onClick={(e) => { e.preventDefault(); void onTool('delall') }}>{i18nT('Clear All Records')}</a>}
+          {isLogin && <a href="#" className="g_btn btn" data-type="delmy" onClick={(e) => { e.preventDefault(); void onTool('delmy') }}>{i18nT('Remove score')}</a>}
           <select id="g_judge" className="g_options" value={judge} onChange={(e) => onJudge(Number(e.target.value))}>
             <option value="-1">{i18nT('All')}</option>
             <option value="0">A(Easy)</option>

@@ -8,10 +8,10 @@ import {
   lockWikiPage, updateWikiTitle, deleteWikiPage,
 } from '../../network/api'
 import {
-  fetchWikiLang, fetchTalkList, saveTalk, operateTalk, fetchTalkRaw, submitVote,
+  fetchTalkList, saveTalk, operateTalk, fetchTalkRaw, submitVote,
 } from '../../network/legacy'
 import { bindHiddenToggles } from '../../utils/wiki'
-import { wikiToHtml, useWikiHtml, renderTalkHtml, renderTalkSmallHtml } from '../../utils/wikiRender'
+import { useWikiHtml, useWikiLang, renderTalkHtml, renderTalkSmallHtml } from '../../utils/wikiRender'
 import { t as i18nT } from '../../i18n'
 import { avatarUrl } from '../../utils/formatters'
 
@@ -275,8 +275,7 @@ export default function WikiPage() {
   const baseRaw = String(page.wiki ?? page.content ?? '')
   const wikiHtml = useWikiHtml(baseRaw)
 
-  const [lang, setLang] = useState<string>('en')
-  const [langHtml, setLangHtml] = useState<string | null>(null)
+  const { lang, langHtml, changeLang } = useWikiLang(key)
   const [titleOverride, setTitleOverride] = useState<string>('')
   const [lockedOverride, setLockedOverride] = useState<boolean | null>(null)
   const bodyRef = useRef<HTMLDivElement>(null)
@@ -315,18 +314,6 @@ export default function WikiPage() {
     root.addEventListener('click', onClick)
     return () => root.removeEventListener('click', onClick)
   }, [])
-
-  const onChangeLang = async (code: string, label: string): Promise<void> => {
-    setLang(code)
-    try {
-      const resp: any = await fetchWikiLang(key, code)
-      const raw = String(resp?.data ?? resp ?? '')
-      setLangHtml(raw ? wikiToHtml(raw).html : '')
-    } catch {
-      setLangHtml(null)
-      showNotify('Server error', 'err')
-    }
-  }
 
   const onEdit = (): void => {
     window.location.href = `/wiki/edit?key=${encodeURIComponent(key)}&lang=${lang}&from=${encodeURIComponent(window.location.pathname + window.location.search)}`
@@ -398,7 +385,7 @@ export default function WikiPage() {
 
       <div className="g_cont2 g_rblock">
         <div className="tool">
-          <LangTabs value={lang} onChange={(c, l) => { void onChangeLang(c, l) }} />
+          <LangTabs value={lang} onChange={(c) => { void changeLang(c) }} />
           {isorg && (
             <a href="#" className="btn g_toolbtn e" data-type="edit" title={i18nT('Edit')} onClick={(e) => { e.preventDefault(); onEdit() }}><i></i></a>
           )}

@@ -1,12 +1,12 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import { useParams } from 'react-router-dom'
 import { Shell } from '../../components/Layout'
 import { useLoad, asArray, showNotify, LoadingBlock, floatFormat, formatTime } from '../../lib/legacy'
 import { URLS, staticUrl } from '../../lib/urls'
 import { fetchSongInfo, fetchSongCharts, fetchWiki } from '../../network/api'
-import { fetchSongPage, fetchWikiLang, operateWikiPage } from '../../network/legacy'
+import { fetchSongPage, operateWikiPage } from '../../network/legacy'
 import { bindHiddenToggles } from '../../utils/wiki'
-import { wikiToHtml, useWikiHtml } from '../../utils/wikiRender'
+import { useWikiHtml, useWikiLang } from '../../utils/wikiRender'
 import { LangTabs, TalkWidget } from './WikiPage'
 import { t as i18nT } from '../../i18n'
 import { coverUrl } from '../../utils/formatters'
@@ -155,23 +155,10 @@ export default function SongPage() {
   )
 
   const wikiHtml = useWikiHtml(data.wikiRaw)
-  const [lang, setLang] = useState<string>('en')
-  const [langHtml, setLangHtml] = useState<string | null>(null)
+  const { lang, langHtml, changeLang } = useWikiLang(key)
   const bodyRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => bindHiddenToggles(bodyRef.current), [wikiHtml, langHtml])
-
-  const onChangeLang = async (code: string, label: string): Promise<void> => {
-    setLang(code)
-    try {
-      const resp: any = await fetchWikiLang(key, code)
-      const raw = String(resp?.data ?? resp ?? '')
-      setLangHtml(raw ? wikiToHtml(raw).html : '')
-    } catch {
-      setLangHtml(null)
-      showNotify('Server error', 'err')
-    }
-  }
 
   const onEdit = (): void => {
     window.location.href = `/wiki/edit?key=${encodeURIComponent(key)}&lang=${lang}&from=${encodeURIComponent(window.location.pathname + window.location.search)}`
@@ -273,7 +260,7 @@ export default function SongPage() {
 
       <div className="g_cont2 g_rblock">
         <div className="tool">
-          <LangTabs value={lang} onChange={(c, l) => { void onChangeLang(c, l) }} />
+          <LangTabs value={lang} onChange={(c) => { void changeLang(c) }} />
           {data.canEdit && <a href="#" className="btn g_toolbtn e" data-type="edit" title={i18nT('Edit')} onClick={(e) => { e.preventDefault(); onEdit() }}><i></i></a>}
         </div>
         <div

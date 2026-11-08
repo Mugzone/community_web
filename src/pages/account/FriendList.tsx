@@ -9,32 +9,41 @@ import { t as i18nT } from '../../i18n'
 
 /* all_friends.html：extended base.html（两栏），默认侧栏 widget/default_side.html */
 type Rec = Record<string, any>
-type FriendData = { items: Rec[]; total: number }
-const FALLBACK: FriendData = { items: [], total: 1 }
+type FriendData = { items: Rec[]; next: number; hasMore: boolean }
+const FALLBACK: FriendData = { items: [], next: 0, hasMore: false }
 
 const s = (v: unknown, fb = ''): string => (v === undefined || v === null ? fb : String(v))
 
 export default function FriendList() {
   const { session } = useSession()
-  const [page, setPage] = useState(1)
+  // Go 的 /player/friend 用 from 游标分页（返回 next / hasMore），不是 page/total。
+  // cursors 保存每一页的起始 id，Prev 直接回退一页。
+  const [cursors, setCursors] = useState<number[]>([0])
+  const from = cursors[cursors.length - 1]
+  const page = cursors.length
 
   const { data } = useLoad<FriendData>(
     async () => {
-      const res = (await getJson<Rec>('/account/friend/list', { params: { page } })) as Rec
+      // 线上注册的是 player.GET("/friend")；/account/friend/list 并不存在（404）
+      const res = (await getJson<Rec>('/player/friend', { params: { from } })) as Rec
       const d: Rec = (res ?? {}) as Rec
       return {
         items: asArray<Rec>(d.data ?? d.list ?? d.items ?? res),
-        total: Math.max(1, num(d.total ?? d.pages, 1)),
+        next: num(d.next, 0),
+        hasMore: Boolean(d.hasMore),
       }
     },
-    [page],
+    [from],
     FALLBACK,
   )
 
-  const go = (p: number) => {
-    if (p < 1 || p > data.total) return
-    setPage(p)
+  const goNext = () => {
+    if (data.hasMore && data.next > 0) setCursors((c) => [...c, data.next])
   }
+  const goPrev = () => {
+    if (cursors.length > 1) setCursors((c) => c.slice(0, -1))
+  }
+  const total = data.hasMore ? page + 1 : page
 
   return (
     <Shell variant="two-col" title="My friends" css={['akari.css']} contCls="" sidebar={<DefaultSidebar />}>
@@ -45,12 +54,14 @@ export default function FriendList() {
         </div>
         <JustifyRow>
           {data.items.map((item: Rec, i: number) => {
-            const u: Rec = (item.to_user ?? item.user ?? item) as Rec
-            const uid = u.id ?? item.user_id ?? item.uid ?? 0
+            const u: Rec = (item.user ?? item.to_user ?? item) as Rec
+            // 响应是 {id(记录), uid(用户), username}；uid 才是用户 ID，不能用 id
+            const uid = item.uid ?? item.user_id ?? u.id ?? 0
+            const name = s(u.username ?? item.username)
             return (
-              <div className="item g_round" key={i}>
-                <img className="g_round" src={avatarUrl(u.avatar, uid)} alt={s(u.username)} />
-                <a className="textfix" href={URLS.user(uid)}>{s(u.username)}</a>
+              <div className="item g_round" key={`${uid}-${i}`}>
+                <img className="g_round" src={avatarUrl(u.avatar, uid)} alt={name} />
+                <a className="textfix" href={URLS.user(uid)}>{name}</a>
               </div>
             )
           })}
@@ -59,16 +70,16 @@ export default function FriendList() {
           ))}
           <span className="justfix"></span>
         </JustifyRow>
-        {data.total > 1 && (
+        {total > 1 && (
           <div className="g_more">
             {page > 1 ? (
-              <a href="#" className="g_round" data-type="back" onClick={(e) => { e.preventDefault(); go(page - 1) }}>{i18nT('Prev')}</a>
+              <a href="#" className="g_round" data-type="back" onClick={(e) => { e.preventDefault(); goPrev() }}>{i18nT('Prev')}</a>
             ) : (
               <a className="fake" href="#"></a>
             )}
-            <span>{page}/{data.total}</span>
-            {page < data.total ? (
-              <a href="#" className="g_round" data-type="back" onClick={(e) => { e.preventDefault(); go(page + 1) }}>{i18nT('Next')}</a>
+            <span>{page}/{total}</span>
+            {data.hasMore ? (
+              <a href="#" className="g_round" data-type="back" onClick={(e) => { e.preventDefault(); goNext() }}>{i18nT('Next')}</a>
             ) : (
               <a className="fake" href="#"></a>
             )}

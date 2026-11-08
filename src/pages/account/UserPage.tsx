@@ -9,6 +9,7 @@ import {
   fetchPlayerAllRank,
   fetchPlayerActivity,
   fetchPlayerCharts,
+  fetchPlayerRecentScores,
   postForm,
 } from '../../network/api'
 import { fetchAchieveList, fetchUserPageWiki } from '../../network/legacy'
@@ -29,7 +30,8 @@ type UserData = {
   content: string
   friendType: number
   tab: number
-  group: Rec[]
+  /** /player/info 的 group 是 group_id 数字数组；兼容老站 {id,name} 对象形式 */
+  group: (number | Rec)[]
   unread: number
   canBan: boolean
   canActive: boolean
@@ -67,6 +69,57 @@ const genderLabel = (g: unknown): string => {
   return map[n(g)] ?? ''
 }
 const countryLabel = (c: unknown): string => regionMap[n(c)]?.fallback ?? '???'
+
+/* 老站 account/models.py:178-208 的 playtime_str / playedtime_str：
+ * 秒数 → "Never" / "H:MM:SS" / "D days HH:MM"。接口只给数值，格式化在前端做。 */
+const durationStr = (value: unknown): string => {
+  const total = n(value, 0)
+  if (total <= 0) return 'Never'
+  const sec = total % 60
+  const min = Math.floor(total / 60) % 60
+  const hour = Math.floor(total / 3600) % 24
+  const days = Math.floor(total / 86400)
+  const pad = (v: number) => String(v).padStart(2, '0')
+  return days === 0 ? `${hour}:${pad(min)}:${pad(sec)}` : `${days} days ${pad(hour)}:${pad(min)}`
+}
+
+/* 老站 account/models.py:146-166 的 age：按生日算周岁，无生日显示 ???。
+ * /player/info 只返回 birth（UTC 时间戳），不再返回 age。 */
+const ageFromBirth = (value: unknown): string => {
+  const ts = n(value, 0)
+  if (ts <= 0) return '???'
+  const birth = new Date(ts < 1e12 ? ts * 1000 : ts)
+  if (Number.isNaN(birth.getTime())) return '???'
+  const today = new Date()
+  let age = today.getFullYear() - birth.getFullYear()
+  const monthDiff = today.getMonth() - birth.getMonth()
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) age -= 1
+  return age >= 0 && age < 150 ? String(age) : '???'
+}
+
+/* 老站 group 是 Django Group 对象（有 id/name），Go /player/info 返回 group_id 数字数组。
+ * 名称按 MaApi-old MalodyEnum.UserGroup 与 lib/util.py 的组定义映射。 */
+const GROUP_NAMES: Record<number, string> = {
+  2: 'Admin', 3: 'Publisher', 4: 'Died', 5: 'Editor',
+  6: 'Artist', 7: 'Architect', 8: 'Assistant', 9: 'Organizer', 10: 'Hide',
+}
+const groupLabel = (g: number | Rec): string => {
+  if (typeof g === 'object' && g !== null) return s(g.name)
+  const id = n(g, 0)
+  return GROUP_NAMES[id] ?? (id > 1 ? `Group ${id}` : '')
+}
+const groupVisible = (g: number | Rec): boolean =>
+  (typeof g === 'object' && g !== null ? n(g.id) : n(g)) > 1
+
+/* 老站 account/models.py:172-176 banner_url = "http://cni.machart.top" + banner；
+ * Go 只返回相对路径 /banner/xx.jpg!banner，用协议相对地址避免混合内容。 */
+const BANNER_CDN = '//cni.machart.top'
+const bannerUrl = (v: unknown): string => {
+  const raw = s(v)
+  if (!raw) return ''
+  if (/^https?:\/\//.test(raw) || raw.startsWith('//')) return raw
+  return BANNER_CDN + (raw.startsWith('/') ? '' : '/') + raw
+}
 const bgCover = (v: unknown): string => {
   const raw = s(v)
   if (!raw) return staticUrl('img/cover.png')
@@ -92,7 +145,7 @@ export default function UserPage() {
 
   const { data, reload } = useLoad<UserData>(
     async () => {
-      const [infoRes, rankRes, actRes, chartRes, achRes, upRes] = await Promise.all([
+      const [infoRes, rankRes, actRes, chartRes, achRes, upRes, recentRes] = await Promise.all([
         fetchPlayerInfo({ uid }).catch(() => undefined),
         fetchPlayerAllRank({ uid }).catch(() => undefined),
         fetchPlayerActivity({ uid }).catch(() => undefined),
@@ -101,6 +154,8 @@ export default function UserPage() {
         // 老站 account/views.py:317 取 plugin_wiki(key=user_<uid>).html；
         // Go 的 /community/wiki/userpage 返回的是 raw wiki 文本，需前端渲染
         fetchUserPageWiki(uid).catch(() => undefined),
+        // 末尾追加：解构顺序必须与上方 Promise.all 数组一一对应
+        fetchPlayerRecentScores({ uid }).catch(() => undefined),
       ])
       // /api/player/info 返回扁平结构（username/gold/... 在顶层）；其它接口带 data 包裹，两者兼容
       const info: Rec = ((infoRes as Rec | undefined)?.data ?? infoRes ?? {}) as Rec
@@ -109,19 +164,21 @@ export default function UserPage() {
         info,
         ranks: asArray<Rec>((rankRes as Rec | undefined)?.data ?? rankRes),
         acts: asArray<Rec>((actRes as Rec | undefined)?.data ?? actRes),
-        recent: asArray<Rec>((actRes as Rec | undefined)?.recent ?? []),
+        // 老站 recent 是服务端直接查 score_key；/player/activity 里没有这个字段，
+        // 改由 /score/player/recent 提供。
+        recent: asArray<Rec>((recentRes as Rec | undefined)?.data ?? (recentRes as Rec | undefined)?.list ?? []),
         charts: asArray<Rec>((chartRes as Rec | undefined)?.data ?? chartRes),
         achieves: achList(achRes),
         content: s(up.content ?? up.wiki ?? info.content ?? info.wiki ?? info.userpage),
         friendType: n(info.friend_type ?? info.friendType ?? info.friend, 0),
         tab: n(info.tab, 0),
-        group: asArray<Rec>(info.group),
+        group: asArray<number | Rec>(info.group),
         unread: n(info.unread, 0),
         canBan: Boolean(info.canban),
         canActive: Boolean(info.canactive),
         canEdit: Boolean(info.can_edit ?? info.canEdit),
         redName: Boolean(info.red_name ?? info.redName),
-        banner: s(info.banner_url ?? info.bannerUrl ?? info.banner),
+        banner: bannerUrl(info.banner_url ?? info.bannerUrl ?? info.banner),
       }
     },
     [uid],
@@ -213,19 +270,19 @@ export default function UserPage() {
             {data.redName
               ? <span style={{ color: '#ef6666' }}>{username}</span>
               : <span>{username}</span>}
-            {data.group.filter((g: Rec) => n(g.id) > 1).map((g: Rec, i: number) => (
-              <em key={i}>{s(g.name)}</em>
+            {data.group.filter(groupVisible).map((g, i) => (
+              <em key={i}>{groupLabel(g)}</em>
             ))}
           </p>
 
           <p className="time">
             <span>Joined since:&nbsp;{ymd(info.regtime ?? info.date_joined)}</span>
             <span>Last play:&nbsp;{(info.lastPlay ?? info.last_play) ? ymd(info.lastPlay ?? info.last_play) : 'Never'}</span>
-            <span>Played: {s(info.playtime_str ?? info.playTimeStr ?? info.playTime)}</span>
+            <span>Played: {s(info.playtime_str ?? info.playTimeStr) || durationStr(info.playTime)}</span>
           </p>
           <p>
             <span>Gender:&nbsp;{genderLabel(info.gender)}</span>
-            <span>Age:&nbsp;{s(info.age)}</span>
+            <span>Age:&nbsp;{s(info.age) || ageFromBirth(info.birth)}</span>
             <span>Location:&nbsp;{countryLabel(info.country ?? info.area)}</span>
           </p>
           <p>
@@ -233,8 +290,10 @@ export default function UserPage() {
             {n(info.gold_d ?? info.goldD) > 0 && (
               <span style={{ marginLeft: '10px' }}>Income:&nbsp;{n(info.gold_d ?? info.goldD)}</span>
             )}
-            {n(info.playedtime ?? info.played_time ?? info.playedTime) > 0 && (
-              <span style={{ marginLeft: '10px' }}>Charts been played:&nbsp;{s(info.playedtime_str)}</span>
+            {n(info.playedTime ?? info.playedtime ?? info.played_time) > 0 && (
+              <span style={{ marginLeft: '10px' }}>
+                Charts been played:&nbsp;{s(info.playedtime_str) || durationStr(info.playedTime ?? info.playedtime ?? info.played_time)}
+              </span>
             )}
           </p>
           <p>
@@ -369,8 +428,8 @@ export default function UserPage() {
                       Judge :<em className={`color-${n(item.judge)}`}>{s(item.judge_str)}</em>
                     </p>
                     <p>
-                      <span className="mod">{s(item.mod)}</span>
-                      <span className="time">{s(item.time_from_now ?? formatTime(item.time))}</span>
+                      <span className="mod">{s(item.mod_str ?? item.mod)}</span>
+                      <span className="time">{s(item.time_from_now) || formatTime(item.time)}</span>
                     </p>
                   </div>
                 </div>
@@ -406,7 +465,8 @@ export default function UserPage() {
                         Length: {s(item.length)}s
                         {hot > 0 && <>&nbsp;&nbsp; Hot: {hot}</>}
                       </p>
-                      <p><span className="time">{s(item.lastedit_str ?? formatTime(item.lastedit))}</span></p>
+                      {/* /community/player/chart 返回 time（unix 秒），没有 lastedit_str */}
+                      <p><span className="time">{s(item.lastedit_str ?? item.time_str) || formatTime(item.time ?? item.lastedit)}</span></p>
                     </div>
                   </div>
                 )

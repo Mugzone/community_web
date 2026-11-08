@@ -77,6 +77,8 @@
   height: auto;
   min-height: 16px;
   line-height: 16px;
+  max-width: 100%;
+  overflow-wrap: anywhere;
 }
 
 .g_talk #g_talk_list .item.small div.right .g_wiki.meta > p {
@@ -84,4 +86,36 @@
   margin: 0 0 0 10px;
   line-height: 16px;
   vertical-align: middle;
+}
+
+/* wiki 的 #hidden 折叠块：渲染器生成 .hidden > .hide-top + .hide-body，
+   bindHiddenToggles 给 .hidden 切 open class。老站 CSS 只写了
+   .hidden .hide-body { display:none }，没有 open 态规则，导致点了展不开。
+   老站样式表是运行时动态插入的，这里提高优先级并强制展开。 */
+.g_wiki .hidden.open > .hide-body {
+  display: block !important;
+}
+
+/* 谱面页 Supporters / 推荐评价卡片：tmpl.css 的 .g_tmpl_user 固定 height:52px，
+   但卡片里还有第二行 .msg 正文，长文本会溢出卡片框。改为高度自适应并让
+   正文在固定宽度内换行；同时给 wiki/讨论正文加长单词换行兜底。 */
+#center .donate_area .g_tmpl_user {
+  height: auto !important;
+  min-height: 52px;
+  overflow: hidden;
+}
+
+#center .donate_area .g_tmpl_user .msg {
+  display: block;
+  margin-left: 52px;
+  width: 136px;
+  line-height: 16px;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+#center .g_wiki,
+#center .g_talk .item .g_wiki {
+  overflow-wrap: break-word;
+  word-break: break-word;
 }

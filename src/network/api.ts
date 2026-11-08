@@ -349,10 +349,39 @@ export type RespPlayerChartItem = {
   title?: string
   artist?: string
   cover?: string
+  cover_url?: string
   mode?: number
   version?: string
+  display_version?: string
   level?: number
+  length?: number
+  hot?: number
+  /** /community/player/chart 的实际字段名（老站模板叫 lastedit_str） */
+  time?: number
+  time_str?: string
   lastedit?: number
+  lastedit_str?: string
+}
+
+/** /score/player/recent：老站 profile/index.html 的「最近高分」 */
+export type RespPlayerRecentScore = {
+  chart_id: number
+  mode?: number
+  score?: number
+  combo?: number
+  acc?: number
+  judge?: number
+  judge_str?: string
+  mod?: number
+  mod_str?: string
+  time?: number
+  time_from_now?: string
+  chart?: {
+    id?: number
+    version?: string
+    display_version?: string
+    song?: { title?: string; cover?: string; cover_url?: string }
+  }
 }
 
 export type RespPlayerChartList = {
@@ -803,6 +832,12 @@ export const fetchPlayerInfo = (params: { uid: number; ver?: number; bver?: numb
 
 export const fetchPlayerActivity = (params: { uid: number }) =>
   getJson<RespPlayerActivity>('/player/activity', { params: { touid: params.uid } })
+
+/** 个人主页「Recent high scores」：老站直接查 score_key，新站由 webpage 层提供 */
+export const fetchPlayerRecentScores = (params: { uid: number }) =>
+  getJson<{ code: number; data?: RespPlayerRecentScore[] }>('/score/player/recent', {
+    params: { touid: params.uid },
+  })
 
 export const fetchPlayerCharts = (params: { uid: number; from?: number; order?: number; mode?: number }) =>
   getJson<RespPlayerChartList>('/community/player/chart', {

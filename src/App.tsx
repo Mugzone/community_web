@@ -45,6 +45,7 @@ import Limit from './pages/account/Limit'
 import Invite from './pages/account/Invite'
 import Publish from './pages/account/Publish'
 import Activate from './pages/account/Activate'
+import AchievePage from './pages/account/AchievePage'
 
 import ScorePage from './pages/score/ScorePage'
 import EventPage from './pages/score/EventPage'
@@ -122,6 +123,7 @@ export default function App() {
       <Route path="/accounts/friend" element={<FriendList />} />
       <Route path="/accounts/config/profile" element={<ProfileSetting />} />
       <Route path="/accounts/user/:id" element={<UserPage />} />
+      <Route path="/accounts/user/achieve/:uid" element={<AchievePage />} />
       <Route path="/accounts/limit" element={<Limit />} />
       <Route path="/accounts/invite" element={<Invite />} />
       <Route path="/accounts/publish" element={<Publish />} />

@@ -90,7 +90,9 @@ export default function ProfileSetting() {
   const { data } = useLoad<ProfileData>(
     async () => {
       const res = await fetchPlayerInfo({ uid })
-      const d: Rec = (res?.data ?? {}) as Rec
+      // /player/info 返回的是扁平结构（username/gender/... 在顶层），没有 data 包裹；
+      // 早期写成 res?.data ?? {} 会把整份资料丢掉，表单全部落回默认值。
+      const d: Rec = ((res as Rec | undefined)?.data ?? res ?? {}) as Rec
       return {
         username: s(d.username ?? d.name),
         email: s(d.email),

@@ -50,16 +50,35 @@ export function Shell({
   }), [])
   useEffect(() => setGlobalLoadingListener(setBusy), [])
 
-  // 老站 base.html:58-66 / base_width.html:54-62 的 window.onresize
+  /* 老站 base.html:58-66 的 window.onresize：视口比内容高时把 footer 贴视口底。
+     SPA 异步取数后 body 会变高，若只在挂载 / resize 时算一次，footer 仍按旧高度
+     absolute 定位，长页面就会被它盖住。这里跟着内容尺寸变化重算，并且内容变长时
+     改成 relative 跟随文档流（absolute + bottom:0 是遮挡的根因）。
+     只在结论变化时写 DOM，避免 ResizeObserver 自身造成回环。 */
   useEffect(() => {
-    const onResize = () => {
-      const footer = document.getElementById('footer')
-      if (!footer) return
-      footer.style.position = window.innerHeight > document.body.clientHeight ? 'fixed' : 'absolute'
+    const footer = document.getElementById('footer')
+    if (!footer) return
+    let last = ''
+    const place = () => {
+      const short = window.innerHeight > document.body.clientHeight
+      const position = short ? 'fixed' : 'relative'
+      const bottom = short ? '0' : 'auto'
+      const key = `${position}|${bottom}`
+      if (key === last) return
+      last = key
+      footer.style.position = position
+      footer.style.bottom = bottom
     }
-    window.addEventListener('resize', onResize)
-    onResize()
-    return () => window.removeEventListener('resize', onResize)
+    place()
+    window.addEventListener('resize', place)
+    window.addEventListener('load', place)
+    const observer = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(place) : null
+    observer?.observe(document.body)
+    return () => {
+      window.removeEventListener('resize', place)
+      window.removeEventListener('load', place)
+      observer?.disconnect()
+    }
   }, [variant])
 
   // base_simple.html 不引 main.css；挂载期间禁用全局 main.css，卸载恢复。

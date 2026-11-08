@@ -9,7 +9,7 @@ import {
 } from '../../network/legacy'
 import { t as i18nT } from '../../i18n'
 import { avatarUrl, coverUrl } from '../../utils/formatters'
-import { renderTalkHtml, renderTalkSmallHtml } from '../../utils/wikiRender'
+import { renderTalkHtml, renderTalkSmallHtml, useWikiHtml } from '../../utils/wikiRender'
 
 const MODE_LABELS = ['Key', 'Step', 'DJ', 'Catch', 'Pad', 'Taiko', 'Ring', 'Slide', 'Live', 'Cube']
 const PLATFORM_LABELS = ['PC', i18nT('Pad Horizontal'), i18nT('Pad Portrait'), i18nT('Phone Horizontal'), i18nT('Phone Portrait')]
@@ -86,6 +86,9 @@ export default function SkinDetail() {
   const modeArr = asArray<number>(detail?.mode_arr ?? skin.mode_arr ?? [])
   const previewArr = asArray<string>(detail?.preview_arr ?? skin.preview_arr ?? [])
   const desc = String(detail?.desc ?? skin.desc ?? '')
+  // 简介是 wiki raw，和讨论区正文走同一套渲染管线（标记 + 换行）；
+  // 早期直接把字符串塞进 JSX，wiki 标记和换行都不会生效。
+  const descHtml = useWikiHtml(desc)
   const key = String(detail?.key ?? talkKey)
   const canEdit = !!(detail?.can_edit ?? skin.can_edit)
   const canDelete = !!(detail?.can_delete ?? skin.can_delete)
@@ -323,8 +326,8 @@ export default function SkinDetail() {
             {previewArr.map((img) => (
               <a
                 className="img" key={img}
-                style={{ backgroundImage: `url(http://cni.machart.top/${img}${thumbParam})` }}
-                href={`http://cni.mugzone.net/${img}`} target="_blank" rel="noreferrer"
+                style={{ backgroundImage: `url(//cni.machart.top/${img.replace(/^\/+/, '')}${thumbParam})` }}
+                href={`//cni.mugzone.net/${img.replace(/^\/+/, '')}`} target="_blank" rel="noreferrer"
               ></a>
             ))}
           </div>
@@ -337,7 +340,7 @@ export default function SkinDetail() {
         </div>
         <div className="g_wiki">
           {desc
-            ? desc
+            ? <div dangerouslySetInnerHTML={{ __html: descHtml }} />
             : <div className="g_wiki_new btn" data-type="edit" onClick={onDescEdit}>Add description</div>}
           <span className="clear"></span>
         </div>

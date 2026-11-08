@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { Shell } from '../../components/Layout'
 import { useSession } from '../../components/SessionProvider'
+import { SkeletonHead, SkeletonRows } from '../../components/Skeleton'
 import { asArray, formatTime, JustifyRow, num, useLoad, floatFormat, showNotify } from '../../lib/legacy'
 import { URLS, staticUrl } from '../../lib/urls'
 import {
@@ -144,7 +145,7 @@ export default function UserPage() {
   const isMe = isLogin && myUid === uid
   const isOther = isLogin && myUid !== uid
 
-  const { data, reload } = useLoad<UserData>(
+  const { data, loading, reload } = useLoad<UserData>(
     async () => {
       const [infoRes, rankRes, actRes, chartRes, achRes, upRes, recentRes] = await Promise.all([
         fetchPlayerInfo({ uid }).catch(() => undefined),
@@ -262,52 +263,57 @@ export default function UserPage() {
     <Shell variant="wide" title={username || 'User'} css={['profile.css', 'user.css']} contCls="gb_profile">
       <div className="user_head g_rblock">
         <div className="coverb">
-          {/* 老站 {% avatar to_user 150 "g_round" %}：!avatar 缩略图 + 内联 150px 上限，user.css 没有 img 尺寸规则 */}
-          <img
-            className="g_round"
-            src={avatarUrl(info.avatar, uid, 150)}
-            alt={username}
-            style={{ maxWidth: 150, maxHeight: 150 }}
-          />
+          {/* 老站 {% avatar to_user 150 "g_round" %}：!avatar 缩略图 + 内联 150px 上限，user.css 没有 img 尺寸规则。
+              加载中 avatar 为空会回落到默认头像，先用骨架占位 */}
+          {loading ? <div className="g_round wb-skel wb-skel-avatar"></div> : (
+            <img
+              className="g_round"
+              src={avatarUrl(info.avatar, uid, 150)}
+              alt={username}
+              style={{ maxWidth: 150, maxHeight: 150 }}
+            />
+          )}
         </div>
 
-        <div className="right">
-          <p className="name">
-            {data.redName
-              ? <span style={{ color: '#ef6666' }}>{username}</span>
-              : <span>{username}</span>}
-            {data.group.filter(groupVisible).map((g, i) => (
-              <em key={i}>{groupLabel(g)}</em>
-            ))}
-          </p>
+        {loading ? <SkeletonHead /> : (
+          <div className="right">
+            <p className="name">
+              {data.redName
+                ? <span style={{ color: '#ef6666' }}>{username}</span>
+                : <span>{username}</span>}
+              {data.group.filter(groupVisible).map((g, i) => (
+                <em key={i}>{groupLabel(g)}</em>
+              ))}
+            </p>
 
-          <p className="time">
-            <span>Joined since:&nbsp;{ymd(info.regtime ?? info.date_joined)}</span>
-            <span>Last play:&nbsp;{(info.lastPlay ?? info.last_play) ? ymd(info.lastPlay ?? info.last_play) : 'Never'}</span>
-            <span>Played: {s(info.playtime_str ?? info.playTimeStr) || durationStr(info.playTime)}</span>
-          </p>
-          <p>
-            <span>Gender:&nbsp;{genderLabel(info.gender)}</span>
-            <span>Age:&nbsp;{s(info.age) || ageFromBirth(info.birth)}</span>
-            <span>Location:&nbsp;{countryLabel(info.country ?? info.area)}</span>
-          </p>
-          <p>
-            <span>Gold:&nbsp;{n(info.gold)}</span>
-            {n(info.gold_d ?? info.goldD) > 0 && (
-              <span style={{ marginLeft: '10px' }}>Income:&nbsp;{n(info.gold_d ?? info.goldD)}</span>
-            )}
-            {n(info.playedTime ?? info.playedtime ?? info.played_time) > 0 && (
-              <span style={{ marginLeft: '10px' }}>
-                Charts been played:&nbsp;{s(info.playedtime_str) || durationStr(info.playedTime ?? info.playedtime ?? info.played_time)}
-              </span>
-            )}
-          </p>
-          <p>
-            <span>Stable charts:&nbsp;{n(info.count_2 ?? info.stableCount ?? info.stableCharts)}</span>
-            <span>Unstable charts:&nbsp;{n(info.count_1 ?? info.unstableCount ?? info.unstableCharts)}</span>
-            {n(info.count_0 ?? info.slot) > 0 && <span>Chart slot:&nbsp;{n(info.count_0 ?? info.slot)}</span>}
-          </p>
-        </div>
+            <p className="time">
+              <span>Joined since:&nbsp;{ymd(info.regtime ?? info.date_joined)}</span>
+              <span>Last play:&nbsp;{(info.lastPlay ?? info.last_play) ? ymd(info.lastPlay ?? info.last_play) : 'Never'}</span>
+              <span>Played: {s(info.playtime_str ?? info.playTimeStr) || durationStr(info.playTime)}</span>
+            </p>
+            <p>
+              <span>Gender:&nbsp;{genderLabel(info.gender)}</span>
+              <span>Age:&nbsp;{s(info.age) || ageFromBirth(info.birth)}</span>
+              <span>Location:&nbsp;{countryLabel(info.country ?? info.area)}</span>
+            </p>
+            <p>
+              <span>Gold:&nbsp;{n(info.gold)}</span>
+              {n(info.gold_d ?? info.goldD) > 0 && (
+                <span style={{ marginLeft: '10px' }}>Income:&nbsp;{n(info.gold_d ?? info.goldD)}</span>
+              )}
+              {n(info.playedTime ?? info.playedtime ?? info.played_time) > 0 && (
+                <span style={{ marginLeft: '10px' }}>
+                  Charts been played:&nbsp;{s(info.playedtime_str) || durationStr(info.playedTime ?? info.playedtime ?? info.played_time)}
+                </span>
+              )}
+            </p>
+            <p>
+              <span>Stable charts:&nbsp;{n(info.count_2 ?? info.stableCount ?? info.stableCharts)}</span>
+              <span>Unstable charts:&nbsp;{n(info.count_1 ?? info.unstableCount ?? info.unstableCharts)}</span>
+              {n(info.count_0 ?? info.slot) > 0 && <span>Chart slot:&nbsp;{n(info.count_0 ?? info.slot)}</span>}
+            </p>
+          </div>
+        )}
 
         <div className="tool">
           {data.canBan && (
@@ -355,7 +361,7 @@ export default function UserPage() {
       <div className="body">
         <div className="panel">
           <div className="rank g_rblock">
-            {data.ranks.length > 0 ? data.ranks.map((item: Rec, i: number) => (
+            {loading ? <SkeletonRows count={3} /> : data.ranks.length > 0 ? data.ranks.map((item: Rec, i: number) => (
               <div className="item" key={i}>
                 <img src={staticUrl(`img/mode/mode-${n(item.mode)}.png`)} alt="mode" />
                 <div className="right">
@@ -404,6 +410,9 @@ export default function UserPage() {
             )}
             <a href="#" className={`btn ${tab === 3 ? 'curr' : ''}`} data-type="wiki" onClick={(e) => { e.preventDefault(); switchTab('Profile', 3) }}>{i18nT('Profile')}</a>
           </div>
+
+          {/* 各 tab 的列表在加载中都是空的，统一用一块骨架占位 */}
+          {loading && <div className="g_rblock wb-skel-block"><SkeletonRows /></div>}
 
           <div className={`wiki g_rblock ${tab === 3 ? 'curr' : ''}`}>
             {(isMe || data.canEdit) && (

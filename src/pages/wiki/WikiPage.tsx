@@ -353,7 +353,8 @@ export default function WikiPage() {
   }
 
   const finalHtml = langHtml !== null ? langHtml : wikiHtml
-  const gWikiInner = finalHtml || `<div class="g_wiki_new btn" data-type="edit">${i18nT('Click to create')}</div>`
+  // 加载中正文也是空串，此时只显示下方骨架，不能当成「还没有内容」
+  const gWikiInner = finalHtml || (loading ? '' : `<div class="g_wiki_new btn" data-type="edit">${i18nT('Click to create')}</div>`)
 
   return (
     <Shell variant="wide" title={title} css={['wiki.css', 'tmpl.css']}>

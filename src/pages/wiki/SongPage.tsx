@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { useParams } from 'react-router-dom'
 import { Shell } from '../../components/Layout'
+import { SkeletonHead, SkeletonRows } from '../../components/Skeleton'
 import { useLoad, asArray, showNotify, LoadingBlock, floatFormat, formatTime } from '../../lib/legacy'
 import { URLS, staticUrl } from '../../lib/urls'
 import { fetchSongInfo, fetchSongCharts, fetchWiki } from '../../network/api'
@@ -199,7 +200,8 @@ export default function SongPage() {
   const title = String(song.title ?? '')
   const artist = String(song.artist ?? '')
   const finalHtml = langHtml !== null ? langHtml : wikiHtml
-  const gWikiInner = finalHtml || '<div class="g_wiki_new btn" data-type="edit">Add description to the song</div>'
+  // 加载中正文也是空串，此时只显示下方骨架，不能当成「还没有简介」
+  const gWikiInner = finalHtml || (loading ? '' : '<div class="g_wiki_new btn" data-type="edit">Add description to the song</div>')
 
   return (
     <Shell
@@ -210,34 +212,39 @@ export default function SongPage() {
     >
       <div className="song_title g_rblock">
         <div className="coverb">
-          <div className="cover" style={{ backgroundImage: `url(${cover})` }}></div>
+          {/* 加载中 cover 为空会回落到 cover.png（No Cover 图），先用骨架占位 */}
+          {loading
+            ? <div className="cover wb-skel"></div>
+            : <div className="cover" style={{ backgroundImage: `url(${cover})` }}></div>}
           {data.canCover && (
             <a href={`/upload/cover?sid=${songId}`} className="g_toolbtn e" title="Edit meta"><i></i></a>
           )}
         </div>
 
-        <div className="right">
-          {data.songEx.hasOrg && (
-            <h3 className="textfix"><span className="textfix artist">{artist}</span> - {title}</h3>
-          )}
-          <h2 className="textfix title"><span className="textfix artist">{data.songEx.artist}</span> - {data.songEx.title}</h2>
-          <h2 className="sub">
-            <label>ID</label>:s<span>{songId}</span>&nbsp;&nbsp;
-            <label>{i18nT('Length')}</label>:<span>{song.length ?? ''}s</span>&nbsp;&nbsp;
-            <label>{i18nT('BPM')}</label>:<span>{floatFormat(song.bpm)}</span>
-            <label>{i18nT('Last updated')}</label>:<span className="textfix">{song.lastedit_str ?? ''}</span>
-          </h2>
-          <h2 className="tags">
-            {data.tags.length > 0 && (
-              <>
-                <span>Tags:</span>
-                {data.tags.map((t, i) => (
-                  <a key={`${t.id ?? 't'}-${i}`} href={`${URLS.chart}?tag=${t.id ?? 0}`}>{t.name ?? ''}</a>
-                ))}
-              </>
+        {loading ? <SkeletonHead /> : (
+          <div className="right">
+            {data.songEx.hasOrg && (
+              <h3 className="textfix"><span className="textfix artist">{artist}</span> - {title}</h3>
             )}
-          </h2>
-        </div>
+            <h2 className="textfix title"><span className="textfix artist">{data.songEx.artist}</span> - {data.songEx.title}</h2>
+            <h2 className="sub">
+              <label>ID</label>:s<span>{songId}</span>&nbsp;&nbsp;
+              <label>{i18nT('Length')}</label>:<span>{song.length ?? ''}s</span>&nbsp;&nbsp;
+              <label>{i18nT('BPM')}</label>:<span>{floatFormat(song.bpm)}</span>
+              <label>{i18nT('Last updated')}</label>:<span className="textfix">{song.lastedit_str ?? ''}</span>
+            </h2>
+            <h2 className="tags">
+              {data.tags.length > 0 && (
+                <>
+                  <span>Tags:</span>
+                  {data.tags.map((t, i) => (
+                    <a key={`${t.id ?? 't'}-${i}`} href={`${URLS.chart}?tag=${t.id ?? 0}`}>{t.name ?? ''}</a>
+                  ))}
+                </>
+              )}
+            </h2>
+          </div>
+        )}
 
         <div className="tool">
           <a href="#" className="btn g_toolbtn e" data-type="edit_meta" title="Edit meta" onClick={(e) => { e.preventDefault(); void onTool('edit_meta') }}><i></i></a>
@@ -247,7 +254,12 @@ export default function SongPage() {
         </div>
       </div>
 
-      {data.charts.length > 0 ? (
+      {/* 加载中谱面列表为空，不能当成「还没有谱面」显示添加入口 */}
+      {loading ? (
+        <div className="g_cont2 g_rblock">
+          <SkeletonRows count={3} />
+        </div>
+      ) : data.charts.length > 0 ? (
         <div className="g_cont2 g_rblock">
           <ChartList charts={data.charts} songId={songId} />
         </div>

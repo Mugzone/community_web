@@ -20,6 +20,19 @@ export function SkeletonCards({ count = 8 }: { count?: number }) {
   return <>{skeletonCardNodes(count)}</>
 }
 
+/** 详情页头部文字（标题 + 若干信息行），放进老站的 .right 容器。
+ *  老站头部是固定高度（皮肤 160px / 用户 150px），默认 3 行刚好不溢出 */
+export function SkeletonHead({ lines = 3 }: { lines?: number }) {
+  return (
+    <div className="right" role="status" aria-busy="true" aria-label="Loading">
+      <div className="wb-skel wb-skel-text is-title" aria-hidden="true"></div>
+      {Array.from({ length: lines }, (_, i) => (
+        <div className="wb-skel wb-skel-text" key={i} aria-hidden="true"></div>
+      ))}
+    </div>
+  )
+}
+
 /** 行式列表：排行榜、通知、讨论、表单等 */
 export function SkeletonRows({ count = 5, label }: { count?: number; label?: string }) {
   return (

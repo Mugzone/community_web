@@ -1,4 +1,4 @@
-import { isValidElement, useEffect, useState, type ReactNode } from 'react'
+import { isValidElement, useEffect, useLayoutEffect, useState, type ReactNode } from 'react'
 import { Header } from './Header'
 import { Footer } from './Footer'
 import { setNotifyListener, setGlobalLoadingListener } from '../lib/legacy'
@@ -52,7 +52,10 @@ export function Shell({
     document.title = title ? `Malody - ${title}` : SITE_TITLE
   }, [title])
 
-  useEffect(() => {
+  // 必须在首帧绘制前写入：useEffect 在绘制之后才执行，首帧没有任何
+  // html[data-styles~=...] 规则生效，图片按原尺寸闪一下（几乎所有页面都会出现）。
+  // 切换页面时旧 Shell 的清理和新 Shell 的写入也都在绘制前完成，中间不会出现无样式帧。
+  useLayoutEffect(() => {
     const root = document.documentElement
     root.setAttribute('data-styles', stylesAttr)
     return () => { root.removeAttribute('data-styles') }

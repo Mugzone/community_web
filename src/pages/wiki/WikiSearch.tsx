@@ -5,6 +5,7 @@ import { URLS } from '../../lib/urls'
 import { searchWiki, searchPlayer } from '../../network/api'
 import { fetchWikiSearch } from '../../network/legacy'
 import { t as i18nT } from '../../i18n'
+import './WikiSearch.css'
 
 /* ------------------------------------------------------------------ *
  * wiki_search.html / wiki_404.html（base.html 两栏, akari.css）
@@ -87,6 +88,7 @@ export default function WikiSearch() {
   return (
     <Shell
       variant="two-col"
+      page="search"
       title={`Search: ${keyword}`}
       css={['akari.css']}
       sidebar={<DefaultSidebar />}

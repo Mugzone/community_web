@@ -19,21 +19,25 @@ type Mode = 'login' | 'reg' | 'forget' | 'reset_psw' | 'change_email'
 type Rec = Record<string, string>
 type TipDef = { text: string; err: boolean }
 
-/* 逐条对应 reg.html 里 .g_tip 下的 span（顺序即 showTip 的下标）。 */
-const TIPS: Record<Mode, TipDef[]> = {
+/* 逐条对应 reg.html 里 .g_tip 下的 span（顺序即 showTip 的下标）。
+ * 必须每次 render 重算：i18nT 是模块级同步函数，切换语言时 Provider 会重挂载
+ * 子树，但模块级常量不会重新求值，缓存成常量会导致提示停留在旧语言。 */
+const tipsFor = (): Record<Mode, TipDef[]> => ({
   login: [
     { text: i18nT('Invalid Email or Password'), err: true },
     { text: i18nT('Submitting...'), err: false },
   ],
   reg: [
-    { text: 'reg_1', err: true },
-    { text: 'reg_2', err: true },
+    { text: i18nT('reg_1'), err: true },
+    { text: i18nT('reg_2'), err: true },
     { text: i18nT('Invalid email'), err: true },
-    { text: 'reg_3', err: true },
+    { text: i18nT('reg_3'), err: true },
     { text: i18nT('Password missmatching'), err: true },
-    { text: 'reg_4', err: true },
-    { text: 'reg_5', err: true },
+    // 老站索引 5 是 reg_4「验证码错误」；v3 没有验证码，此槽改作通用失败提示
+    { text: i18nT('Operation failed'), err: true },
+    { text: i18nT('reg_5'), err: true },
     { text: i18nT('Submitting...'), err: false },
+    { text: i18nT('reg_success'), err: false },
   ],
   forget: [
     { text: i18nT('Invalid email'), err: true },
@@ -43,7 +47,7 @@ const TIPS: Record<Mode, TipDef[]> = {
     { text: i18nT('Email address does not exist!'), err: true },
   ],
   reset_psw: [
-    { text: 'reg_3', err: true },
+    { text: i18nT('reg_3'), err: true },
     { text: i18nT('Password missmatching'), err: true },
     { text: i18nT('Submitting...'), err: false },
     { text: i18nT('Please login with your new password'), err: false },
@@ -54,11 +58,11 @@ const TIPS: Record<Mode, TipDef[]> = {
     { text: i18nT('Please check your new email for activation information'), err: false },
     { text: i18nT('Submitting...'), err: false },
   ],
-}
+})
 
 /* module/account/src/init.js 中 showTip(n) 的下标映射。 */
 const SUBMIT_TIP: Record<Mode, number> = { login: 1, reg: 7, forget: 2, reset_psw: 2, change_email: 2 }
-const SUCCESS_TIP: Record<Mode, number> = { login: 1, reg: 7, forget: 1, reset_psw: 3, change_email: 1 }
+const SUCCESS_TIP: Record<Mode, number> = { login: 1, reg: 8, forget: 1, reset_psw: 3, change_email: 1 }
 const ERROR_TIP: Record<Mode, number> = { login: 0, reg: 5, forget: 3, reset_psw: 4, change_email: 0 }
 const VALID_TIP: Record<Mode, Record<number, number>> = {
   login: { 2: 0, 3: 0 },
@@ -67,8 +71,12 @@ const VALID_TIP: Record<Mode, Record<number, number>> = {
   reset_psw: { 3: 0, 4: 1 },
   change_email: { 2: 0 },
 }
-/* 注册接口返回码 -> .g_tip 下标（module/account error 回调） */
-const REG_ERR: Record<number, number> = { [-1]: 0, [-3]: 1, [-5]: 2, [-6]: 4, [-4]: 5, [-2]: 6 }
+/* 注册接口返回码 -> .g_tip 下标。对齐 MaApi-go handler.Register 的实际返回：
+ * -1 用户名非法/通用失败、-2 用户名已占用、-3 邮箱已占用、-5 邮箱格式、
+ * -6 密码非 32 位 MD5、-7 设备封禁。老站的 -4 是验证码错误，Go 不再返回。 */
+const REG_ERR: Record<number, number> = {
+  [-1]: 0, [-2]: 6, [-3]: 1, [-5]: 2, [-6]: 3, [-7]: 5,
+}
 /** 与 LoginModal 一致：code 存在且非 0 视为失败 */
 const failed = (res: any): boolean => res?.code !== undefined && Number(res.code) !== 0
 
@@ -113,9 +121,10 @@ function validate(mode: Mode, form: Rec): number | Rec {
 }
 
 function Tips({ mode, tip }: { mode: Mode; tip: number | null }) {
+  const tips = tipsFor()
   return (
     <div className="g_tip">
-      {TIPS[mode].map((d: TipDef, i: number) => {
+      {tips[mode].map((d: TipDef, i: number) => {
         const cls = `${d.err ? 'err' : ''}${tip === i ? ' curr' : ''}`.trim()
         return <span key={i} className={cls}>{d.text}</span>
       })}
@@ -143,6 +152,7 @@ export default function AuthPage() {
   const resetUid = dash >= 0 ? resetRaw.slice(0, dash) : resetRaw
   const resetToken = dash >= 0 ? resetRaw.slice(dash + 1) : ''
 
+  const tips = tipsFor()
   const [form, setForm] = useState<Rec>({})
   const [tip, setTip] = useState<number | null>(null)
   const [busy, setBusy] = useState(false)
@@ -167,7 +177,7 @@ export default function AuthPage() {
     if (typeof ret === 'number') {
       const idx = VALID_TIP[mode][ret] ?? ERROR_TIP[mode]
       setTip(idx)
-      showNotify(TIPS[mode][idx]?.text ?? 'Invalid input', 'err')
+      showNotify(tips[mode][idx]?.text ?? 'Invalid input', 'err')
       return
     }
     setBusy(true)
@@ -192,7 +202,7 @@ export default function AuthPage() {
         if (mode === 'reg' && REG_ERR[code] !== undefined) idx = REG_ERR[code]
         else if (mode === 'forget' && code === -1) idx = 4
         setTip(idx)
-        showNotify(res?.message ?? TIPS[mode][idx]?.text ?? i18nT('Operation failed'), 'err')
+        showNotify(res?.message ?? tips[mode][idx]?.text ?? i18nT('Operation failed'), 'err')
         return
       }
 
@@ -211,19 +221,21 @@ export default function AuthPage() {
       }
       if (mode === 'reg') {
         setTip(SUCCESS_TIP[mode])
-        showNotify(i18nT('Submitting...'), 'succ')
-        navigate(URLS.index)
+        showNotify(tips[mode][SUCCESS_TIP[mode]].text, 'succ')
+        // 老站 module/account 也是延时 500ms 再跳 /index，让成功提示可见；
+        // 立刻跳转会让用户以为「点了没反应」。
+        window.setTimeout(() => navigate(URLS.index), 800)
         return
       }
       setTip(SUCCESS_TIP[mode])
-      showNotify(TIPS[mode][SUCCESS_TIP[mode]].text, 'succ')
+      showNotify(tips[mode][SUCCESS_TIP[mode]].text, 'succ')
       if (mode === 'reset_psw') {
         window.setTimeout(() => navigate(URLS.login), 3000)
       }
     } catch {
       const idx = ERROR_TIP[mode]
       setTip(idx)
-      showNotify(TIPS[mode][idx]?.text ?? i18nT('Operation failed'), 'err')
+      showNotify(tips[mode][idx]?.text ?? i18nT('Operation failed'), 'err')
     } finally {
       setBusy(false)
     }

@@ -6,7 +6,10 @@
 import type { Locale } from './i18n'
 
 export const translations: Record<Locale, Record<string, string>> = {
-  "en": {},
+  "en": {
+    "START::DASH": "Let's go!",
+    "reg_success": "Registered! Please check your email for the activation link."
+  },
   "ja": {
     "1st level Heading": "大見出し",
     "2nd level Heading": "中見出し",
@@ -363,6 +366,7 @@ export const translations: Record<Locale, Record<string, string>> = {
     "reg_4": "計算の答えが一致しません。",
     "reg_5": "このユーザーネームは既に使用されています。",
     "reg_notice": "通知: メールの受信ボックスを確認してください。",
+    "reg_success": "登録しました。認証メールをご確認ください",
     "replied to you": "あなたへの返信",
     "skinstore_del_confirm": "この画像を削除してもよろしいですか？",
     "skinstore_hint_delimg": "この画像を削除する",
@@ -619,6 +623,7 @@ export const translations: Record<Locale, Record<string, string>> = {
     "Reset password": "设置新的密码",
     "Retrieve Password": "设置新的密码",
     "Russian Federation": "俄罗斯",
+    "START::DASH": "开始吧!!",
     "Save": "保存",
     "Saved": "已保存",
     "Saving...": "保存中...",
@@ -718,6 +723,7 @@ export const translations: Record<Locale, Record<string, string>> = {
     "reg_4": "验证码错误, 请输入验证码的计算结果",
     "reg_5": "用户名已被注册",
     "reg_notice": "注意: 注册后请检查邮箱以激活帐号",
+    "reg_success": "注册成功，请检查邮箱以激活帐号",
     "replied to you": "回复了你",
     "skinstore_del_confirm": "确认要删除这张图片么",
     "skinstore_hint_delimg": "删除这张图",
@@ -902,6 +908,7 @@ export const translations: Record<Locale, Record<string, string>> = {
     "Reset password": "重置密碼",
     "Retrieve Password": "取回密碼",
     "Russian Federation": "俄羅斯",
+    "START::DASH": "開始吧!!",
     "Save": "保存",
     "Saved": "已保存",
     "Saving...": "正在保存…",
@@ -978,6 +985,7 @@ export const translations: Record<Locale, Record<string, string>> = {
     "reg_4": "驗證碼錯誤, 請輸入驗證碼的計算結果",
     "reg_5": "用戶名已被註冊",
     "reg_notice": "注意: 註冊成功後請檢查電郵收件箱以激活帳戶",
+    "reg_success": "註冊成功，請檢查信箱以啟用帳號",
     "replied to you": "給了你回覆",
     "song": "歌曲",
     "talk_01": "注意：你正在一個公共討論版中發言，請使用英語",

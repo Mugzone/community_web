@@ -19,9 +19,11 @@
 @import '../pages/home/Index.css';
 @import '../pages/home/Intro.css';
 @import '../pages/wiki/AllPlayer.css';
+@import '../pages/wiki/WikiSearch.css';
 @import '../pages/account/AuthPage.css';
 @import '../pages/store/SkinDetail.css';
 @import '../pages/store/SkinEntry.css';
 @import '../pages/store/SkinList.css';
 @import '../pages/talk/ChartTalk.css';
+@import '../pages/admin/Command.css';
 @import '../skeleton.css';

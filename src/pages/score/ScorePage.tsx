@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { Shell } from '../../components/Layout'
+import { ModIcons } from '../../components/ModIcons'
 import { useSession } from '../../components/SessionProvider'
 import { asArray, num, Pager, showNotify, useLoad, floatFormat } from '../../lib/legacy'
 import { URLS, staticUrl } from '../../lib/urls'
@@ -168,7 +169,7 @@ export default function ScorePage() {
                       <i className={`g_round color-${n(item.judge)}`} style={{ width: `${n(item.acc)}%` }}></i>
                       <em>{fmt2(item.acc)}%</em>
                     </span>
-                    <span className="mod">{s(item.mod ?? item.mods)}</span>
+                    <span className="mod"><ModIcons value={item.mod ?? item.mods} none /></span>
                     <span className="time textfix">{s(item.time_str)}</span>
                     {data.isAdmin && (
                       <span className="combo"><a target="_blank" rel="noreferrer" href={`/score/dscore?touid=${uid}&cid=${chartId}`}>Remove</a></span>

@@ -62,6 +62,7 @@ import UploadCover from './pages/upload/UploadCover'
 import UploadInternal from './pages/upload/UploadInternal'
 import UploadBanner from './pages/upload/UploadBanner'
 import UploadAvatar from './pages/upload/UploadAvatar'
+import Command from './pages/admin/Command'
 
 /** 老站 /page/<id> 只是 302 到 /wiki/<id>，保持 URL 与跳转行为 */
 function PageRedirect() {
@@ -154,6 +155,10 @@ export default function App() {
       <Route path="/upload/banner" element={<UploadBanner />} />
       <Route path="/upload/avatar" element={<UploadAvatar />} />
 
+      {/* 后台指令台：老站 /lolicon/command 的能力，路由注册改为 /emiri/command。
+          其余 lolicon 页面一律不移植，继续走下面的 /lolicon/* 废弃兜底。 */}
+      <Route path="/emiri/command" element={<Command />} />
+
       {/* 错误页 */}
       <Route path="/403" element={<Error403 />} />
       <Route path="/404" element={<Error404 />} />
@@ -174,6 +179,7 @@ export default function App() {
       <Route path="/captcha/*" element={<Abandoned />} />
       <Route path="/plugin/*" element={<Abandoned />} />
       <Route path="/cgi/*" element={<Abandoned />} />
+      {/* /lolicon/command 也由这里兜底：刻意不做重定向，避免暴露后台新入口 */}
       <Route path="/lolicon/*" element={<Abandoned />} />
       <Route path="/sistercon/*" element={<Abandoned />} />
       <Route path="/i18n/*" element={<Abandoned />} />

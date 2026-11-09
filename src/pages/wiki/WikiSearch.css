@@ -1,0 +1,40 @@
+/* WikiSearch.css — 作用域名 "search"。
+   老站 wiki_search.html / wiki_404.html 这里放的是 Google CSE 的
+   <gcse:searchbox-only>：输入框占满整行、搜索按钮是右侧窄条。
+   v3 自己实现 DOM 后复用了站点通用 .g_btn（width:96% 的全宽块按钮），
+   而 .g_input 没有任何样式，于是变成「小输入框 + 大按钮」。
+   这里按 CSE 的比例还原：输入框 flex 占满，按钮按内容定宽。
+   选择器带 #content 以提高权重，覆盖 akari.css 的 .p404 a 等规则。 */
+html[data-styles~="search"] #content .gcse-searchbox-only {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  margin: 0 0 16px;
+}
+
+html[data-styles~="search"] #content .gcse-searchbox-only input.g_input {
+  flex: 1 1 auto;
+  min-width: 0;
+  box-sizing: border-box;
+  height: 32px;
+  padding: 0 8px;
+  font-size: 14px;
+  border: 1px solid #4190e7;
+  border-radius: 4px;
+  background-color: #fff;
+}
+
+html[data-styles~="search"] #content .gcse-searchbox-only a.g_btn {
+  flex: 0 0 auto;
+  display: inline-block;
+  box-sizing: border-box;
+  width: auto;
+  min-width: 80px;
+  height: 32px;
+  line-height: 32px;
+  padding: 0 16px;
+  margin: 0;
+  text-align: center;
+  white-space: nowrap;
+}

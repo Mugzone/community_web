@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom'
 import { Shell } from '../../components/Layout'
 import { useSession } from '../../components/SessionProvider'
 import { SkeletonHead, SkeletonRows } from '../../components/Skeleton'
+import { ModIcons } from '../../components/ModIcons'
 import { asArray, formatTime, JustifyRow, num, useLoad, floatFormat, showNotify } from '../../lib/legacy'
 import { URLS, staticUrl } from '../../lib/urls'
 import {
@@ -34,6 +35,8 @@ type UserData = {
   tab: number
   /** /player/info 的 group 是 group_id 数字数组；兼容老站 {id,name} 对象形式 */
   group: (number | Rec)[]
+  /** group_list: 后端从 auth_group 读出的 [{id,name}]，优先用于显示组名 */
+  groupList: (number | Rec)[]
   unread: number
   canBan: boolean
   canActive: boolean
@@ -44,7 +47,7 @@ type UserData = {
 
 const FALLBACK: UserData = {
   info: {}, ranks: [], acts: [], recent: [], charts: [], achieves: [], content: '',
-  friendType: 0, tab: 0, group: [], unread: 0,
+  friendType: 0, tab: 0, group: [], groupList: [], unread: 0,
   canBan: false, canActive: false, canEdit: false, redName: false, banner: '',
 }
 
@@ -175,6 +178,9 @@ export default function UserPage() {
         friendType: n(info.friend_type ?? info.friendType ?? info.friend, 0),
         tab: n(info.tab, 0),
         group: asArray<number | Rec>(info.group),
+        // 后端新增的 [{id,name}]：老站网页拿的就是 Django Group 对象，
+        // 有它就不必依赖前端硬编码映射，新组（如 id=11）自动显示真实名称。
+        groupList: asArray<number | Rec>(info.group_list ?? info.groups),
         unread: n(info.unread, 0),
         canBan: Boolean(info.canban),
         canActive: Boolean(info.canactive),
@@ -281,9 +287,11 @@ export default function UserPage() {
               {data.redName
                 ? <span style={{ color: '#ef6666' }}>{username}</span>
                 : <span>{username}</span>}
-              {data.group.filter(groupVisible).map((g, i) => (
-                <em key={i}>{groupLabel(g)}</em>
-              ))}
+              {(data.groupList.length > 0 ? data.groupList : data.group)
+                .filter(groupVisible)
+                .map((g, i) => (
+                  <em key={i}>{groupLabel(g)}</em>
+                ))}
             </p>
 
             <p className="time">
@@ -443,7 +451,11 @@ export default function UserPage() {
                       Judge :<em className={`color-${n(item.judge)}`}>{s(item.judge_str)}</em>
                     </p>
                     <p>
-                      <span className="mod">{s(item.mod_str ?? item.mod)}</span>
+                      {/* 老站 profile/index.html:182 `format_mods item.mod none=False`：
+                          mod 是位掩码，渲染成 g_mod 图标；0 时留空。以前的
+                          `s(item.mod_str ?? item.mod)` 会把 32/16 这类掩码直接
+                          当成数字显示，后端 mod_str 当时也是同一个数字。 */}
+                      <span className="mod"><ModIcons value={item.mod ?? item.mod_str} /></span>
                       <span className="time">{s(item.time_from_now) || formatTime(item.time)}</span>
                     </p>
                   </div>

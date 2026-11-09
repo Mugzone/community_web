@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { Shell } from '../../components/Layout'
+import { ModIcons } from '../../components/ModIcons'
 import { useSession } from '../../components/SessionProvider'
 import { SkeletonHead, SkeletonRows } from '../../components/Skeleton'
 import { useLoad, asArray, num, formatTime, showNotify, LoadingBlock, JustifyRow, floatFormat } from '../../lib/legacy'
@@ -146,7 +147,7 @@ function ScoreList({ rows }: { rows: ScoreRow[] }) {
                 <i className={`g_round color-${row.judge ?? 0}`} style={{ width: `${acc}%` }}></i>
                 <em>{floatFormat(row.acc)}%</em>
               </span>
-              <span className="mod">{row.mod ?? ''}</span>
+              <span className="mod"><ModIcons value={row.mod} none /></span>
               <span className="time textfix">{row.time_str ?? formatTime(row.time)}</span>
             </li>
           )

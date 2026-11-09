@@ -38,7 +38,8 @@ export default function UploadInternal() {
       css={['upload.css']}
       sidebar={
         <div className="tool">
-          <a href="/lolicon/home" className="g_btn">Home</a>
+          {/* 老站指向 /lolicon/home（后台首页）；v3 不移植该页，改回站点首页 */}
+          <a href="/index" className="g_btn">Home</a>
         </div>
       }
     >

@@ -21,6 +21,8 @@ type FetchOptions = {
   /** Defaults to true for non-/wt endpoints */
   auth?: boolean
   headers?: Record<string, string>
+  /** 业务负码由调用方自己处理（登录/注册要按 code 显示具体原因），不抛异常 */
+  allowBizError?: boolean
 }
 
 export type PackBase = {
@@ -213,7 +215,7 @@ export const postForm = async <T>(path: string, options?: PostOptions): Promise<
     throw new Error(`Request failed: ${res.status}`)
   }
   const text = await res.text()
-  assertBizOk(text)
+  if (!options?.allowBizError) assertBizOk(text)
   // 兼容后端返回纯文本 / 空体的 post 接口
   try {
     return JSON.parse(text) as T
@@ -240,7 +242,7 @@ export const getJson = async <T>(path: string, options?: FetchOptions): Promise<
     throw new Error(`Request failed: ${res.status}`)
   }
   const text = await res.text()
-  assertBizOk(text)
+  if (!options?.allowBizError) assertBizOk(text)
   return JSON.parse(text) as T
 }
 
@@ -908,6 +910,31 @@ export const revokePlayerRings = (payload: { uids: string; item: number }) =>
     },
   })
 
+export type RespCommand = {
+  code: number
+  data?: string
+}
+
+/** v3 /emiri/command 指令台。老站 /lolicon/exec 的等价端点是
+ *  /api/emiria/command/exec；负码由页面自行提示，故 allowBizError=true。 */
+export const execCommand = (cmd: string) =>
+  postForm<RespCommand>('/emiria/command/exec', {
+    body: { cmd },
+    allowBizError: true,
+  })
+
+export type RespCommandAccess = {
+  code: number
+  data?: { allowed?: boolean }
+}
+
+/** 页面可见性完全由服务端裁决：老站 adminpage/views.py:command 要求
+ *  is_admin(group 2) 且 is_superuser，否则 raise Http404。
+ *  SPA 不能靠 localStorage.groups 判断（可伪造），也不要把权限放宽到 is_commu
+ *  ——那是老站另一个页面 /lolicon/judgement 的口径，本次不移植。 */
+export const fetchCommandAccess = () =>
+  getJson<RespCommandAccess>('/emiria/command/access')
+
 export const finishImageUpload = (payload: { path: string }) =>
   postForm<PackBase>('/upload/finish', { body: { path: payload.path } })
 
@@ -1165,6 +1192,7 @@ export const searchPlayer = (params: { keyword: string; from?: number; limit?: n
 export const login = (payload: { name: string; psw: string; ver?: number; h?: string; bver?: number }) =>
   postForm<RespLogin>('/account/login/wt', {
     auth: false,
+    allowBizError: true,
     body: {
       name: payload.name,
       psw: payload.psw,
@@ -1184,6 +1212,7 @@ export const register = (payload: {
 }) =>
   postForm<RespLogin>('/account/register/wt', {
     auth: false,
+    allowBizError: true,
     body: {
       name: payload.name,
       psw: payload.psw,

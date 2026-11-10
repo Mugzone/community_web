@@ -23,9 +23,9 @@ PO_DIRS = {
     'ja': 'ja',
 }
 
-# 老站 .po 里 msgstr 为空的条目，以及 v3 新增的文案。
+# 老站 .po 里 msgstr 为空 / 被 fuzzy 跳过的条目，以及 v3 新增的文案。
 # 不补齐的话 t() 会回落成 key 本身，例如注册按钮显示 "START::DASH"。
-# 这里只补这两类，不改写 .po 里已有的翻译。
+# 这里只补这些缺口，不改写 .po 里已有的有效翻译。
 OVERRIDES = {
     'en': {
         'START::DASH': "Let's go!",
@@ -34,14 +34,30 @@ OVERRIDES = {
     'zh-hans': {
         'START::DASH': '开始吧!!',
         'reg_success': '注册成功，请检查邮箱以激活帐号',
+        'Never': '从未',
+        # 老站 profile/index.html:122 硬编码英文，v3 新增文案
+        'No score record': '暂无成绩记录',
     },
     'zh-hant': {
         'START::DASH': '開始吧!!',
         'reg_success': '註冊成功，請檢查信箱以啟用帳號',
+        # 老站 .po 这些条目为空或是 fuzzy 的旧 msgid（"Player"/"Charts list"）
+        # 过时错译，parse_po 会跳过；按简体/日文既有语义补齐。
+        'Played': '遊玩時長',
+        'Charts been played': '譜面被遊玩',
+        'Stable charts': '上架譜面',
+        'Unstable charts': '非上架譜面',
+        'Chart slot': '譜面上傳位',
+        'Never': '從未',
+        'No score record': '暫無成績記錄',
     },
     'ja': {
         'START::DASH': 'スタート::ダッシュ!!',
         'reg_success': '登録しました。認証メールをご確認ください',
+        # 老站 .po 的 "Played" 是 fuzzy 的旧 msgid "Player" 译文「プレイヤー」
+        'Played': 'プレイ時間',
+        'Never': 'なし',
+        'No score record': 'スコア記録なし',
     },
 }
 

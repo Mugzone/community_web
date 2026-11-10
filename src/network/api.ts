@@ -862,13 +862,18 @@ export const savePlayerInfo = (payload: {
   birth?: string
   gender?: number
   area?: number
+  tab?: number
 }) =>
   postForm<PackBase>('/player/info', {
+    // 负码是业务结果（金币不足/重名/生日非法等），交给页面按 code 显示具体提示，
+    // 不能让 assertBizOk 抛异常后统一退化成「保存失败」。
+    allowBizError: true,
     body: {
       name: payload.name,
       birth: payload.birth,
       gender: payload.gender,
       area: payload.area,
+      tab: payload.tab,
     },
   })
 
@@ -928,10 +933,11 @@ export type RespCommandAccess = {
   data?: { allowed?: boolean }
 }
 
-/** 页面可见性完全由服务端裁决：老站 adminpage/views.py:command 要求
- *  is_admin(group 2) 且 is_superuser，否则 raise Http404。
- *  SPA 不能靠 localStorage.groups 判断（可伪造），也不要把权限放宽到 is_commu
- *  ——那是老站另一个页面 /lolicon/judgement 的口径，本次不移植。 */
+/** 融合页面 /emiri/command 的可见性完全由服务端裁决：老站
+ *  /lolicon/command（is_admin && is_superuser）与 /lolicon/judgement
+ * （is_commu）两个页面已合并，任一条件成立即可进入；具体能执行哪些命令
+ *  由 /emiria/command/exec 的权限链裁决，命令集保持隐藏、不在前端下发。
+ *  SPA 不靠 localStorage.groups 判断（可伪造）。 */
 export const fetchCommandAccess = () =>
   getJson<RespCommandAccess>('/emiria/command/access')
 

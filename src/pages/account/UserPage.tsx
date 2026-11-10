@@ -79,7 +79,7 @@ const countryLabel = (c: unknown): string => regionMap[n(c)]?.fallback ?? '???'
  * 秒数 → "Never" / "H:MM:SS" / "D days HH:MM"。接口只给数值，格式化在前端做。 */
 const durationStr = (value: unknown): string => {
   const total = n(value, 0)
-  if (total <= 0) return 'Never'
+  if (total <= 0) return i18nT('Never')
   const sec = total % 60
   const min = Math.floor(total / 60) % 60
   const hour = Math.floor(total / 3600) % 24
@@ -294,31 +294,32 @@ export default function UserPage() {
                 ))}
             </p>
 
+            {/* 老站 profile/index.html:35-56 这些标签都用 {% trans %}，冒号留在译文之后 */}
             <p className="time">
-              <span>Joined since:&nbsp;{ymd(info.regtime ?? info.date_joined)}</span>
-              <span>Last play:&nbsp;{(info.lastPlay ?? info.last_play) ? ymd(info.lastPlay ?? info.last_play) : 'Never'}</span>
-              <span>Played: {s(info.playtime_str ?? info.playTimeStr) || durationStr(info.playTime)}</span>
+              <span>{i18nT('Joined since')}:&nbsp;{ymd(info.regtime ?? info.date_joined)}</span>
+              <span>{i18nT('Last play')}:&nbsp;{(info.lastPlay ?? info.last_play) ? ymd(info.lastPlay ?? info.last_play) : i18nT('Never')}</span>
+              <span>{i18nT('Played')}: {s(info.playtime_str ?? info.playTimeStr) || durationStr(info.playTime)}</span>
             </p>
             <p>
-              <span>Gender:&nbsp;{genderLabel(info.gender)}</span>
-              <span>Age:&nbsp;{s(info.age) || ageFromBirth(info.birth)}</span>
-              <span>Location:&nbsp;{countryLabel(info.country ?? info.area)}</span>
+              <span>{i18nT('Gender')}:&nbsp;{genderLabel(info.gender)}</span>
+              <span>{i18nT('Age')}:&nbsp;{s(info.age) || ageFromBirth(info.birth)}</span>
+              <span>{i18nT('Location')}:&nbsp;{countryLabel(info.country ?? info.area)}</span>
             </p>
             <p>
-              <span>Gold:&nbsp;{n(info.gold)}</span>
+              <span>{i18nT('Gold')}:&nbsp;{n(info.gold)}</span>
               {n(info.gold_d ?? info.goldD) > 0 && (
-                <span style={{ marginLeft: '10px' }}>Income:&nbsp;{n(info.gold_d ?? info.goldD)}</span>
+                <span style={{ marginLeft: '10px' }}>{i18nT('Income')}:&nbsp;{n(info.gold_d ?? info.goldD)}</span>
               )}
               {n(info.playedTime ?? info.playedtime ?? info.played_time) > 0 && (
                 <span style={{ marginLeft: '10px' }}>
-                  Charts been played:&nbsp;{s(info.playedtime_str) || durationStr(info.playedTime ?? info.playedtime ?? info.played_time)}
+                  {i18nT('Charts been played')}:&nbsp;{s(info.playedtime_str) || durationStr(info.playedTime ?? info.playedtime ?? info.played_time)}
                 </span>
               )}
             </p>
             <p>
-              <span>Stable charts:&nbsp;{n(info.count_2 ?? info.stableCount ?? info.stableCharts)}</span>
-              <span>Unstable charts:&nbsp;{n(info.count_1 ?? info.unstableCount ?? info.unstableCharts)}</span>
-              {n(info.count_0 ?? info.slot) > 0 && <span>Chart slot:&nbsp;{n(info.count_0 ?? info.slot)}</span>}
+              <span>{i18nT('Stable charts')}:&nbsp;{n(info.count_2 ?? info.stableCount ?? info.stableCharts)}</span>
+              <span>{i18nT('Unstable charts')}:&nbsp;{n(info.count_1 ?? info.unstableCount ?? info.unstableCharts)}</span>
+              {n(info.count_0 ?? info.slot) > 0 && <span>{i18nT('Chart slot')}:&nbsp;{n(info.count_0 ?? info.slot)}</span>}
             </p>
           </div>
         )}
@@ -380,7 +381,7 @@ export default function UserPage() {
                   <p>
                     <span>Exp.{s(item.exp ?? item.value ?? 0)}</span>
                     {' '}
-                    <span>Playcount:{s(item.playcount ?? item.pc ?? 0)}</span>
+                    <span>{i18nT('Playcount')}:{s(item.playcount ?? item.pc ?? 0)}</span>
                   </p>
                   <p>
                     <span>Acc.{fmt2(item.acc)}%</span>
@@ -389,7 +390,7 @@ export default function UserPage() {
                   </p>
                 </div>
               </div>
-            )) : 'No score record'}
+            )) : i18nT('No score record')}
           </div>
 
           {achieves.length > 0 && (

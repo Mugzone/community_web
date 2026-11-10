@@ -4,7 +4,7 @@ import { Shell } from '../../components/Layout'
 import { num, showNotify, useLoad } from '../../lib/legacy'
 import { URLS } from '../../lib/urls'
 import { fetchPlayerInfo, savePlayerInfo } from '../../network/api'
-import { regionMap } from '../../utils/profile'
+import { formatBirthPayload, regionMap } from '../../utils/profile'
 import { avatarUrl } from '../../utils/formatters'
 import { t as i18nT } from '../../i18n'
 
@@ -47,8 +47,11 @@ const TIPS: { text: string; err: boolean; link?: string }[] = [
   { text: i18nT('The username is in use'), err: true },
 ]
 
-/* module/profile/src/init.js error 回调：返回码 -> .g_tip 下标 */
-const SAVE_ERR: Record<number, number> = { [-2]: 6, [-3]: 7, [-4]: 8, [-5]: 9 }
+/* 返回码 -> .g_tip 下标。
+ * 这里是 MaApi-go PlayerSaveInfo 的码表，不是老站 /accounts/config/profile 的：
+ * -1 金币/改名券不足, -2 资料不存在或生日非法, -3 用户名非法,
+ * -4 半年内已改过名, -5 用户名已存在。老站 -2 才是「没有改名券」。 */
+const SAVE_ERR: Record<number, number> = { [-1]: 6, [-2]: 5, [-3]: 7, [-4]: 8, [-5]: 9 }
 
 const s = (v: unknown, fb = ''): string => (v === undefined || v === null ? fb : String(v))
 const n = (v: unknown, fb = 0): number => num(v, fb)
@@ -138,15 +141,16 @@ export default function ProfileSetting() {
   const save = async () => {
     if (busy) return
     const age = (form.age ?? '').trim()
-    if (!/^(\d{4})-(\d{1,2})-(\d{1,2})$/.test(age)) {
-      setTip(5)
-      showNotify(TIPS[5].text, 'err')
-      return
-    }
-    const t = new Date(age).getTime() / 1000
-    if (!Number.isFinite(t) || t < 0 || t > Date.now() / 1000) {
-      showNotify('invalid birthday', 'err')
-      return
+    // 空生日表示不修改；非空必须是后端能 time.Parse("2006-1-2") 的日期串，
+    // 不能再转成老站 age 参数那种 Unix 时间戳（会触发 code:-2）。
+    let birth: string | undefined
+    if (age !== '') {
+      birth = formatBirthPayload(age)
+      if (!birth) {
+        setTip(5)
+        showNotify(TIPS[5].text, 'err')
+        return
+      }
     }
     setTip(0)
     showNotify(i18nT('Saving...'), 'succ')
@@ -154,9 +158,10 @@ export default function ProfileSetting() {
     try {
       const res = await savePlayerInfo({
         name: form.name,
-        birth: String(t),
+        birth,
         gender: Number(form.gender),
         area: Number(form.country),
+        tab: Number(form.tab),
       })
       const rc = res?.code
       if (rc !== undefined && Number(rc) !== 0) {

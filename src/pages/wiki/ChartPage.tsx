@@ -6,7 +6,7 @@ import { useSession } from '../../components/SessionProvider'
 import { SkeletonHead, SkeletonRows } from '../../components/Skeleton'
 import { useLoad, asArray, num, formatTime, showNotify, LoadingBlock, JustifyRow, floatFormat } from '../../lib/legacy'
 import { URLS, staticUrl } from '../../lib/urls'
-import { fetchChartInfo, fetchRankingList, fetchChartDonateList, fetchWiki } from '../../network/api'
+import { fetchChartInfo, fetchRankingList, fetchRankingFirst5, fetchChartDonateList, fetchWiki } from '../../network/api'
 import { fetchChartPage, operateWikiPage, operateScore } from '../../network/legacy'
 import { bindHiddenToggles } from '../../utils/wiki'
 import { avatarUidUrl, coverUrl } from '../../utils/formatters'
@@ -69,7 +69,8 @@ const EMPTY_CHART: ChartState = {
   donate: [],
   percent: -1,
   gold: 0,
-  stat: null,
+  // 老站 {% if stat %} 恒渲染 first_area，加载中也保留三张 Empty 卡片，避免布局跳动
+  stat: {},
   wikiRaw: '',
   canMark: false,
   canTop: false,
@@ -90,6 +91,28 @@ const percentLabel = (v: number): string => {
   if (v >= 30) return i18nT('Mostly Negative')
   if (v >= 20) return i18nT('Negative')
   return i18nT('Very Negative')
+}
+
+/** 老站 RunningDataChart.time3_str：time==0 → "Never"，否则本地时区 %Y-%m-%d %H:%M */
+const firstTimeStr = (ts?: number): string => {
+  const n = num(ts, 0)
+  if (n <= 0) return 'Never'
+  const d = new Date(n < 1e12 ? n * 1000 : n)
+  if (Number.isNaN(d.getTime())) return 'Never'
+  const p = (v: number) => (v < 10 ? `0${v}` : String(v))
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`
+}
+
+/** /ranking/first5 → 老站 stat（first3/4/5 + time*_str），与 Go /community/chart/page 的 stat 同构 */
+const first5ToStat = (r: unknown): Record<string, any> => {
+  const f: any = r ?? {}
+  const toUser = (u: any): Record<string, any> | null =>
+    u && num(u.uid, 0) > 0 ? { id: num(u.uid, 0), username: u.username ?? '' } : null
+  return {
+    first3: toUser(f.first3), time3_str: firstTimeStr(f.first3?.time),
+    first4: toUser(f.first4), time4_str: firstTimeStr(f.first4?.time),
+    first5: toUser(f.first5), time5_str: firstTimeStr(f.first5?.time),
+  }
 }
 
 /** wiki/tmpl_first.html —— 首个达成者 */
@@ -173,11 +196,14 @@ export default function ChartPage() {
   const { data, loading } = useLoad<ChartState>(
     async () => {
       const cid = Number(id) || 0
-      const [pageR, infoR, donateR, wikiR] = await Promise.all([
+      const [pageR, infoR, donateR, wikiR, first5R] = await Promise.all([
         fetchChartPage(String(id)).catch(() => ({})),
         fetchChartInfo({ cid }).catch(() => ({})),
         fetchChartDonateList({ cid }).catch(() => ({})),
         fetchWiki({ cid, lang: 0 }).catch(() => ({})),
+        // 老站 wiki_page_chart.html:143-148 的「首个达成者」：Go /community/chart/page
+        // 已补 stat，旧后端（stat: nil）或 page 接口失败时用这份 /ranking/first5 兜底。
+        fetchRankingFirst5({ cid }).catch(() => ({})),
       ])
       const p: any = (pageR as any)?.data ?? pageR ?? {}
       const info: any = infoR ?? {}
@@ -202,7 +228,11 @@ export default function ChartPage() {
         donate: asArray<DonateRow>((donateR as any)?.data ?? p.donate ?? donateR),
         percent: num(p.percent, -1),
         gold: num(p.gold, 0),
-        stat: (p.stat ?? null) as Record<string, any> | null,
+        // 老站 {% if stat %} 恒渲染 first_area；优先用 page 接口的完整 stat，
+        // 字段缺失（旧后端 stat: nil / 半截对象）时退回 /ranking/first5。
+        stat: (p.stat && typeof p.stat === 'object' && 'time3_str' in p.stat
+          ? p.stat
+          : first5ToStat(first5R)) as Record<string, any>,
         wikiRaw: String((wikiR as any)?.wiki ?? p.content ?? ''),
         // 老站 JSON 只在有权限时写 canXxx 字段，缺省即 False。
         // 这里必须显式 === true：接口失败被 .catch(() => ({})) 吞掉时不能把管理按钮全露出。

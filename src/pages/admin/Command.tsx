@@ -18,19 +18,21 @@ const ERROR_MSG: Record<number, string> = {
 }
 
 /**
- * 老站 /lolicon/command（admin/operation.html + module/admin/src/command.js）。
- * v3 只保留这一个 lolicon 页面，路由改为 /emiri/command；其余 /lolicon/* 仍是 Abandoned。
- * 执行端点为 /api/emiria/command/exec（MaApi-go 中 adminpage/command.py 的等价移植）。
+ * 老站两个后台页面在 v3 融合成 /emiri/command 单页：
+ *   /lolicon/command   （admin/operation.html）   → is_admin && is_superuser
+ *   /lolicon/judgement （admin/operation_width.html）→ is_commu(2/3/8/9)
+ * 两者渲染的是同一个输入框、POST 的是同一个 /lolicon/exec。命令集在老站
+ * 本就是隐藏的（页面没有任何白名单/提示），v3 同样不在前端展示任何命令名
+ * 或权限档位；能执行哪些命令完全由 /api/emiria/command/exec 的
+ * is_commu → -3 → -4 权限链裁决。
  *
- * 权限口径严格对齐老站 /lolicon/command（adminpage/views.py:524-530）：
- * is_admin(group 2) 且 is_superuser，否则 raise Http404。v3 是 SPA，页面可见性
- * 由 GET /api/emiria/command/access 服务端裁决（不信任 localStorage.groups，
- * 也不放宽到 is_commu —— 那是本次不移植的 /lolicon/judgement 的口径）；
- * 执行端点 /api/emiria/command/exec 仍保留老站 exec_command 的完整双层权限链。
+ * 页面可见性由 GET /api/emiria/command/access 服务端裁决，该端点只返回
+ * allowed 布尔值；SPA 不靠 localStorage.groups 判断（可伪造）。
+ * 其余 /lolicon/* 仍是 Abandoned。
  *
- * 与老站一致：输入 (+/-)cmd:param,param，点 Send 后把命令与返回逐行 prepend 到记录区；
- * 负码按 ERROR_MSG 提示。区别在于 React 自动转义文本，不会像老站 jQuery 的
- * .prepend(html) 那样把返回值当 HTML 执行。
+ * 与老站一致：输入 (+/-)cmd:param,param，点 Send 后把命令与返回逐行 prepend
+ * 到记录区；负码按 ERROR_MSG 提示。区别在于 React 自动转义文本，不会像老站
+ * jQuery 的 .prepend(html) 那样把返回值当 HTML 执行。
  */
 type LineKind = 'cmd' | 'res' | 'err'
 type RecordLine = { id: number; text: string; kind: LineKind }
@@ -46,6 +48,8 @@ export default function Command() {
   const inFlight = useRef(false)
 
   // 唯一裁决来自服务端；失败/未登录一律 fallback=false → 404 页（老站 Http404）。
+  // 融合后 is_admin&&is_superuser 与 is_commu 两类用户都 allowed=true，
+  // 但端点不下发档位信息，前端也不需要知道，执行权限交给 exec 端点。
   const { data: allowed, loading } = useLoad<boolean>(
     async () => (await fetchCommandAccess()).data?.allowed === true,
     [],

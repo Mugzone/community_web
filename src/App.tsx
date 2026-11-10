@@ -155,7 +155,9 @@ export default function App() {
       <Route path="/upload/banner" element={<UploadBanner />} />
       <Route path="/upload/avatar" element={<UploadAvatar />} />
 
-      {/* 后台指令台：老站 /lolicon/command 的能力，路由注册改为 /emiri/command。
+      {/* 后台指令台：老站 /lolicon/command（管理员）与 /lolicon/judgement
+          （社区）融合为一页，路由注册改为 /emiri/command；进入权限由
+          /api/emiria/command/access 服务端裁决，命令集保持隐藏。
           其余 lolicon 页面一律不移植，继续走下面的 /lolicon/* 废弃兜底。 */}
       <Route path="/emiri/command" element={<Command />} />
 

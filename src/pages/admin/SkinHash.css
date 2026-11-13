@@ -1,0 +1,55 @@
+/* SkinHash.css — 老站 admin.css 的 .adm_table / .adm_table_control 区块，
+   作用域名 "skinhash"（Shell 的 page prop 写入 html[data-styles]）。
+   三列与 admin_skinhash.html 一致：ID / Skin ID / Hash。 */
+html[data-styles~="skinhash"] .adm_table {
+  width: 100%;
+  margin-top: 24px;
+  border-collapse: collapse;
+  color: #333;
+}
+html[data-styles~="skinhash"] .adm_table thead th {
+  border-right: 1px solid #4190e7;
+  text-align: center;
+  padding: 4px 8px;
+}
+html[data-styles~="skinhash"] .adm_table tr {
+  border-bottom: 1px solid #4190e7;
+}
+html[data-styles~="skinhash"] .adm_table tr.curr {
+  color: #2f6fb5;
+  background: #f2f8ff;
+}
+html[data-styles~="skinhash"] .adm_table td {
+  padding: 4px 8px;
+  text-align: center;
+}
+html[data-styles~="skinhash"] .adm_table td input {
+  width: 100%;
+  box-sizing: border-box;
+  height: 26px;
+  line-height: 24px;
+  padding: 0 6px;
+  border: 1px solid #c9d8e8;
+  border-radius: 3px;
+  outline: none;
+  background: #fff;
+  color: #333;
+}
+html[data-styles~="skinhash"] .adm_table td input:focus {
+  border-color: #4190e7;
+}
+html[data-styles~="skinhash"] .adm_table_control {
+  margin-top: 16px;
+  display: flex;
+  gap: 10px;
+}
+html[data-styles~="skinhash"] .adm_table_control .g_btn {
+  display: inline-block;
+  width: 80px;
+  text-align: center;
+}
+html[data-styles~="skinhash"] .adm_table_control .g_btn.busy {
+  opacity: 0.5;
+  cursor: default;
+  pointer-events: none;
+}

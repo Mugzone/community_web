@@ -933,13 +933,44 @@ export type RespCommandAccess = {
   data?: { allowed?: boolean }
 }
 
-/** 融合页面 /emiri/command 的可见性完全由服务端裁决：老站
- *  /lolicon/command（is_admin && is_superuser）与 /lolicon/judgement
- * （is_commu）两个页面已合并，任一条件成立即可进入；具体能执行哪些命令
- *  由 /emiria/command/exec 的权限链裁决，命令集保持隐藏、不在前端下发。
- *  SPA 不靠 localStorage.groups 判断（可伪造）。 */
 export const fetchCommandAccess = () =>
   getJson<RespCommandAccess>('/emiria/command/access')
+
+
+export type SkinHashRow = {
+  id: number
+  skin: number
+  hash: string
+}
+
+export type RespSkinHashList = {
+  code: number
+  data?: { list?: SkinHashRow[] }
+}
+
+export const fetchSkinHashList = () =>
+  getJson<RespSkinHashList>('/emiria/skinhash/list')
+
+export type RespSkinHashSave = { code: number }
+
+/** 老站 init.js 的 act=del|save；负码（不存在 / 参数错误）由页面提示。 */
+export const saveSkinHash = (payload: {
+  act: 'del' | 'save'
+  id: number
+  // 原样传输入框字符串，由后端 Atoi 解析（对齐老站 FieldReader.getInt），
+  // 避免前端 Number() 把 "0x10" / "1e3" 之类解析成与 Python int() 不同的值。
+  skin?: string
+  hash?: string
+}) =>
+  postForm<RespSkinHashSave>('/emiria/skinhash/save', {
+    body: {
+      act: payload.act,
+      id: payload.id,
+      skin: payload.skin,
+      hash: payload.hash,
+    },
+    allowBizError: true,
+  })
 
 export const finishImageUpload = (payload: { path: string }) =>
   postForm<PackBase>('/upload/finish', { body: { path: payload.path } })

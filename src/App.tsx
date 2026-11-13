@@ -63,6 +63,7 @@ import UploadInternal from './pages/upload/UploadInternal'
 import UploadBanner from './pages/upload/UploadBanner'
 import UploadAvatar from './pages/upload/UploadAvatar'
 import Command from './pages/admin/Command'
+import SkinHash from './pages/admin/SkinHash'
 
 /** 老站 /page/<id> 只是 302 到 /wiki/<id>，保持 URL 与跳转行为 */
 function PageRedirect() {
@@ -160,6 +161,9 @@ export default function App() {
           /api/emiria/command/access 服务端裁决，命令集保持隐藏。
           其余 lolicon 页面一律不移植，继续走下面的 /lolicon/* 废弃兜底。 */}
       <Route path="/emiri/command" element={<Command />} />
+      {/* Skin Hash 管理页：老站 /lolicon/list?type=6，权限由
+          /api/emiria/skinhash/list 服务端裁决（未授权裸 404） */}
+      <Route path="/emiri/skinhash" element={<SkinHash />} />
 
       {/* 错误页 */}
       <Route path="/403" element={<Error403 />} />

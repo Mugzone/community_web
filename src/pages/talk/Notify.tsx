@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { Shell, DefaultSidebar } from '../../components/Layout'
 import { useLoad, num, showNotify, LoadingBlock } from '../../lib/legacy'
 import { URLS } from '../../lib/urls'
@@ -51,6 +52,9 @@ export default function Notify() {
     [],
     EMPTY,
   )
+  const [viewed, setViewed] = useState<Record<number, boolean>>({})
+
+  useEffect(() => { setViewed({}) }, [data])
 
   const onDeleteAll = async () => {
     if (!window.confirm('Are you sure to delete all notifications?')) return
@@ -82,12 +86,19 @@ export default function Notify() {
             {data.items.map((item, i) => {
               const user = item.talk?.user ?? {}
               const key = item.talk?.topic?.key ?? ''
+              const isNew = item.read === false && !viewed[i]
               return (
-                <div className={item.read === false ? 'item new' : 'item'} key={i}>
-                  {item.read === false ? <>[New]{'\u00a0'}</> : null}
+                <div className={isNew ? 'item new' : 'item'} key={i}>
+                  {isNew ? <>[New]{'\u00a0'}</> : null}
                   <a href={URLS.user(user.id ?? 0)}>{user.username ?? ''}</a>
                   {' '}replied to you{' '}
-                  <a className="link link_key" target="_blank" href={keyToUrl(key)} data-key={key}>{i18nT('View')}</a>
+                  <a
+                    className="link link_key"
+                    target="_blank"
+                    href={keyToUrl(key)}
+                    data-key={key}
+                    onClick={() => setViewed((prev) => ({ ...prev, [i]: true }))}
+                  >{i18nT('View')}</a>
                 </div>
               )
             })}

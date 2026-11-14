@@ -12,7 +12,9 @@ import {
   fetchPlayerActivity,
   fetchPlayerCharts,
   fetchPlayerRecentScores,
+  fetchPlayerLabels,
   postForm,
+  type RespPlayerLabelItem,
 } from '../../network/api'
 import { fetchAchieveList, fetchUserPageWiki } from '../../network/legacy'
 import { avatarUrl, coverUrl } from '../../utils/formatters'
@@ -30,6 +32,8 @@ type UserData = {
   recent: Rec[]
   charts: Rec[]
   achieves: Rec[]
+  /** /player/label：徽章（item 1000-3000），只有 item 编号与数量 */
+  labels: RespPlayerLabelItem[]
   content: string
   friendType: number
   tab: number
@@ -46,7 +50,7 @@ type UserData = {
 }
 
 const FALLBACK: UserData = {
-  info: {}, ranks: [], acts: [], recent: [], charts: [], achieves: [], content: '',
+  info: {}, ranks: [], acts: [], recent: [], charts: [], achieves: [], labels: [], content: '',
   friendType: 0, tab: 0, group: [], groupList: [], unread: 0,
   canBan: false, canActive: false, canEdit: false, redName: false, banner: '',
 }
@@ -119,6 +123,9 @@ const groupVisible = (g: number | Rec): boolean =>
 /* 老站 account/models.py:172-176 banner_url = "http://cni.machart.top" + banner；
  * Go 只返回相对路径 /banner/xx.jpg!banner，用协议相对地址避免混合内容。 */
 const BANNER_CDN = '//cni.machart.top'
+/* web-v2 Player.tsx:83：徽章图按 item 编号放在 CDN 上，无扩展名（实为 258x120 JPEG）。
+ * v3 本地 public/static/img 下没有 plabel 资源，沿用同一个 CDN。 */
+const PLAYER_LABEL_IMG_BASE = '//cdn1.machart.top/static/img/plabel/'
 const bannerUrl = (v: unknown): string => {
   const raw = s(v)
   if (!raw) return ''
@@ -150,7 +157,7 @@ export default function UserPage() {
 
   const { data, loading, reload } = useLoad<UserData>(
     async () => {
-      const [infoRes, rankRes, actRes, chartRes, achRes, upRes, recentRes] = await Promise.all([
+      const [infoRes, rankRes, actRes, chartRes, achRes, upRes, recentRes, labelRes] = await Promise.all([
         fetchPlayerInfo({ uid }).catch(() => undefined),
         fetchPlayerAllRank({ uid }).catch(() => undefined),
         fetchPlayerActivity({ uid }).catch(() => undefined),
@@ -161,6 +168,8 @@ export default function UserPage() {
         fetchUserPageWiki(uid).catch(() => undefined),
         // 末尾追加：解构顺序必须与上方 Promise.all 数组一一对应
         fetchPlayerRecentScores({ uid }).catch(() => undefined),
+        // 徽章：/player/label 返回 {code,data:[{item,count}]}；失败/负码一律降级为空数组
+        fetchPlayerLabels({ uid }).catch(() => undefined),
       ])
       // /api/player/info 返回扁平结构（username/gold/... 在顶层）；其它接口带 data 包裹，两者兼容
       const info: Rec = ((infoRes as Rec | undefined)?.data ?? infoRes ?? {}) as Rec
@@ -174,6 +183,7 @@ export default function UserPage() {
         recent: asArray<Rec>((recentRes as Rec | undefined)?.data ?? (recentRes as Rec | undefined)?.list ?? []),
         charts: asArray<Rec>((chartRes as Rec | undefined)?.data ?? chartRes),
         achieves: achList(achRes),
+        labels: asArray<RespPlayerLabelItem>(labelRes),
         content: s(up.content ?? up.wiki ?? info.content ?? info.wiki ?? info.userpage),
         friendType: n(info.friend_type ?? info.friendType ?? info.friend, 0),
         tab: n(info.tab, 0),
@@ -418,6 +428,9 @@ export default function UserPage() {
               <a href="#" className={`btn ${tab === 2 ? 'curr' : ''}`} data-type="chart" onClick={(e) => { e.preventDefault(); switchTab('Chart', 2) }}>{i18nT('Chart')}</a>
             )}
             <a href="#" className={`btn ${tab === 3 ? 'curr' : ''}`} data-type="wiki" onClick={(e) => { e.preventDefault(); switchTab('Profile', 3) }}>{i18nT('Profile')}</a>
+            {/* 徽章是新增的第 5 个 tab（index 4）。后端 PlayerSaveInfo 只接受默认 tab 0-3，
+                所以它可以切换但暂不能设为「默认 tab」，ProfileSetting 的下拉也保持 4 项。 */}
+            <a href="#" className={`btn ${tab === 4 ? 'curr' : ''}`} data-type="badge" onClick={(e) => { e.preventDefault(); switchTab('Badge', 4) }}>{i18nT('Badge')}</a>
           </div>
 
           {/* 各 tab 的列表在加载中都是空的，统一用一块骨架占位 */}
@@ -506,6 +519,29 @@ export default function UserPage() {
               </div>
             </div>
           )}
+
+          {/* v2 是页头下方一条自动轮播的横向卡片区；v3 改为「徽章」tab 内平铺网格。
+              /player/label 一次返回全部徽章（无分页），count>1 时右下角显示 xN。 */}
+          <div className={`badge g_rblock ${tab === 4 ? 'curr' : ''}`}>
+            {data.labels.length > 0 ? (
+              <div className="badge_list">
+                {data.labels.map((label, i) => (
+                  <div className="badge_item" key={`${label.item}-${i}`}>
+                    <img
+                      src={`${PLAYER_LABEL_IMG_BASE}${label.item}`}
+                      alt={`badge-${label.item}`}
+                      width={258}
+                      height={120}
+                      loading="lazy"
+                    />
+                    {n(label.count) > 1 && <span className="badge_count">x{n(label.count)}</span>}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="g_memo"><span className="g_round">{i18nT('No badges')}</span></div>
+            )}
+          </div>
         </div>
         <span className="clear"></span>
       </div>

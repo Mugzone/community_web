@@ -157,7 +157,8 @@ html[data-styles~="user"] #content .option a:hover {
 html[data-styles~="user"] #content .wiki,
 html[data-styles~="user"] #content .active,
 html[data-styles~="user"] #content .recent,
-html[data-styles~="user"] #content .chart {
+html[data-styles~="user"] #content .chart,
+html[data-styles~="user"] #content .badge {
   display: none;
 }
 html[data-styles~="user"] #content .wiki {
@@ -275,6 +276,44 @@ html[data-styles~="user"] #content .chart .item .right .time {
 }
 html[data-styles~="user"] #content .chart .more {
   padding: 5px;
+}
+/* 徽章 tab：v2 是页头下的自动轮播，这里改成平铺网格；
+   plabel 原图固定 258x120，count>1 时右下角叠加数量角标。 */
+html[data-styles~="user"] #content .badge {
+  padding: 12px;
+}
+html[data-styles~="user"] #content .badge .badge_list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+html[data-styles~="user"] #content .badge_list .badge_item {
+  position: relative;
+  width: 258px;
+  height: 120px;
+  overflow: hidden;
+  border: 1px solid #dddddd;
+  border-radius: 5px;
+}
+html[data-styles~="user"] #content .badge_list .badge_item img {
+  display: block;
+  width: 258px;
+  height: 120px;
+}
+html[data-styles~="user"] #content .badge_list .badge_count {
+  position: absolute;
+  right: 6px;
+  bottom: 6px;
+  padding: 1px 7px;
+  border-radius: 10px;
+  background-color: rgba(0, 0, 0, 0.65);
+  color: white;
+  font-size: 12px;
+  font-weight: bold;
+}
+html[data-styles~="user"] #content .badge .g_memo {
+  text-align: center;
+  padding: 24px 0;
 }
 html[data-styles~="user"] .pub_page {
   text-align: left;

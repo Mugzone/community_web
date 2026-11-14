@@ -973,7 +973,7 @@ export const saveSkinHash = (payload: {
   })
 
 export const finishImageUpload = (payload: { path: string }) =>
-  postForm<PackBase>('/upload/finish', { body: { path: payload.path } })
+  postForm<PackBase>('/upload/finish', { body: { path: payload.path }, allowBizError: true })
 
 export const fetchGlobalRank = (params: { mm?: number; mode?: number; from?: number; ver?: number; bver?: number }) =>
   getJson<RespGlobalRank>('/ranking/global', { params })
@@ -985,7 +985,7 @@ export const fetchEventCharts = async (params: { eid: number; org?: number; from
   try {
     return await getJson<RespEventChart>('/event/event', { params })
   } catch (err) {
-    return getJson<RespEventChart>('/events/event', { params })
+    return getJson<RespEventChart>('/store/event', { params })
   }
 }
 
@@ -1000,6 +1000,7 @@ export const createEvent = (payload: {
   wiki?: number
 }) =>
   postForm<RespEventCreate>('/event/create', {
+    allowBizError: true,
     body: {
       eid: payload.eid,
       name: payload.name,
@@ -1013,7 +1014,7 @@ export const createEvent = (payload: {
   })
 
 export const fetchEventCoverUpload = (params: { eid: number; type?: number }) =>
-  getJson<RespImageUpload>('/event/image', { params: { ...params, type: params.type ?? 1 } })
+  getJson<RespImageUpload>('/event/image', { params: { ...params, type: params.type ?? 1 }, allowBizError: true })
 
 export const fetchSkinList = (params?: {
   uid?: number
@@ -1217,8 +1218,11 @@ export const deleteWikiPage = (payload: { pid: number; uid: number }) =>
     body: { pid: payload.pid },
   })
 
+/** 上下架新闻：code=1 上架 / 2 下架 / -1 页面不存在 / -5 权限不足。
+ *  负码是业务结果，页面要按 code 给不同提示，故不走 assertBizOk 抛异常。 */
 export const toggleWikiNews = (payload: { pid: number; uid: number }) =>
   postForm<RespPushNews>('/push/news', {
+    allowBizError: true,
     params: { uid: payload.uid },
     body: { pid: payload.pid },
   })

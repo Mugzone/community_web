@@ -52,9 +52,10 @@ export function Header() {
     let timer: number | undefined
     const poll = async () => {
       try {
-        const resp = await fetchUnreadMsg()
-        const count = Number(resp?.data ?? resp?.num ?? 0)
-        if (alive && count > 0) setUnread(true)
+        const resp: any = await fetchUnreadMsg()
+        const payload = resp?.data
+        const count = Number(payload && typeof payload === 'object' ? payload.count ?? payload.total ?? 0 : payload ?? 0)
+        if (alive) setUnread(count > 0)
       } catch {
         // 轮询失败（含业务负 code）保持隐藏，等待下一轮
       }
@@ -77,6 +78,7 @@ export function Header() {
             {isLogin && <a href={URLS.store}><i className="icon-st"></i>{i18nT('Store')}</a>}
             <a href={URLS.skin}><i className="icon-sk"></i>{i18nT('Skin')}</a>
             <a href={`${URLS.chart}?type=3`}><i className="icon-ch"></i>{i18nT('Chart')}</a>
+            <a href={URLS.event}><i className="icon-qu"></i>{i18nT('Events')}</a>
             <a href={URLS.player}><i className="icon-pl"></i>{i18nT('Player')}</a>
           </div>
           {isLogin ? (

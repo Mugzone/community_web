@@ -5,7 +5,7 @@ import { useLoad, asArray, num, formatTime, showNotify, LoadingBlock } from '../
 import { URLS } from '../../lib/urls'
 import {
   fetchWiki, getSession,
-  lockWikiPage, updateWikiTitle, deleteWikiPage,
+  lockWikiPage, updateWikiTitle, deleteWikiPage, toggleWikiNews,
 } from '../../network/api'
 import {
   fetchTalkList, saveTalk, operateTalk, fetchTalkRaw, submitVote,
@@ -278,6 +278,9 @@ export default function WikiPage() {
   const { lang, langHtml, changeLang } = useWikiLang(key)
   const [titleOverride, setTitleOverride] = useState<string>('')
   const [lockedOverride, setLockedOverride] = useState<boolean | null>(null)
+  const [newsBusy, setNewsBusy] = useState(false)
+  // 同步 in-flight 锁：React state 批处理下 newsBusy 挡不住同一帧内的双击。
+  const newsInFlight = useRef(false)
   const bodyRef = useRef<HTMLDivElement>(null)
 
   const title = titleOverride || String(page.title ?? '') || `Wiki #${id}`
@@ -352,6 +355,33 @@ export default function WikiPage() {
     }
   }
 
+  /* web-v2 Wiki.tsx handleToggleNews：无表单的一键 toggle，服务端按
+     link="/wiki/{pid}" 决定上架(code=1)还是下架(code=2)，标题/时间/描述
+     都由服务端从 wiki_page 生成。按钮不查询当前状态，文案保持固定。 */
+  const onToggleNews = async (): Promise<void> => {
+    // 连点两次会「上架后立刻下架」，用 ref 做同步锁而不是只靠 state。
+    if (newsInFlight.current) return
+    const pid = Number(id) || 0
+    if (!pid) return
+    if (uid <= 1) { showNotify(i18nT('Please login'), 'err'); return }
+    newsInFlight.current = true
+    setNewsBusy(true)
+    try {
+      const resp = await toggleWikiNews({ pid, uid })
+      if (resp?.code === 1) { showNotify(i18nT('News published.'), 'succ'); return }
+      if (resp?.code === 2) { showNotify(i18nT('News unpublished.'), 'succ'); return }
+      // 按钮露出用 isorg(2/3/8/9)，服务端 /push/news 用 IsAssistent(2/3/8)，
+      // group 9 会走到这里，单独给权限提示。
+      if (resp?.code === -5) { showNotify(i18nT('You do not have permission to push news.'), 'err'); return }
+      showNotify(i18nT('Operation failed'), 'err')
+    } catch {
+      showNotify(i18nT('Operation failed'), 'err')
+    } finally {
+      newsInFlight.current = false
+      setNewsBusy(false)
+    }
+  }
+
   const finalHtml = langHtml !== null ? langHtml : wikiHtml
   // 加载中正文也是空串，此时只显示下方骨架，不能当成「还没有内容」
   const gWikiInner = finalHtml || (loading ? '' : `<div class="g_wiki_new btn" data-type="edit">${i18nT('Click to create')}</div>`)
@@ -373,6 +403,14 @@ export default function WikiPage() {
             <>
               <a href="#" className="btn g_toolbtn e" data-type="title" title={i18nT('Change title')} onClick={(e) => { e.preventDefault(); void onChangeTitle() }}><i></i></a>
               <a href="#" className="btn g_toolbtn d" data-type="del" title={i18nT('Delete')} onClick={(e) => { e.preventDefault(); void onDelete() }}><i></i></a>
+              <a
+                href="#"
+                className={`btn g_toolbtn n${newsBusy ? ' busy' : ''}`}
+                data-type="news"
+                title={i18nT('Push news')}
+                aria-busy={newsBusy}
+                onClick={(e) => { e.preventDefault(); void onToggleNews() }}
+              ><i></i></a>
             </>
           )}
         </div>

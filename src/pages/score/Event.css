@@ -1,0 +1,412 @@
+html[data-styles~="event"] .event_tools {
+  text-align: left;
+  min-height: 40px;
+}
+
+html[data-styles~="event"] .event_tools .g_btn,
+html[data-styles~="event"] .event_more .g_btn,
+html[data-styles~="event"] .event_actions .g_btn {
+  display: inline-block;
+  width: auto;
+  height: 28px;
+  line-height: 28px;
+  margin: 0 8px 8px 0;
+  padding: 0 12px;
+  font-size: 14px;
+}
+
+html[data-styles~="event"] .event_grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 14px;
+  text-align: left;
+}
+
+html[data-styles~="event"] .event_card {
+  display: block;
+  overflow: hidden;
+  background-color: white;
+  border: 1px solid #4190e7;
+  border-radius: 4px;
+  color: #333;
+  text-decoration: none;
+}
+
+html[data-styles~="event"] .event_card:hover {
+  border-color: #7ab1ee;
+  box-shadow: 0 0 8px #b2d2f5;
+  text-decoration: none;
+}
+
+html[data-styles~="event"] .event_cover {
+  position: relative;
+  height: 128px;
+  background: #e3eefb url('/static/img/cover.png') no-repeat center center;
+  background-size: cover;
+}
+
+html[data-styles~="event"] .event_pill {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  padding: 2px 9px;
+  border-radius: 10px;
+  background-color: #97c2f2;
+  color: white;
+  font-size: 12px;
+  line-height: 18px;
+}
+
+html[data-styles~="event"] .event_pill.ongoing {
+  background-color: #4190e7;
+}
+
+html[data-styles~="event"] .event_pill.ended {
+  background-color: #999;
+}
+
+html[data-styles~="event"] .event_pill.unknown {
+  background-color: #d8e8fa;
+  color: #555;
+}
+
+html[data-styles~="event"] .event_card_body {
+  padding: 8px 10px 12px;
+}
+
+html[data-styles~="event"] .event_card_title {
+  font-size: 15px;
+  font-weight: bold;
+  line-height: 22px;
+}
+
+html[data-styles~="event"] .event_card_meta {
+  color: #777;
+  font-size: 12px;
+  line-height: 20px;
+}
+
+html[data-styles~="event"] .event_more {
+  margin: 18px 0 4px;
+  text-align: center;
+}
+
+html[data-styles~="event"] .event_more .g_btn {
+  width: 180px;
+  margin: 0;
+}
+
+html[data-styles~="event"] .event_hero {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  text-align: left;
+  padding: 4px 0 16px;
+  border-bottom: 1px solid #b2d2f5;
+}
+
+html[data-styles~="event"] .event_hero_cover {
+  flex: none;
+  width: 200px;
+  height: 150px;
+  border: 1px solid #4190e7;
+  border-radius: 4px;
+  background: #e3eefb url('/static/img/cover.png') no-repeat center center;
+  background-size: cover;
+}
+
+html[data-styles~="event"] .event_hero_info {
+  flex: 1;
+  min-width: 0;
+}
+
+html[data-styles~="event"] .event_hero_info h3 {
+  margin: 0 0 8px;
+  font-size: 20px;
+  line-height: 28px;
+}
+
+html[data-styles~="event"] .event_meta_row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 8px 0;
+}
+
+html[data-styles~="event"] .event_tag {
+  display: inline-block;
+  padding: 1px 10px;
+  border: 1px solid #4190e7;
+  border-radius: 12px;
+  color: #4190e7;
+  font-size: 12px;
+  line-height: 20px;
+}
+
+html[data-styles~="event"] .event_tag.solid {
+  background-color: #4190e7;
+  color: white;
+}
+
+html[data-styles~="event"] .event_tag.muted {
+  border-color: #b2d2f5;
+  color: #777;
+}
+
+html[data-styles~="event"] .event_section {
+  margin-top: 20px;
+  text-align: left;
+}
+
+html[data-styles~="event"] .event_section > p.label {
+  margin: 0 0 12px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #4190e7;
+  font-size: 16px;
+  font-weight: bold;
+  color: #4190e7;
+}
+
+html[data-styles~="event"] .event_chart_grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 12px;
+}
+
+html[data-styles~="event"] .event_chart_card {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  border: 1px solid #b2d2f5;
+  border-radius: 4px;
+  background-color: white;
+  color: #333;
+  text-decoration: none;
+}
+
+html[data-styles~="event"] a.event_chart_card:hover {
+  border-color: #4190e7;
+  text-decoration: none;
+}
+
+html[data-styles~="event"] .event_chart_cover {
+  height: 108px;
+  background: #e3eefb url('/static/img/cover.png') no-repeat center center;
+  background-size: cover;
+}
+
+html[data-styles~="event"] .event_chart_body {
+  padding: 8px 10px 10px;
+}
+
+html[data-styles~="event"] .event_chart_title {
+  font-size: 14px;
+  font-weight: bold;
+  line-height: 20px;
+}
+
+html[data-styles~="event"] .event_chart_artist {
+  color: #777;
+  font-size: 12px;
+  line-height: 18px;
+}
+
+html[data-styles~="event"] .event_chart_tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 6px;
+}
+
+html[data-styles~="event"] .event_chart_tags .event_tag {
+  border-color: #ddd;
+  color: #777;
+  font-size: 11px;
+}
+
+html[data-styles~="event"] .event_rank .list_head,
+html[data-styles~="event"] .event_rank .list li {
+  display: flex;
+}
+
+html[data-styles~="event"] #center .g_cont .event_rank span.rank,
+html[data-styles~="event"] #center .g_cont .event_rank span.name,
+html[data-styles~="event"] #center .g_cont .event_rank span.score {
+  width: auto;
+}
+
+html[data-styles~="event"] #center .g_cont .event_rank span.rank {
+  flex: 0 0 60px;
+  text-align: center;
+}
+
+html[data-styles~="event"] #center .g_cont .event_rank span.name {
+  flex: 1;
+  text-align: left;
+  padding-left: 10px;
+}
+
+html[data-styles~="event"] #center .g_cont .event_rank span.score {
+  flex: 0 0 140px;
+  text-align: right;
+  padding-right: 10px;
+}
+
+html[data-styles~="event"] .event_msg {
+  margin: 8px 0;
+  text-align: left;
+  color: #c33;
+  font-size: 13px;
+}
+
+html[data-styles~="event"] .event_msg.ok {
+  color: #2a7d2a;
+}
+
+html[data-styles~="event"] .event_hint {
+  margin: 6px 0;
+  text-align: left;
+  color: #777;
+  font-size: 12px;
+}
+
+html[data-styles~="event"] .event_form {
+  display: block;
+  width: 100%;
+  margin: 8px 0 18px;
+}
+
+html[data-styles~="event"] .event_form div.bg {
+  padding: 6px 0;
+}
+
+html[data-styles~="event"] .event_form h2 {
+  display: flex;
+  align-items: center;
+  min-height: 30px;
+}
+
+html[data-styles~="event"] .event_form h2 label {
+  width: 140px;
+  flex: none;
+  line-height: 26px;
+}
+
+html[data-styles~="event"] .event_form h2 input,
+html[data-styles~="event"] .event_form h2 select {
+  width: auto;
+  flex: 1;
+  min-width: 0;
+  height: 26px;
+  line-height: 26px;
+  padding: 0 6px;
+  border: 1px solid #b2d2f5;
+  border-radius: 3px;
+  background-color: white;
+  color: #333;
+  font-size: 14px;
+}
+
+html[data-styles~="event"] .event_form h2 .event_field_extra {
+  display: flex;
+  flex: 1;
+  gap: 6px;
+  align-items: center;
+}
+
+html[data-styles~="event"] .event_form h2 .event_field_extra input {
+  flex: 1;
+}
+
+html[data-styles~="event"] .event_form h2 .event_field_extra .g_btn {
+  display: inline-block;
+  width: auto;
+  height: 26px;
+  line-height: 26px;
+  margin: 0;
+  padding: 0 10px;
+  font-size: 13px;
+  flex: none;
+}
+
+html[data-styles~="event"] .event_cover_row {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  text-align: left;
+  margin: 12px 0;
+}
+
+html[data-styles~="event"] .event_cover_preview {
+  flex: none;
+  width: 160px;
+  height: 120px;
+  border: 1px solid #4190e7;
+  border-radius: 4px;
+  background: #e3eefb url('/static/img/cover.png') no-repeat center center;
+  background-size: cover;
+}
+
+html[data-styles~="event"] .event_cover_controls {
+  flex: 1;
+  min-width: 0;
+}
+
+html[data-styles~="event"] .event_cover_controls .g_btn {
+  display: inline-block;
+  width: auto;
+  height: 28px;
+  line-height: 28px;
+  margin: 8px 0 0;
+  padding: 0 12px;
+  font-size: 14px;
+}
+
+html[data-styles~="event"] .event_file_label {
+  display: inline-block;
+  max-width: 100%;
+  padding: 4px 8px;
+  border: 1px solid #b2d2f5;
+  border-radius: 3px;
+  color: #4190e7;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+html[data-styles~="event"] .event_file_label input {
+  display: none;
+}
+
+html[data-styles~="event"] .event_remove {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  z-index: 2;
+  padding: 1px 8px;
+  border: 1px solid #4190e7;
+  border-radius: 3px;
+  background-color: white;
+  color: #4190e7;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+html[data-styles~="event"] .event_actions {
+  margin-top: 18px;
+  text-align: left;
+}
+
+html[data-styles~="event"] .event_chart_tags .event_tag.alpha {
+  border-color: #bbb;
+  color: #888;
+}
+
+html[data-styles~="event"] .event_chart_tags .event_tag.beta {
+  border-color: #e0a94b;
+  color: #a06a12;
+}
+
+html[data-styles~="event"] .event_chart_tags .event_tag.stable {
+  border-color: #4190e7;
+  color: #4190e7;
+}

@@ -1,4 +1,4 @@
-import { Navigate, Route, Routes, useParams } from 'react-router-dom'
+import { Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom'
 import { useSession } from './components/SessionProvider'
 
 import Index from './pages/home/Index'
@@ -50,6 +50,9 @@ import AchievePage from './pages/account/AchievePage'
 import ScorePage from './pages/score/ScorePage'
 import EventPage from './pages/score/EventPage'
 import EventRank from './pages/score/EventRank'
+import EventList from './pages/score/EventList'
+import EventDetail from './pages/score/EventDetail'
+import EventEdit from './pages/score/EventEdit'
 
 import StoreAll from './pages/store/StoreAll'
 import MyItems from './pages/store/MyItems'
@@ -69,6 +72,14 @@ import SkinHash from './pages/admin/SkinHash'
 function PageRedirect() {
   const { pageId } = useParams()
   return <Navigate to={`/wiki/${pageId ?? ''}`} replace />
+}
+
+function EventRoute() {
+  const { search } = useLocation()
+  const params = new URLSearchParams(search)
+  const raw = params.get('eid') ?? params.get('id')
+  const id = raw ? Number(raw) : 0
+  return id > 0 ? <EventDetail /> : <EventList />
 }
 
 /** 老站 /accounts/logout 清 session 后回 /index */
@@ -137,6 +148,8 @@ export default function App() {
       <Route path="/talk/chart" element={<ChartTalk />} />
 
       {/* 成绩组 */}
+      <Route path="/score/event/edit" element={<EventEdit />} />
+      <Route path="/score/event" element={<EventRoute />} />
       <Route path="/score/event/:id" element={<EventPage />} />
       <Route path="/score/event_rank/:id" element={<EventRank />} />
       <Route path="/score/:chartId" element={<ScorePage />} />

@@ -821,6 +821,11 @@ html[data-styles~="main"] .g_toolbtn i {
   background-repeat: no-repeat;
   background-size: contain;
 }
+html[data-styles~="main"] .g_toolbtn.busy {
+  opacity: 0.5;
+  cursor: default;
+  pointer-events: none;
+}
 html[data-styles~="main"] .g_toolbtn em {
   display: inline-block;
   width: 8px;
@@ -880,6 +885,10 @@ html[data-styles~="main"] .g_toolbtn.in i {
 }
 html[data-styles~="main"] .g_toolbtn.log i {
   background-image: url(/static/img/edit/tool-log.png);
+}
+/* wiki 页「推送新闻」：复用老站 tool-add.png 的加号图标 */
+html[data-styles~="main"] .g_toolbtn.n i {
+  background-image: url(/static/img/edit/tool-add.png);
 }
 html[data-styles~="main"] .g_talk {
   min-height: 10px !important;

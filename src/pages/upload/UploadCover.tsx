@@ -1,39 +1,26 @@
-import { useRef, useState, type ChangeEvent } from 'react'
+import { useRef, useState } from 'react'
 import { Shell } from '../../components/Layout'
-import { num, useLoad } from '../../lib/legacy'
+import { num } from '../../utils/data'
+import { useLoad } from '../../lib/useLoad'
 import { URLS } from '../../lib/urls'
-import { fetchUploadPage } from '../../network/legacy'
 import { coverUrl } from '../../utils/formatters'
 import { onUpyunSubmit } from './upyunSubmit'
 import { t as i18nT } from '../../i18n'
-
-const IMG_HOST = 'http://v0.api.upyun.com/ma-img'
+import type { Rec } from '../../utils/response'
+import { EMPTY_UPLOAD, IMG_HOST, fileChangeHandler, loadUploadPage, signFieldsOf, type UploadSong } from './uploadCommon'
 
 export default function UploadCover() {
   const sid = new URLSearchParams(window.location.search).get('sid') ?? ''
   const [file, setFile] = useState<File | null>(null)
   const formRef = useRef<HTMLFormElement>(null)
 
-  const { data } = useLoad<Record<string, any>>(
-    async () => {
-      const resp = await fetchUploadPage('cover')
-      return (resp?.data ?? resp ?? {}) as Record<string, any>
-    },
-    [],
-    {} as Record<string, any>,
-  )
+  const { data } = useLoad<Rec>(() => loadUploadPage('cover'), [], EMPTY_UPLOAD)
 
-  const song: any = data.song ?? {}
+  const song = (data.song ?? {}) as UploadSong
   const songId = song.id ?? sid
   const cover = String(song.cover_url ?? song.cover ?? '')
-  const policy = String(data.policy ?? '')
-  const signature = String(data.signature ?? '')
-
-  const onFile = (e: ChangeEvent<HTMLInputElement>) => {
-    const f = e.target.files?.[0]
-    if (!f) return
-    setFile(f)
-  }
+  const { policy, signature } = signFieldsOf(data)
+  const onFile = fileChangeHandler(setFile)
 
   return (
     <Shell variant="two-col" title={i18nT('Change Cover')} css={['upload.css']}>

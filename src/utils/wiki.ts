@@ -23,13 +23,10 @@ export type WikiRenderOptions = {
   hiddenLabel: string
   templateLabel: string
   templateLoading: string
-  /** 老站 preview 的 conf={"ignore_tmpl": True}：{{ }} 模板块整段不输出 */
   ignoreTemplates?: boolean
-  /** 讨论/私信不解析业务模板：{{ ... }} 按老站 translate() 原样转义成文本 */
   literalTemplates?: boolean
 }
 
-/** 老站 lib/woc2baka.py translate() 的默认标签文案；页面侧可覆盖成 i18n 文案 */
 export const DEFAULT_WIKI_OPTIONS: WikiRenderOptions = {
   hiddenLabel: 'Click to display',
   templateLabel: 'Template',
@@ -51,7 +48,6 @@ export const bindHiddenToggles = (container: HTMLElement | null) => {
   }
 }
 
-/** 老站 cgi.escape(line, quote=True) 后再把 ' 换成 &#039; */
 export const escapeHtml = (input: string) =>
   input
     .replace(/&/g, '&amp;')
@@ -60,17 +56,6 @@ export const escapeHtml = (input: string) =>
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#039;')
 
-/* ------------------------------------------------------------------ *
- * URL 协议白名单 —— 存储型 XSS 的主防线
- *
- * wiki 语法会把用户提供的字符串直接拼进 href/src，例如
- *   [video:javascript:...]            → <iframe src="javascript:...">
- *   {{name:action / link:javascript:...}} → <a href="javascript:...">
- * escapeHtml 只能防属性逃逸，挡不住危险协议。这里统一走
- * 「实体解码 → 剥离控制字符 → scheme 白名单 → 重新转义」，
- * 返回值可直接放进 HTML 属性。采用白名单而非黑名单，覆盖大小写、
- * 命名/数字实体、多重编码、Tab/换行等常见绕过。
- * ------------------------------------------------------------------ */
 
 const NAMED_ENTITIES: Record<string, string> = {
   amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: '\u00a0',
@@ -79,7 +64,6 @@ const NAMED_ENTITIES: Record<string, string> = {
   period: '.', hyphen: '-', lowbar: '_', plus: '+', ast: '*', excl: '!',
 }
 
-/** 反复解码实体，覆盖 &amp;#x6a;avascript: 之类的多重编码 */
 const decodeHtmlEntities = (input: string): string => {
   let out = input
   for (let pass = 0; pass < 3; pass += 1) {
@@ -98,12 +82,10 @@ const decodeHtmlEntities = (input: string): string => {
   return out
 }
 
-/** 浏览器解析 URL 时会忽略这些字符，攻击者常用它们拆开 javascript: */
 const URL_IGNORABLE = /[\u0000-\u0020\u007f-\u009f\u00ad\u200b-\u200f\u2028\u2029\u2060\ufeff]/g
 
 export type UrlSchemeOptions = { allowMailto?: boolean }
 
-/** 只放行 http/https（可选 mailto）与无 scheme 的相对/协议相对 URL */
 export const sanitizeUrl = (raw: string, options: UrlSchemeOptions = {}): string => {
   const value = String(raw ?? '')
   if (!value) return '#'
@@ -118,48 +100,30 @@ export const sanitizeUrl = (raw: string, options: UrlSchemeOptions = {}): string
   return escapeHtml(decoded)
 }
 
-/** CSS url(...) 上下文：先过协议白名单，再去掉能闭合/改写 CSS 的字符 */
 export const sanitizeCssUrl = (raw: string): string =>
   sanitizeUrl(raw).replace(/[()'"\\;\u0000-\u0020\u007f]/g, '')
 
-/** 外链视频 code 只能作为固定域名的路径片段 */
 export const safePathSegment = (raw: string): string =>
   decodeHtmlEntities(String(raw ?? '')).replace(/[^A-Za-z0-9_-]/g, '').slice(0, 128)
 
-/**
- * 输出兜底：渲染器生成的 HTML 在注入 DOM 之前，把所有 URL 型属性再过一遍
- * 白名单。即使某个语法分支漏了 sanitizeUrl，这里也不会漏出 javascript:/data:。
- * 全站 14 处 dangerouslySetInnerHTML 的输入都由 wikiRender.tsx 提供，
- * 因此这一层能覆盖所有注入点。
- */
-// 渲染器生成的属性一律带引号；只匹配带引号形式，避免误改正文里出现的 src=xxx 文本
 const URL_ATTR = /\b(href|src|poster|background|action|formaction)\s*=\s*(?:"([^"]*)"|'([^']*)')/gi
 
 export const sanitizeRenderedHtml = (html: string): string =>
   String(html ?? '').replace(URL_ATTR, (_m, attr: string, dq?: string, sq?: string) =>
     `${attr}="${sanitizeUrl(dq ?? sq ?? '')}"`)
 
-/* ------------------------------------------------------------------ *
- * 老站落库的「已翻译 HTML」（如皮肤简介 desc：woc2baka.translate() 的结果）。
- * 接口没有对应的 raw，不能再按 wiki 渲染（会把标签整体转义成文本），
- * 也不能直接塞进 innerHTML。这里用白名单重建：只保留渲染器会产出的
- * 标签与属性，URL 再过 sanitizeUrl，其余（script / on* / 未知标签）一律丢弃。
- * ------------------------------------------------------------------ */
 const LEGACY_ALLOWED_TAGS = new Set([
   'a', 'b', 'blockquote', 'br', 'code', 'del', 'div', 'em', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
   'hr', 'i', 'iframe', 'img', 'li', 'ol', 'p', 'pre', 's', 'span', 'strong', 'sub', 'sup',
   'table', 'tbody', 'td', 'th', 'thead', 'tr', 'u', 'ul',
 ])
-/** 内容一并丢弃的标签（其余未知标签只去壳、保留文字） */
 const LEGACY_DROP_TAGS = new Set(['script', 'style', 'template', 'noscript', 'object', 'embed', 'frame', 'frameset', 'svg', 'math'])
 const LEGACY_ALLOWED_ATTRS = new Set([
   'align', 'alt', 'class', 'colspan', 'height', 'href', 'rowspan', 'src', 'style', 'target', 'title', 'width',
   'allowfullscreen', 'frameborder', 'scrolling',
 ])
 const LEGACY_URL_ATTRS = new Set(['href', 'src'])
-/** 渲染器只为这两个站点生成 iframe（[video:...]），其它来源一律不保留 */
 const LEGACY_IFRAME_SRC = /^(?:https?:)?\/\/(?:www\.youtube\.com\/embed\/|player\.bilibili\.com\/player\.html\?)/i
-/** style 里禁止外部资源与旧 IE 表达式 */
 const LEGACY_UNSAFE_STYLE = /url\s*\(|expression\s*\(|@import|javascript:|behavior\s*:/i
 
 const isSafeLegacyUrl = (value: string): boolean => {
@@ -179,7 +143,6 @@ const cleanLegacyNode = (node: Node, doc: Document): Node | null => {
     .filter((child): child is Node => child !== null)
 
   if (!LEGACY_ALLOWED_TAGS.has(tag)) {
-    // 未知标签去壳保留文字，避免正文丢失
     const frag = doc.createDocumentFragment()
     children.forEach((child) => frag.appendChild(child))
     return frag
@@ -199,12 +162,10 @@ const cleanLegacyNode = (node: Node, doc: Document): Node | null => {
   return out
 }
 
-/** 判断文本是否为老站已翻译好的 HTML（以标签开头），而不是 wiki raw */
 export const looksLikeLegacyHtml = (text: string): boolean => /^\s*<[a-z][a-z0-9]*[\s>/]/i.test(String(text ?? ''))
 
 export const sanitizeLegacyHtml = (html: string): string => {
   if (typeof DOMParser === 'undefined') return escapeHtml(String(html ?? ''))
-  // DOMParser 生成的是惰性文档：其中的 <img>/<script> 不会加载或执行
   const parsed = new DOMParser().parseFromString(String(html ?? ''), 'text/html')
   const target = document.implementation.createHTMLDocument('')
   const wrapper = target.createElement('div')
@@ -217,17 +178,13 @@ export const sanitizeLegacyHtml = (html: string): string => {
 
 const clamp = (value: number, max = 700, min = 0) => Math.min(Math.max(value, min), max)
 
-/* 按需求只移植 translate(raw, False)：任何 wiki 文本（含 """ 原文块）一律
- * 先 escape 再由标记语法生成可信标签，不保留老站 is_admin 的原文 HTML 特权。 */
 
-/** 老站 lib/w2b_chat.py translate()：私信/自动消息用的精简行内渲染器 */
 export const renderChat = (raw: string): string => {
   let line = escapeHtml(String(raw ?? ''))
   line = line.replace(/\[img:([^\s\]]+)\]/gi, (_m, url: string) =>
     `<img src="${sanitizeUrl(url)}" style="width:300px"/>`)
   line = line.replace(/\[((?:https?):\/\/[^\s\]]+)\s+([^\]]+)\]/gi, (_m, href: string, label: string) =>
     `<a href="${sanitizeUrl(href)}">${label}</a>`)
-  // 同 w2b_chat.py:8-12，字符类允许内容含标记字符本身
   line = line.replace(/\*\*\s*([\s\S]+?)\s*\*\*/g, '<b>$1</b>')
   line = line.replace(/http:\/\//g, '____http____').replace(/https:\/\//g, '____https____')
   line = line.replace(/\/\/\s*([\s\S]+?)\s*\/\//g, '<i>$1</i>')
@@ -243,7 +200,6 @@ const parseInnerMark = (rawLine: string, { newLine = false, autoFloat = true } =
   const imageRegex = /\[img:([^@\s\]]+)(@(left|right|center))?(@(\d{1,3}))?\]/i
   let imageMatch = line.match(imageRegex)
   while (imageMatch) {
-    // sanitizeUrl 统一解码实体、校验协议并重新转义，顺带修掉老站 &amp; 只替换首个的 bug
     const url = sanitizeUrl(imageMatch[1])
     let align = imageMatch[3] ?? ''
     let size = imageMatch[5]
@@ -301,7 +257,6 @@ const parseInnerMark = (rawLine: string, { newLine = false, autoFloat = true } =
   let exLinkMatch = line.match(exLinkRegex)
   while (exLinkMatch) {
     const type = exLinkMatch[1].toLowerCase()
-    // code 会被拼进固定域名的路径，收紧成安全路径片段，防止改写 URL / 属性逃逸
     const code = safePathSegment(exLinkMatch[2])
     let replacement = ''
     if (type === 'xiami') {
@@ -366,9 +321,6 @@ const parseInnerMark = (rawLine: string, { newLine = false, autoFloat = true } =
     emojiMatch = line.match(emojiRegex)
   }
 
-  // 老站 woc2baka.py:26-29 的字符类是 ([^\1]+?)（\1 在字符类里是 0x01 控制符），
-  // 实际含义是「允许内容里出现标记字符本身」。用 [^*]/[^/]/[^_]/[^-] 会让
-  // //**粗体**//、__[链接]__（target="_blank" 含 _）、----文字---- 解析失败。
   const boldRegex = /\*\*\s*([\s\S]+?)\s*\*\*/g
   line = line.replace(boldRegex, '<b>$1</b>')
 
@@ -578,7 +530,6 @@ export const renderWiki = (content: string, options: WikiRenderOptions): WikiRen
       }
       inTemplate = true
       templateLines = []
-      // 老站 translate() 默认把 {{ 本身 escape 后写进 ret（讨论里就是字面文本）
       if (options.literalTemplates) output.push(escapeHtml(line))
       return
     }
@@ -606,7 +557,6 @@ export const renderWiki = (content: string, options: WikiRenderOptions): WikiRen
         inTemplate = false
         const tmpl = parseTemplateBlock(templateLines)
         if (tmpl) {
-          // 老站 conf={"ignore_tmpl": True}：预览时模板块整段不输出
           if (!options.ignoreTemplates) templates.push(tmpl)
           if (!options.ignoreTemplates) {
             output.push(buildTemplatePlaceholder(tmpl, templates.length - 1, options))
@@ -628,7 +578,6 @@ export const renderWiki = (content: string, options: WikiRenderOptions): WikiRen
         const prefix = line.match(/^(=*)/)?.[1] ?? ''
         const level = Math.min(prefix.length, 4)
         const text = line.replace(/^[=\s]*|[=\s]*$/g, '')
-        // 老站正文标题就是纯 <hN>，无 id、无目录、无编号
         output.push(`<h${level}>${escapeHtml(text)}</h${level}>`)
         return
       }
@@ -653,7 +602,6 @@ export const renderWiki = (content: string, options: WikiRenderOptions): WikiRen
         mode = BlockMode.None
         return
       }
-      // 老站 MODE_ORG 的非管理员分支：只做 html escape，不做任何标记解析
       output.push(`<p>${escapeHtml(line)}</p>`)
       return
     }
@@ -667,7 +615,6 @@ export const renderWiki = (content: string, options: WikiRenderOptions): WikiRen
       if (line.startsWith('|!')) {
         output.push(parseTableRow(line.slice(2), { head: true }))
       } else if (line.startsWith('|-')) {
-        // ignore divider
       } else if (line.startsWith('|')) {
         output.push(parseTableRow(line.slice(1)))
       }
@@ -693,11 +640,9 @@ export const renderWiki = (content: string, options: WikiRenderOptions): WikiRen
   return { html: output.join(''), templates }
 }
 
-/** 全站统一入口：老站 translate() 保存时生成的 html 现在一律由前端按 raw 现算。 */
 export const wikiRenderOptions = (
   options: Partial<WikiRenderOptions> = {},
 ): WikiRenderOptions => ({ ...DEFAULT_WIKI_OPTIONS, ...options })
 
-/** 只取 HTML 的便捷入口（讨论、预览、编辑页等不需要异步模板块的场景） */
 export const renderWikiText = (raw: string, options: Partial<WikiRenderOptions> = {}): string =>
   renderWiki(String(raw ?? ''), wikiRenderOptions(options)).html

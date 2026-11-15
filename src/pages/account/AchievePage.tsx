@@ -1,15 +1,14 @@
 import { useParams } from 'react-router-dom'
 import { Shell } from '../../components/Layout'
-import { asArray, LoadingBlock, useLoad } from '../../lib/legacy'
+import { asArray } from '../../utils/data'
+import { LoadingBlock } from '../../components/fragments'
+import { useLoad } from '../../lib/useLoad'
 import { URLS } from '../../lib/urls'
-import { fetchAchieveList } from '../../network/legacy'
+import { fetchAchieveList } from '../../network/pageAccount'
 import { t as i18nT } from '../../i18n'
 import './AchievePage.css'
+import type { AnyRec as Rec } from '../../utils/data'
 
-/* list/achieve.html：个人主页成就区「查看全部」的落地页。
- * 老站还有 Puzzle 拼图区，数据来自 player_evt；Go 的 /account/achieve/list
- * 只返回 user_achievement，因此这里只复刻 Achievement 区块。 */
-type Rec = Record<string, any>
 
 export default function AchievePage() {
   const params = useParams<{ uid?: string }>()

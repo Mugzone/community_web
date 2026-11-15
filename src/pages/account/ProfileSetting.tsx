@@ -1,15 +1,16 @@
 import { useEffect, useState, type ChangeEvent } from 'react'
 import { useSession } from '../../components/SessionProvider'
 import { Shell } from '../../components/Layout'
-import { num, showNotify, useLoad } from '../../lib/legacy'
+import { useLoad } from '../../lib/useLoad'
+import { showNotify } from '../../lib/notify'
 import { URLS } from '../../lib/urls'
 import { fetchPlayerInfo, savePlayerInfo } from '../../network/api'
 import { formatBirthPayload, regionMap } from '../../utils/profile'
 import { avatarUrl } from '../../utils/formatters'
 import { t as i18nT } from '../../i18n'
+import { asString as s, num as n } from '../../utils/data'
+import type { AnyRec as Rec } from '../../utils/data'
 
-/* user_profile.html：编辑资料单页，交互对应 module/profile/src/init.js */
-type Rec = Record<string, any>
 type ProfileData = {
   username: string
   email: string
@@ -33,7 +34,6 @@ const FALLBACK: ProfileData = {
   username: '', email: '', gender: 3, country: 0, birth: '', tab: 0, avatar: '', isPub: false,
 }
 
-/* .g_tip 下的 10 个 span，顺序即 util.showTip(n) 的下标。 */
 const TIPS: { text: string; err: boolean; link?: string }[] = [
   { text: i18nT('Saving...'), err: false },
   { text: i18nT('Failed to save, please try again later.'), err: true },
@@ -47,14 +47,8 @@ const TIPS: { text: string; err: boolean; link?: string }[] = [
   { text: i18nT('The username is in use'), err: true },
 ]
 
-/* 返回码 -> .g_tip 下标。
- * 这里是 MaApi-go PlayerSaveInfo 的码表，不是老站 /accounts/config/profile 的：
- * -1 金币/改名券不足, -2 资料不存在或生日非法, -3 用户名非法,
- * -4 半年内已改过名, -5 用户名已存在。老站 -2 才是「没有改名券」。 */
 const SAVE_ERR: Record<number, number> = { [-1]: 6, [-2]: 5, [-3]: 7, [-4]: 8, [-5]: 9 }
 
-const s = (v: unknown, fb = ''): string => (v === undefined || v === null ? fb : String(v))
-const n = (v: unknown, fb = 0): number => num(v, fb)
 
 const dobStr = (v: unknown): string => {
   if (v === undefined || v === null || v === '') return ''
@@ -93,8 +87,6 @@ export default function ProfileSetting() {
   const { data } = useLoad<ProfileData>(
     async () => {
       const res = await fetchPlayerInfo({ uid })
-      // /player/info 返回的是扁平结构（username/gender/... 在顶层），没有 data 包裹；
-      // 早期写成 res?.data ?? {} 会把整份资料丢掉，表单全部落回默认值。
       const d: Rec = ((res as Rec | undefined)?.data ?? res ?? {}) as Rec
       return {
         username: s(d.username ?? d.name),
@@ -141,8 +133,6 @@ export default function ProfileSetting() {
   const save = async () => {
     if (busy) return
     const age = (form.age ?? '').trim()
-    // 空生日表示不修改；非空必须是后端能 time.Parse("2006-1-2") 的日期串，
-    // 不能再转成老站 age 参数那种 Unix 时间戳（会触发 code:-2）。
     let birth: string | undefined
     if (age !== '') {
       birth = formatBirthPayload(age)
@@ -194,7 +184,6 @@ export default function ProfileSetting() {
           <a href="/store/my" className="g_btn">My items</a>
           {data.isPub && <a href={URLS.publish} className="g_btn">Publisher</a>}
         </div>
-        {/* 老站 user_profile.html:18 {% avatar user 128 hclass="g_round" %}：!avatar128 + 内联 128px 上限 */}
         <h1><label htmlFor="avatar">{i18nT('Avatar')}</label><a href="/upload/avatar"><img className="g_round" src={avatarUrl(data.avatar, uid, 128)} alt={i18nT('Avatar')} style={{ maxWidth: 128, maxHeight: 128 }} /></a></h1>
         <h1><label htmlFor="name">{i18nT('Nickname')}</label><input type="text" name="name" id="name" value={form.name} onChange={setField('name')} /> </h1>
         <h1><label htmlFor="email">Email</label><input type="text" className="lock" name="email" id="email" value={form.email} disabled /> </h1>

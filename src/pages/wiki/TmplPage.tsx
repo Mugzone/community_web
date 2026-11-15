@@ -1,15 +1,15 @@
 import { useParams } from 'react-router-dom'
 import { Shell, DefaultSidebar } from '../../components/Layout'
-import { useLoad, showNotify } from '../../lib/legacy'
+import { useLoad } from '../../lib/useLoad'
+import { showNotify } from '../../lib/notify'
 import { URLS } from '../../lib/urls'
-import { operateWikiPage, fetchWikiTmplPage } from '../../network/legacy'
+import { operateWikiPage, fetchWikiTmplPage } from '../../network/pageWeb'
 import { wikiToHtml } from '../../utils/wikiRender'
 import { t as i18nT } from '../../i18n'
 
 type Model = { name: string; id: number | string; key: string; raw: string }
 const FALLBACK: Model = { name: '', id: '', key: '', raw: '' }
 
-/** /page/tmpl/<name> —— 老站 wiki/wiki_tmpl.html + module/wikiTmpl（Usage/Preview/Delete） */
 export default function TmplPage() {
   const { name = '' } = useParams()
 
@@ -22,7 +22,6 @@ export default function TmplPage() {
         name: String(p?.name ?? name),
         id: tmpl?.id ?? name,
         key: String(tmpl?.key ?? ''),
-        // 只取 raw；服务端 html 字段不再作为渲染源
         raw: String(tmpl?.raw ?? p?.raw ?? ''),
       }
     },
@@ -30,7 +29,6 @@ export default function TmplPage() {
     FALLBACK,
   )
 
-  // 复刻 wikiTmpl init.js：从 raw 里抽出 $param$ 生成 Usage。
   const params: string[] = []
   const reg = /\$([^$]+)\$/g
   let m: RegExpExecArray | null
@@ -38,8 +36,6 @@ export default function TmplPage() {
     params.push(m[1])
   }
 
-  // 老站 wiki_tmpl.html 的 Preview 用 {% autoescape off %}{{ tmpl.html }}；
-  // 现在由前端按 raw 现算（模板块按 preview 的 ignore_tmpl 语义跳过）
   const previewHtml = wikiToHtml(data.raw, { ignoreTemplates: true }).html
 
   const del = async () => {

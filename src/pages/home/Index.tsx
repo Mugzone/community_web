@@ -1,15 +1,16 @@
 import { useEffect, useState } from 'react'
 import { Shell } from '../../components/Layout'
-import { useLoad, asArray, JustifyRow } from '../../lib/legacy'
+import { useLoad } from '../../lib/useLoad'
+import { asArray } from '../../utils/data'
+import { JustifyRow } from '../../components/fragments'
 import { URLS, staticUrl } from '../../lib/urls'
-import { fetchHomeData } from '../../network/legacy'
+import { fetchHomeData } from '../../network/pageWeb'
 import { fetchBasicInfo } from '../../network/api'
 import { t as i18nT } from '../../i18n'
 import { coverUrl } from '../../utils/formatters'
 import { skeletonCardNodes } from '../../components/Skeleton'
 import './Index.css'
 
-/* 老站 index.html 的数据结构（homepage.views.index） */
 type Banner = { img?: string; image?: string; url?: string; link?: string }
 type News = { title?: string; desc?: string; link?: string }
 type MapSong = {
@@ -93,7 +94,6 @@ const normalize = (homeRes: any, basicRes: any): HomeState => {
   }
 }
 
-/** widget/map.html —— song=True 走歌曲页，否则走谱面页；run 时显示 hotcount */
 function MapCardView({ map, song, run }: { map: MapCard; song?: boolean; run?: boolean }) {
   const s: MapSong = map?.song ?? {}
   const href = song ? URLS.song(s.id ?? 0) : URLS.chartPage(map.id ?? 0)
@@ -117,7 +117,6 @@ function MapCardView({ map, song, run }: { map: MapCard; song?: boolean; run?: b
   )
 }
 
-/** module/home/src/init.js —— 6 秒自动轮播 + 圆点跳转，curr 高亮 */
 function BannerSlider({ items }: { items: Banner[] }) {
   const [curr, setCurr] = useState(0)
 
@@ -216,7 +215,6 @@ export default function Index() {
       <div id="newMap" className="g_rblock">
         <p className="label">New Arrival <a href={URLS.chart} className="more">{i18nT('More')}</a></p>
         <JustifyRow>
-          {/* 加载中用卡片骨架占位，避免整块空白（老站服务端直出无此态） */}
           {loading && skeletonCardNodes(5)}
           {!loading && data.newMap.map((map, i) => (
             <MapCardView key={`nm${i}`} map={map} song />

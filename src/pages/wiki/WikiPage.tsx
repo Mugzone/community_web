@@ -1,7 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { Shell } from '../../components/Layout'
-import { useLoad, asArray, num, formatTime, showNotify, LoadingBlock } from '../../lib/legacy'
+import { useLoad } from '../../lib/useLoad'
+import { asArray, num, formatTime } from '../../utils/data'
+import { LoadingBlock } from '../../components/fragments'
+import { showNotify } from '../../lib/notify'
 import { URLS } from '../../lib/urls'
 import {
   fetchWiki, getSession,
@@ -9,16 +12,12 @@ import {
 } from '../../network/api'
 import {
   fetchTalkList, saveTalk, operateTalk, fetchTalkRaw, submitVote,
-} from '../../network/legacy'
+} from '../../network/pageAccount'
 import { bindHiddenToggles } from '../../utils/wiki'
 import { useWikiHtml, useWikiLang, renderTalkHtml, renderTalkSmallHtml } from '../../utils/wikiRender'
 import { t as i18nT } from '../../i18n'
 import { avatarUrl } from '../../utils/formatters'
 
-/* ------------------------------------------------------------------ *
- * wiki/wiki_page.html（base_width.html 宽版）+ module/wiki + module/plugin
- * 正文渲染器已抽到 utils/wikiRender.tsx：服务端只返回 raw，前端现算 HTML。
- * ------------------------------------------------------------------ */
 
 export const LANGS: { code: string; label: string }[] = [
   { code: 'en', label: 'English' },
@@ -28,7 +27,6 @@ export const LANGS: { code: string; label: string }[] = [
   { code: 'kr', label: '한국어' },
 ]
 
-/** wiki/wiki_lang2.html —— 多语言下拉 tab */
 export function LangTabs({ value, onChange }: { value: string; onChange: (code: string, label: string) => void }) {
   const label = LANGS.find((l) => l.code === value)?.label ?? 'English'
   return (
@@ -50,7 +48,6 @@ export function LangTabs({ value, onChange }: { value: string; onChange: (code: 
   )
 }
 
-/** widget/edittool.html —— 完整标记工具条 */
 const EDIT_TOOLS: { type: string; cls: string; title: string }[] = [
   { type: 'bold', cls: 'tool-B', title: i18nT('Bold') },
   { type: 'italic', cls: 'tool-I', title: i18nT('Italic') },
@@ -80,9 +77,7 @@ export type TalkItem = {
   uid?: number | string
   name?: string
   time?: number | string
-  /** 服务端返回的 raw 文本，由前端 renderTalkHtml 现算 HTML */
   content?: string
-  /** 'chat' 走老站 w2b_chat 精简渲染器；缺省走完整 woc2baka */
   renderer?: string
   num?: number | string
   type?: number
@@ -92,7 +87,6 @@ export type TalkItem = {
   canDel?: boolean
 }
 
-/** module/talk + widget/talk.html + widget/edittool.html —— 讨论区 */
 export function TalkWidget({ talkKey, hasOwner }: { talkKey: string; hasOwner: boolean }) {
   const [talkPage, setTalkPage] = useState(0)
   const { data: talkItems, reload } = useLoad<TalkItem[]>(
@@ -175,8 +169,6 @@ export function TalkWidget({ talkKey, hasOwner }: { talkKey: string; hasOwner: b
     const showTime = formatTime(t.time)
     const bodyHtml = renderTalkHtml(String(t.content ?? ''), t.renderer)
     if (t.type === 1) {
-      // talk/like.tmpl.html：<p> 必须是 .g_wiki.meta 的直接子元素，
-      // 否则块级 wrapper 会把固定高度的白块撑塌，时间掉到灰底上。
       return (
         <li className="item small" data-id={tid} data-time={t.time} key={`${tid}-${idx}`}>
           <div className="bg right">
@@ -195,7 +187,6 @@ export function TalkWidget({ talkKey, hasOwner }: { talkKey: string; hasOwner: b
     return (
       <li className="item" data-id={tid} data-time={t.time} key={`${tid}-${idx}`}>
         <a className="bg left" href={URLS.user(uid)}>
-          {/* 老站 widget/discuss_item.html:5 {% avatar item.user 64 small=True %} */}
           <img src={avatarUrl(t.avatar, uid, 64)} style={{ background: 'none' }} alt="" />
         </a>
         <div className="bg right">
@@ -271,7 +262,6 @@ export default function WikiPage() {
   )
 
   const uid = getSession()?.uid ?? 1
-  // 服务端只返回 raw；无论旧接口的 raw 标志是什么，都不再消费服务端 html
   const baseRaw = String(page.wiki ?? page.content ?? '')
   const wikiHtml = useWikiHtml(baseRaw)
 
@@ -279,22 +269,16 @@ export default function WikiPage() {
   const [titleOverride, setTitleOverride] = useState<string>('')
   const [lockedOverride, setLockedOverride] = useState<boolean | null>(null)
   const [newsBusy, setNewsBusy] = useState(false)
-  // 同步 in-flight 锁：React state 批处理下 newsBusy 挡不住同一帧内的双击。
   const newsInFlight = useRef(false)
   const bodyRef = useRef<HTMLDivElement>(null)
 
   const title = titleOverride || String(page.title ?? '') || `Wiki #${id}`
   const limit = num(page.limit, 0)
-  // 老站 wiki_page.html 用 object.limit >= 16 判定「团队维护 / 已锁定」，
-  // 用 conf["isorg"]（is_commu）露出 Lock / Change title / Delete / Edit 按钮。
-  // 后端 GetWiki 现下发这两个字段；缺省一律收起，避免旧接口下按钮对所有人可见。
   const locked = lockedOverride ?? (page.limit !== undefined ? limit >= 16 : Boolean(page.locked))
   const isorg = page.isorg === true
 
   useEffect(() => bindHiddenToggles(bodyRef.current), [wikiHtml, langHtml])
 
-  /* module/plugin/src/init.js:8-43：正文里的 .g_tmpl_vote 用事件委托处理，
-     eid / choice 取自元素自身 data 属性，成功就地改成 Voted。 */
   useEffect(() => {
     const root = bodyRef.current
     if (!root) return
@@ -355,11 +339,7 @@ export default function WikiPage() {
     }
   }
 
-  /* web-v2 Wiki.tsx handleToggleNews：无表单的一键 toggle，服务端按
-     link="/wiki/{pid}" 决定上架(code=1)还是下架(code=2)，标题/时间/描述
-     都由服务端从 wiki_page 生成。按钮不查询当前状态，文案保持固定。 */
   const onToggleNews = async (): Promise<void> => {
-    // 连点两次会「上架后立刻下架」，用 ref 做同步锁而不是只靠 state。
     if (newsInFlight.current) return
     const pid = Number(id) || 0
     if (!pid) return
@@ -370,8 +350,6 @@ export default function WikiPage() {
       const resp = await toggleWikiNews({ pid, uid })
       if (resp?.code === 1) { showNotify(i18nT('News published.'), 'succ'); return }
       if (resp?.code === 2) { showNotify(i18nT('News unpublished.'), 'succ'); return }
-      // 按钮露出用 isorg(2/3/8/9)，服务端 /push/news 用 IsAssistent(2/3/8)，
-      // group 9 会走到这里，单独给权限提示。
       if (resp?.code === -5) { showNotify(i18nT('You do not have permission to push news.'), 'err'); return }
       showNotify(i18nT('Operation failed'), 'err')
     } catch {
@@ -383,7 +361,6 @@ export default function WikiPage() {
   }
 
   const finalHtml = langHtml !== null ? langHtml : wikiHtml
-  // 加载中正文也是空串，此时只显示下方骨架，不能当成「还没有内容」
   const gWikiInner = finalHtml || (loading ? '' : `<div class="g_wiki_new btn" data-type="edit">${i18nT('Click to create')}</div>`)
 
   return (
@@ -442,8 +419,6 @@ export default function WikiPage() {
         {loading && <LoadingBlock />}
       </div>
 
-      {/* 老站 wiki_page.html 没有固定投票按钮；投票只由正文 {{ name:_vote }} 模板块渲染，
-          由 module/plugin/src/init.js 在 #content 上做事件委托处理（见下方 useEffect）。 */}
       <TalkWidget talkKey={key} hasOwner={false} />
     </Shell>
   )

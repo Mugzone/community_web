@@ -1,6 +1,3 @@
-/* Command.css — 老站 admin.css 的 .oper / .editor / #record 区块，作用域名 "command"。
-   与页面组件同目录，由 src/styles/index.css 统一静态加载；Shell 的 page prop
-   会把 html[data-styles~="command"] 激活。配色沿用站点主题色 #4190e7。 */
 html[data-styles~="command"] .oper {
   text-align: left;
   color: #333;

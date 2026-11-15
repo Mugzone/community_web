@@ -1,7 +1,3 @@
-/* chartlist.css — 老站样式，作用域名 "chartlist"。
-   规则以 html[data-styles~="chartlist"] 限定，
-   Shell 依据 variant / page / css prop 生成 <html data-styles="...">。
- */
 html[data-styles~="chartlist"] .clear {
   clear: both;
   display: block;

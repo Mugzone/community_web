@@ -1,17 +1,16 @@
 import { useState } from 'react'
 import { Shell } from '../../components/Layout'
-import { asArray, num, Pager, useLoad } from '../../lib/legacy'
-import { fetchLimitList } from '../../network/legacy'
+import { Pager } from '../../components/fragments'
+import { useLoad } from '../../lib/useLoad'
+import { fetchLimitList } from '../../network/pageWeb'
 import { t as i18nT } from '../../i18n'
+import { asString as s, asArray, num } from '../../utils/data'
+import type { AnyRec as Rec } from '../../utils/data'
 
-/* list/limit.html：extended base_width.html，页面级 akari.css。数据 fetchLimitList(page) */
-type Rec = Record<string, any>
 type LimitData = { items: Rec[]; total: number }
 const FALLBACK: LimitData = { items: [], total: 1 }
 
-const s = (v: unknown, fb = ''): string => (v === undefined || v === null ? fb : String(v))
 
-/* 复刻 account/templatetags/limit_reason.py 的位掩码顺序 */
 const limitText = (level: number): string => {
   if ((level & 1) > 0) return 'Change Wiki/Meta'
   if ((level & 2) > 0) return 'Submit Scores'

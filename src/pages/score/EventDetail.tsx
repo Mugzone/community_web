@@ -1,9 +1,11 @@
 import { useLocation } from 'react-router-dom'
 import { Shell } from '../../components/Layout'
 import { useSession } from '../../components/SessionProvider'
-import { asArray, LoadingBlock, num, useLoad } from '../../lib/legacy'
+import { asArray, num } from '../../utils/data'
+import { LoadingBlock } from '../../components/fragments'
+import { useLoad } from '../../lib/useLoad'
 import { URLS } from '../../lib/urls'
-import { fetchEventRank } from '../../network/legacy'
+import { fetchEventRank } from '../../network/pageContent'
 import { isOrgMember } from '../../utils/auth'
 import {
   fetchEventCharts,

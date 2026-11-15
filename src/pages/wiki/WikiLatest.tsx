@@ -1,30 +1,17 @@
 import { Shell, DefaultSidebar } from '../../components/Layout'
-import { useLoad, asArray, LoadingBlock } from '../../lib/legacy'
+import { useLoad } from '../../lib/useLoad'
+import { LoadingBlock } from '../../components/fragments'
 import { URLS } from '../../lib/urls'
-import { fetchWikiLatest } from '../../network/legacy'
+import { fetchWikiLatest } from '../../network/pageWeb'
 import { t as i18nT } from '../../i18n'
+import { listOf } from '../../utils/response'
+import { changeKeyOf, nameOf, uidOf, type ChangeItem } from './wikiChangeModel'
 
-type ChangeItem = {
-  user_id?: number | string
-  user?: { id?: number | string; username?: string }
-  username?: string
-  link?: string
-  msg?: string
-  create_time_str?: string
-}
 const FALLBACK: ChangeItem[] = []
 
-const uidOf = (it: ChangeItem): number | string => it.user_id ?? it.user?.id ?? 0
-const nameOf = (it: ChangeItem): string => it.user?.username ?? it.username ?? ''
-
-/** /page/latest —— 老站 wiki_latest.html（base.html 两栏） */
 export default function WikiLatest() {
   const { data, loading } = useLoad<ChangeItem[]>(
-    async () => {
-      const resp: any = await fetchWikiLatest(1)
-      const p: any = resp?.data ?? resp
-      return asArray<ChangeItem>(p?.changes ?? p?.items ?? p?.list ?? p)
-    },
+    async () => listOf<ChangeItem>(await fetchWikiLatest(1), ['changes', 'items', 'list']),
     [],
     FALLBACK,
   )
@@ -36,7 +23,7 @@ export default function WikiLatest() {
       <div className="g_title">{i18nT('Recent Changes')}</div>
       <div className="g_cont wiki_change">
         {items.map((it, i) => (
-          <h1 key={i}>
+          <h1 key={changeKeyOf(it, i)}>
             <a className="red" href={URLS.user(uidOf(it))}>{nameOf(it)}</a>:
             <a href={it.link}>{it.msg}</a>
             <span className="textfix gray">-- {it.create_time_str}</span>

@@ -1,7 +1,6 @@
 import { Shell, DefaultSidebar } from '../../components/Layout'
 import { staticUrl, URLS } from '../../lib/urls'
 
-/** 500.html —— 独立整页模板，自带简化 header / sidebar / footer */
 export default function Error500() {
   return (
     <Shell variant="simple" css={['akari.css']}>

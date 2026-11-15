@@ -3,14 +3,16 @@ import { useLocation } from 'react-router-dom'
 import { Shell } from '../../components/Layout'
 import { ModIcons } from '../../components/ModIcons'
 import { useSession } from '../../components/SessionProvider'
-import { asArray, num, Pager, showNotify, useLoad, floatFormat } from '../../lib/legacy'
+import { Pager } from '../../components/fragments'
+import { useLoad } from '../../lib/useLoad'
+import { showNotify } from '../../lib/notify'
 import { URLS, staticUrl } from '../../lib/urls'
-import { fetchScorePage, operateScore } from '../../network/legacy'
+import { fetchScorePage, operateScore } from '../../network/pageContent'
 import { avatarUrl, coverUrl, modeLabel } from '../../utils/formatters'
 import { t as i18nT } from '../../i18n'
+import { asString as s, num as n, asArray, floatFormat } from '../../utils/data'
+import type { AnyRec as Rec } from '../../utils/data'
 
-/* score.html + score/chart.html + score/items.html：extended base.html（两栏 + Platforms 侧栏），交互 module/score */
-type Rec = Record<string, any>
 type ScoreData = {
   chart: Rec
   list: Rec[]
@@ -20,8 +22,6 @@ type ScoreData = {
 }
 const FALLBACK: ScoreData = { chart: {}, list: [], backId: '', isAdmin: false, total: 1 }
 
-const s = (v: unknown, fb = ''): string => (v === undefined || v === null ? fb : String(v))
-const n = (v: unknown, fb = 0): number => num(v, fb)
 const fmt2 = (v: unknown): string => floatFormat(v, 2)
 const coverSrc = (v: unknown): string => {
   const raw = s(v)
@@ -78,7 +78,6 @@ export default function ScorePage() {
       const res = await operateScore({ chart_id: chartId, from, type: 'delmy' })
       const rc = res?.code
       if (rc !== undefined && Number(rc) !== 0) {
-        // module/score init.js：-3 本周已删过，-2 无删除权限
         const code = Number(rc)
         const msg = code === -3 ? 'You have deleted score this week'
           : code === -2 ? 'You have no permission to delete score'
@@ -118,11 +117,9 @@ export default function ScorePage() {
           {data.isAdmin && (
             <a href="#" className="g_btn btn" data-type="del" onClick={(e) => { e.preventDefault(); void clearAll() }}>{i18nT('Clear All Records')}</a>
           )}
-          {/* 后端 OperateScore(delmy) 要求 uid != 0，游客不露出 */}
           {isLogin && <a href="#" className="g_btn btn" data-type="delmy" onClick={(e) => { e.preventDefault(); void deleteMy() }}>{i18nT('Remove score')}</a>}
         </div>
 
-        {/* score/chart.html */}
         <div className="g_temp temp song">
           <div className="bg">
             <h1>{i18nT('Chart information')}</h1>
@@ -142,7 +139,6 @@ export default function ScorePage() {
             <div className="g_memo">
               <span className="g_round">{from === 2 ? i18nT('Scores from iOS or Android') : i18nT('Scores from Windows & Mac')}</span>
             </div>
-            {/* score/items.html */}
             <div className="list_head">
               <span className="rank">{i18nT('Rank')}</span>
               <span className="name">{i18nT('Player')}</span>

@@ -1,25 +1,18 @@
 import { useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { Shell, DefaultSidebar } from '../../components/Layout'
-import { useLoad, asArray, showNotify, LoadingBlock, EmptyBlock } from '../../lib/legacy'
+import { useLoad } from '../../lib/useLoad'
+import { LoadingBlock, EmptyBlock } from '../../components/fragments'
+import { showNotify } from '../../lib/notify'
 import { URLS } from '../../lib/urls'
-import { fetchWikiChange, fetchWikiBackup, saveWikiBackup } from '../../network/legacy'
+import { fetchWikiChange, fetchWikiBackup, saveWikiBackup } from '../../network/pageWeb'
 import { t as i18nT } from '../../i18n'
+import { listOf } from '../../utils/response'
+import { changeKeyOf, nameOf, uidOf, type ChangeItem } from './wikiChangeModel'
 
-type ChangeItem = {
-  user_id?: number | string
-  user?: { id?: number | string; username?: string }
-  username?: string
-  msg?: string
-  create_time_str?: string
-}
 type Tab = 'changes' | 'backup'
 const FALLBACK: ChangeItem[] = []
 
-const uidOf = (it: ChangeItem): number | string => it.user_id ?? it.user?.id ?? 0
-const nameOf = (it: ChangeItem): string => it.user?.username ?? it.username ?? ''
-
-/** /page/change —— 老站 wiki_change.html + module/wikiChange（tab + 存档读档） */
 export default function WikiChange() {
   const [sp, setSp] = useSearchParams()
   const pid = sp.get('pid') ?? '0'
@@ -27,11 +20,7 @@ export default function WikiChange() {
   const [backupContent, setBackupContent] = useState('')
 
   const { data, loading } = useLoad<ChangeItem[]>(
-    async () => {
-      const resp: any = await fetchWikiChange(pid)
-      const p: any = resp?.data ?? resp
-      return asArray<ChangeItem>(p?.content ?? p?.items ?? p?.list ?? p)
-    },
+    async () => listOf<ChangeItem>(await fetchWikiChange(pid), ['content', 'items', 'list']),
     [pid],
     FALLBACK,
   )
@@ -42,7 +31,7 @@ export default function WikiChange() {
     try {
       const resp: any = await fetchWikiBackup(pid)
       setBackupContent(String(resp?.data?.content ?? resp?.content ?? resp?.data ?? ''))
-    } catch { /* ignore */ }
+    } catch { }
   }
 
   const writeBackup = async () => {
@@ -74,7 +63,7 @@ export default function WikiChange() {
         {tab === 'changes' ? (
           <>
             {items.map((it, i) => (
-              <h1 key={i}>
+              <h1 key={changeKeyOf(it, i)}>
                 <a className="red" href={URLS.user(uidOf(it))}>{nameOf(it)}</a>
                 <span>{it.msg}</span>
                 <span className="textfix gray">-- {it.create_time_str}</span>

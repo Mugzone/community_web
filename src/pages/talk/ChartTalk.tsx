@@ -1,13 +1,13 @@
 import { useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { Shell } from '../../components/Layout'
-import { useLoad, showNotify } from '../../lib/legacy'
+import { useLoad } from '../../lib/useLoad'
+import { showNotify } from '../../lib/notify'
 import { URLS } from '../../lib/urls'
-import { fetchChartTalk, saveTalk } from '../../network/legacy'
+import { fetchChartTalk, saveTalk } from '../../network/pageAccount'
 import { t as i18nT } from '../../i18n'
 import './ChartTalk.css'
 
-/** talk/chart.html —— 客户端谱面评价留言（独立整页，自带内联样式） */
 type ChartTalkState = {
   cid: number | string
   uid: number | string

@@ -1,8 +1,3 @@
-/* AchievePage.css — 老站 achieve.css，作用域名 "achieve"。
-   与页面组件同目录（React colocation）。所有规则以
-   html[data-styles~="achieve"] 限定，由 src/styles/index.css 统一静态加载；
-   Shell 依据 variant / page / css prop 生成 <html data-styles="...">。
-   作用域前缀统一带 attr 权重，级联顺序由 index.css 的 @import 顺序保证。 */
 html[data-styles~="achieve"] .clear {
   clear: both;
   display: block;

@@ -1,7 +1,3 @@
-/* score.css — 老站样式，作用域名 "score"。
-   规则以 html[data-styles~="score"] 限定，
-   Shell 依据 variant / page / css prop 生成 <html data-styles="...">。
- */
 html[data-styles~="score"] .clear {
   clear: both;
   display: block;

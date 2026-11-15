@@ -1,10 +1,13 @@
 import { useState } from 'react'
 import { DefaultSidebar, Shell } from '../../components/Layout'
-import { asArray, EmptyBlock, JustifyRow, LoadingBlock, num, showNotify, useLoad } from '../../lib/legacy'
-import { buyStoreItem, fetchMyItems } from '../../network/legacy'
+import { asArray, num } from '../../utils/data'
+import { EmptyBlock, JustifyRow, LoadingBlock } from '../../components/fragments'
+import { useLoad } from '../../lib/useLoad'
+import { showNotify } from '../../lib/notify'
+import { buyStoreItem, fetchMyItems } from '../../network/pageContent'
 import { t as i18nT } from '../../i18n'
+import { payloadOf } from '../../utils/response'
 
-/** 老站 list/store.html：items 里每项是 {item: {...}, buy?: {...}}，也兼容扁平结构。 */
 type StoreItemRow = {
   item?: {
     id?: number | string
@@ -25,10 +28,7 @@ type StoreItemRow = {
 
 export default function StoreAll() {
   const { data: rows, loading, error, reload } = useLoad<StoreItemRow[]>(
-    async () => {
-      const resp = await fetchMyItems()
-      return asArray<StoreItemRow>(resp?.data ?? resp)
-    },
+    async () => asArray<StoreItemRow>(payloadOf(await fetchMyItems())),
     [],
     [] as StoreItemRow[],
   )
@@ -67,7 +67,6 @@ export default function StoreAll() {
         <>
           <DefaultSidebar />
           <a href="/store/my">My items</a>
-          {/* Chart Promotion 在老站线上早已下线，不再保留入口 */}
         </>
       }
     >

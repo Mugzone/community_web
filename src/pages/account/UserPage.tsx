@@ -4,7 +4,9 @@ import { Shell } from '../../components/Layout'
 import { useSession } from '../../components/SessionProvider'
 import { SkeletonHead, SkeletonRows } from '../../components/Skeleton'
 import { ModIcons } from '../../components/ModIcons'
-import { asArray, formatTime, JustifyRow, num, useLoad, floatFormat, showNotify } from '../../lib/legacy'
+import { JustifyRow } from '../../components/fragments'
+import { useLoad } from '../../lib/useLoad'
+import { showNotify } from '../../lib/notify'
 import { URLS, staticUrl } from '../../lib/urls'
 import {
   fetchPlayerInfo,
@@ -16,15 +18,16 @@ import {
   postForm,
   type RespPlayerLabelItem,
 } from '../../network/api'
-import { fetchAchieveList, fetchUserPageWiki } from '../../network/legacy'
+import { fetchAchieveList } from '../../network/pageAccount'
+import { fetchUserPageWiki } from '../../network/pageWeb'
 import { avatarUrl, coverUrl } from '../../utils/formatters'
 import { isRedName, regionMap } from '../../utils/profile'
 import { t as i18nT } from '../../i18n'
 import { useWikiHtml } from '../../utils/wikiRender'
 import { bindHiddenToggles } from '../../utils/wiki'
+import { asString as s, num as n, asArray, formatTime, floatFormat } from '../../utils/data'
+import type { AnyRec as Rec } from '../../utils/data'
 
-/* profile/index.html：extended base_width.html（wide），交互对应 module/user/src/init.js */
-type Rec = Record<string, any>
 type UserData = {
   info: Rec
   ranks: Rec[]
@@ -32,14 +35,11 @@ type UserData = {
   recent: Rec[]
   charts: Rec[]
   achieves: Rec[]
-  /** /player/label：徽章（item 1000-3000），只有 item 编号与数量 */
   labels: RespPlayerLabelItem[]
   content: string
   friendType: number
   tab: number
-  /** /player/info 的 group 是 group_id 数字数组；兼容老站 {id,name} 对象形式 */
   group: (number | Rec)[]
-  /** group_list: 后端从 auth_group 读出的 [{id,name}]，优先用于显示组名 */
   groupList: (number | Rec)[]
   unread: number
   canBan: boolean
@@ -55,14 +55,11 @@ const FALLBACK: UserData = {
   canBan: false, canActive: false, canEdit: false, redName: false, banner: '',
 }
 
-/** 老站 account/views.py:305-313 成就最多 5 个，并补齐到 3 的倍数让 text-align:justify 生效 */
 const achHolds = (count: number): number => {
   const n = 3 - (count % 3)
   return n > 0 && n !== 3 ? n : 0
 }
 
-const s = (v: unknown, fb = ''): string => (v === undefined || v === null ? fb : String(v))
-const n = (v: unknown, fb = 0): number => num(v, fb)
 const fmt2 = (v: unknown): string => floatFormat(v, 2)
 const ymd = (v: unknown): string => {
   if (v === undefined || v === null || v === '') return ''
@@ -79,8 +76,6 @@ const genderLabel = (g: unknown): string => {
 }
 const countryLabel = (c: unknown): string => regionMap[n(c)]?.fallback ?? '???'
 
-/* 老站 account/models.py:178-208 的 playtime_str / playedtime_str：
- * 秒数 → "Never" / "H:MM:SS" / "D days HH:MM"。接口只给数值，格式化在前端做。 */
 const durationStr = (value: unknown): string => {
   const total = n(value, 0)
   if (total <= 0) return i18nT('Never')
@@ -92,8 +87,6 @@ const durationStr = (value: unknown): string => {
   return days === 0 ? `${hour}:${pad(min)}:${pad(sec)}` : `${days} days ${pad(hour)}:${pad(min)}`
 }
 
-/* 老站 account/models.py:146-166 的 age：按生日算周岁，无生日显示 ???。
- * /player/info 只返回 birth（UTC 时间戳），不再返回 age。 */
 const ageFromBirth = (value: unknown): string => {
   const ts = n(value, 0)
   if (ts <= 0) return '???'
@@ -106,8 +99,6 @@ const ageFromBirth = (value: unknown): string => {
   return age >= 0 && age < 150 ? String(age) : '???'
 }
 
-/* 老站 group 是 Django Group 对象（有 id/name），Go /player/info 返回 group_id 数字数组。
- * 名称按 MaApi-old MalodyEnum.UserGroup 与 lib/util.py 的组定义映射。 */
 const GROUP_NAMES: Record<number, string> = {
   2: 'Admin', 3: 'Publisher', 4: 'Died', 5: 'Editor',
   6: 'Artist', 7: 'Architect', 8: 'Assistant', 9: 'Organizer', 10: 'Hide',
@@ -120,11 +111,7 @@ const groupLabel = (g: number | Rec): string => {
 const groupVisible = (g: number | Rec): boolean =>
   (typeof g === 'object' && g !== null ? n(g.id) : n(g)) > 1
 
-/* 老站 account/models.py:172-176 banner_url = "http://cni.machart.top" + banner；
- * Go 只返回相对路径 /banner/xx.jpg!banner，用协议相对地址避免混合内容。 */
 const BANNER_CDN = '//cni.machart.top'
-/* web-v2 Player.tsx:83：徽章图按 item 编号放在 CDN 上，无扩展名（实为 258x120 JPEG）。
- * v3 本地 public/static/img 下没有 plabel 资源，沿用同一个 CDN。 */
 const PLAYER_LABEL_IMG_BASE = '//cdn1.machart.top/static/img/plabel/'
 const bannerUrl = (v: unknown): string => {
   const raw = s(v)
@@ -138,7 +125,6 @@ const bgCover = (v: unknown): string => {
   return coverUrl(raw)
 }
 
-/* /api/account/achieve/list 的 data 可能是数组，也可能是 {list, achievements, ...} 对象 */
 const achList = (res: unknown): Rec[] => {
   const d = (res as Rec | undefined)?.data
   if (Array.isArray(d)) return d as Rec[]
@@ -163,23 +149,16 @@ export default function UserPage() {
         fetchPlayerActivity({ uid }).catch(() => undefined),
         fetchPlayerCharts({ uid }).catch(() => undefined),
         fetchAchieveList(uid).catch(() => undefined),
-        // 老站 account/views.py:317 取 plugin_wiki(key=user_<uid>).html；
-        // Go 的 /community/wiki/userpage 返回的是 raw wiki 文本，需前端渲染
         fetchUserPageWiki(uid).catch(() => undefined),
-        // 末尾追加：解构顺序必须与上方 Promise.all 数组一一对应
         fetchPlayerRecentScores({ uid }).catch(() => undefined),
-        // 徽章：/player/label 返回 {code,data:[{item,count}]}；失败/负码一律降级为空数组
         fetchPlayerLabels({ uid }).catch(() => undefined),
       ])
-      // /api/player/info 返回扁平结构（username/gold/... 在顶层）；其它接口带 data 包裹，两者兼容
       const info: Rec = ((infoRes as Rec | undefined)?.data ?? infoRes ?? {}) as Rec
       const up: Rec = ((upRes as Rec | undefined)?.data ?? upRes ?? {}) as Rec
       return {
         info,
         ranks: asArray<Rec>((rankRes as Rec | undefined)?.data ?? rankRes),
         acts: asArray<Rec>((actRes as Rec | undefined)?.data ?? actRes),
-        // 老站 recent 是服务端直接查 score_key；/player/activity 里没有这个字段，
-        // 改由 /score/player/recent 提供。
         recent: asArray<Rec>((recentRes as Rec | undefined)?.data ?? (recentRes as Rec | undefined)?.list ?? []),
         charts: asArray<Rec>((chartRes as Rec | undefined)?.data ?? chartRes),
         achieves: achList(achRes),
@@ -188,14 +167,11 @@ export default function UserPage() {
         friendType: n(info.friend_type ?? info.friendType ?? info.friend, 0),
         tab: n(info.tab, 0),
         group: asArray<number | Rec>(info.group),
-        // 后端新增的 [{id,name}]：老站网页拿的就是 Django Group 对象，
-        // 有它就不必依赖前端硬编码映射，新组（如 id=11）自动显示真实名称。
         groupList: asArray<number | Rec>(info.group_list ?? info.groups),
         unread: n(info.unread, 0),
         canBan: Boolean(info.canban),
         canActive: Boolean(info.canactive),
         canEdit: Boolean(info.can_edit ?? info.canEdit),
-        // 老站红名由 active_type 决定，/player/info 里叫 active（见 utils/profile.ts）
         redName: isRedName(info),
         banner: bannerUrl(info.banner_url ?? info.bannerUrl ?? info.banner),
       }
@@ -204,10 +180,7 @@ export default function UserPage() {
     FALLBACK,
   )
 
-  // 与 wiki 正文共用渲染管线（markdown 式标记 + {{ name:... }} 模板块）
   const profileHtml = useWikiHtml(data.content)
-  // 与 WikiPage / SongPage / ChartPage 一致：#hidden 折叠块靠事件委托切换 open class，
-  // 只有 CSS 的话「Click to display」点了不会展开。
   const profileRef = useRef<HTMLDivElement>(null)
   useEffect(() => bindHiddenToggles(profileRef.current), [profileHtml])
 
@@ -216,7 +189,6 @@ export default function UserPage() {
   const [achieves, setAchieves] = useState<Rec[]>([])
   useEffect(() => { setTab(data.tab); setFriendType(data.friendType); setAchieves(data.achieves) }, [data])
 
-  /* module/user init.js：banner 背景整页生效，SPA 需在卸载时还原 */
   useEffect(() => {
     if (!data.banner) return
     const body = document.body
@@ -237,15 +209,10 @@ export default function UserPage() {
     }
   }, [data.banner])
 
-  /* module/user：tab 切换 */
-  const switchTab = (type: string, t: number) => {
+  const switchTab = (_type: string, t: number) => {
     setTab(t)
   }
 
-  /* module/user：好友切换
-   * 后端是 /player/friend/toggle（不是 /account/friend/toggle），参数 touid，
-   * 且为 toggle 语义、没有 add 参数；返回 code 就是切换后的关系：
-   * 0=非好友 / 1=单向关注 / 2=互粉。老站加好友失败时必须保持原状态。 */
   const toggleFriend = async () => {
     try {
       const resp = await postForm<Record<string, unknown> | string>('/player/friend/toggle', {
@@ -256,18 +223,15 @@ export default function UserPage() {
       setFriendType(code)
       showNotify(code > 0 ? 'Friend added' : 'Friend removed', 'succ')
     } catch {
-      // 失败不乐观更新：提示错误并重新拉取，保证界面与服务端一致
       showNotify(i18nT('Operation failed'), 'err')
       reload()
     }
   }
 
-  /* module/user：ban / active 等操作 */
   const operation = async (type: string) => {
     try {
       await postForm('/account/operation', { body: { uid: String(uid), type } })
     } catch {
-      /* ignore */
     }
     reload()
   }
@@ -279,8 +243,6 @@ export default function UserPage() {
     <Shell variant="wide" title={username || 'User'} css={['profile.css', 'user.css']} contCls="gb_profile">
       <div className="user_head g_rblock">
         <div className="coverb">
-          {/* 老站 {% avatar to_user 150 "g_round" %}：!avatar 缩略图 + 内联 150px 上限，user.css 没有 img 尺寸规则。
-              加载中 avatar 为空会回落到默认头像，先用骨架占位 */}
           {loading ? <div className="g_round wb-skel wb-skel-avatar"></div> : (
             <img
               className="g_round"
@@ -304,7 +266,6 @@ export default function UserPage() {
                 ))}
             </p>
 
-            {/* 老站 profile/index.html:35-56 这些标签都用 {% trans %}，冒号留在译文之后 */}
             <p className="time">
               <span>{i18nT('Joined since')}:&nbsp;{ymd(info.regtime ?? info.date_joined)}</span>
               <span>{i18nT('Last play')}:&nbsp;{(info.lastPlay ?? info.last_play) ? ymd(info.lastPlay ?? info.last_play) : i18nT('Never')}</span>
@@ -385,9 +346,6 @@ export default function UserPage() {
                 <img src={staticUrl(`img/mode/mode-${n(item.mode)}.png`)} alt="mode" />
                 <div className="right">
                   <p className="rank">#{s(item.exp_rank ?? item.rank ?? item.gradeRank)}</p>
-                  {/* /ranking/player/all 返回 pc（游玩次数）与 exp；老站模板字段名是
-                      playcount / exp，两者都兼容。JSX 会吞掉标签间换行，必须显式补空格，
-                      否则两列会粘成 Exp.123Playcount:456、Acc.97.96%Combo:3544。 */}
                   <p>
                     <span>Exp.{s(item.exp ?? item.value ?? 0)}</span>
                     {' '}
@@ -428,12 +386,9 @@ export default function UserPage() {
               <a href="#" className={`btn ${tab === 2 ? 'curr' : ''}`} data-type="chart" onClick={(e) => { e.preventDefault(); switchTab('Chart', 2) }}>{i18nT('Chart')}</a>
             )}
             <a href="#" className={`btn ${tab === 3 ? 'curr' : ''}`} data-type="wiki" onClick={(e) => { e.preventDefault(); switchTab('Profile', 3) }}>{i18nT('Profile')}</a>
-            {/* 徽章是新增的第 5 个 tab（index 4）。后端 PlayerSaveInfo 只接受默认 tab 0-3，
-                所以它可以切换但暂不能设为「默认 tab」，ProfileSetting 的下拉也保持 4 项。 */}
             <a href="#" className={`btn ${tab === 4 ? 'curr' : ''}`} data-type="badge" onClick={(e) => { e.preventDefault(); switchTab('Badge', 4) }}>{i18nT('Badge')}</a>
           </div>
 
-          {/* 各 tab 的列表在加载中都是空的，统一用一块骨架占位 */}
           {loading && <div className="g_rblock wb-skel-block"><SkeletonRows /></div>}
 
           <div className={`wiki g_rblock ${tab === 3 ? 'curr' : ''}`}>
@@ -465,10 +420,6 @@ export default function UserPage() {
                       Judge :<em className={`color-${n(item.judge)}`}>{s(item.judge_str)}</em>
                     </p>
                     <p>
-                      {/* 老站 profile/index.html:182 `format_mods item.mod none=False`：
-                          mod 是位掩码，渲染成 g_mod 图标；0 时留空。以前的
-                          `s(item.mod_str ?? item.mod)` 会把 32/16 这类掩码直接
-                          当成数字显示，后端 mod_str 当时也是同一个数字。 */}
                       <span className="mod"><ModIcons value={item.mod ?? item.mod_str} /></span>
                       <span className="time">{s(item.time_from_now) || formatTime(item.time)}</span>
                     </p>
@@ -491,8 +442,6 @@ export default function UserPage() {
             <div className={`chart ${tab === 2 ? 'curr' : ''}`}>
               {data.charts.map((item: Rec, i: number) => {
                 const song: Rec = (item.song ?? item) as Rec
-                // Go 的 hot 字段带 omitempty，playcount=0 时整个字段不返回；
-                // 0 或缺失都不展示 Hot 标签，避免只留一个空的「Hot:」。
                 const hot = n(item.hot ?? item.playcount, 0)
                 return (
                   <div className="item g_rblock" key={i}>
@@ -506,22 +455,17 @@ export default function UserPage() {
                         Length: {s(item.length)}s
                         {hot > 0 && <>&nbsp;&nbsp; Hot: {hot}</>}
                       </p>
-                      {/* /community/player/chart 返回 time（unix 秒），没有 lastedit_str */}
                       <p><span className="time">{s(item.lastedit_str ?? item.time_str) || formatTime(item.time ?? item.lastedit)}</span></p>
                     </div>
                   </div>
                 )
               })}
-              {/* 老站 all_chart(uid) 会把 uid 换成用户名预填 Creator 筛选框；
-                  v3 用 keyword=<用户名> 把作者名带到谱面列表页（AllChart 会按作者筛选）。 */}
               <div className="more g_rblock">
                 <a href={`${URLS.chart}?keyword=${encodeURIComponent(username || String(uid))}`}>{i18nT('Show All')}</a>
               </div>
             </div>
           )}
 
-          {/* v2 是页头下方一条自动轮播的横向卡片区；v3 改为「徽章」tab 内平铺网格。
-              /player/label 一次返回全部徽章（无分页），count>1 时右下角显示 xN。 */}
           <div className={`badge g_rblock ${tab === 4 ? 'curr' : ''}`}>
             {data.labels.length > 0 ? (
               <div className="badge_list">

@@ -1,7 +1,3 @@
-/* main.css — 老站样式，作用域名 "main"。
-   规则以 html[data-styles~="main"] 限定，
-   Shell 依据 variant / page / css prop 生成 <html data-styles="...">。
- */
 html[data-styles~="main"] .clear {
   clear: both;
   display: block;
@@ -886,7 +882,6 @@ html[data-styles~="main"] .g_toolbtn.in i {
 html[data-styles~="main"] .g_toolbtn.log i {
   background-image: url(/static/img/edit/tool-log.png);
 }
-/* wiki 页「推送新闻」：复用老站 tool-add.png 的加号图标 */
 html[data-styles~="main"] .g_toolbtn.n i {
   background-image: url(/static/img/edit/tool-add.png);
 }

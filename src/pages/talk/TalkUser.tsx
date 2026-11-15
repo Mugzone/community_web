@@ -1,12 +1,13 @@
 import { useState } from 'react'
 import { Shell, DefaultSidebar } from '../../components/Layout'
-import { useLoad, formatTime, num, LoadingBlock } from '../../lib/legacy'
+import { useLoad } from '../../lib/useLoad'
+import { formatTime, num } from '../../utils/data'
+import { LoadingBlock } from '../../components/fragments'
 import { URLS } from '../../lib/urls'
-import { fetchTalkInbox } from '../../network/legacy'
+import { fetchTalkInbox } from '../../network/pageAccount'
 import { getJson } from '../../network/api'
 import { t as i18nT } from '../../i18n'
 
-/** talk/user_topics.html + talk/user_topic_item.html */
 type TopicUserItem = {
   meta?: { count?: number | string }
   host_user?: { id?: number | string; username?: string }
@@ -86,7 +87,6 @@ export default function TalkUser() {
   const { data, loading } = useLoad<TalkUserState>(
     async () => {
       const res = await fetchTalkInbox(page)
-      // 老站 Outbox 走 /talk/user?guest=1，fetchTalkInbox 只暴露 page，故补一次带 guest 的请求
       if (guest === 1) {
         const out = await getJson<any>('/talk/user', { params: { page, guest: 1 } })
         return normalize(out, guest)

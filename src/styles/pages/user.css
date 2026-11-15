@@ -1,7 +1,3 @@
-/* user.css — 老站样式，作用域名 "user"。
-   规则以 html[data-styles~="user"] 限定，
-   Shell 依据 variant / page / css prop 生成 <html data-styles="...">。
- */
 html[data-styles~="user"] .clear {
   clear: both;
   display: block;
@@ -277,8 +273,6 @@ html[data-styles~="user"] #content .chart .item .right .time {
 html[data-styles~="user"] #content .chart .more {
   padding: 5px;
 }
-/* 徽章 tab：v2 是页头下的自动轮播，这里改成平铺网格；
-   plabel 原图固定 258x120，count>1 时右下角叠加数量角标。 */
 html[data-styles~="user"] #content .badge {
   padding: 12px;
 }

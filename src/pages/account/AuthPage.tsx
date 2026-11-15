@@ -1,27 +1,23 @@
-import { useState, type ChangeEvent, type KeyboardEvent, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ChangeEvent, type KeyboardEvent, type ReactNode } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { Shell } from '../../components/Layout'
 import { useSession } from '../../components/SessionProvider'
-import { showNotify } from '../../lib/legacy'
+import { showNotify } from '../../lib/notify'
 import { URLS } from '../../lib/urls'
 import { login, register } from '../../network/api'
 import {
   requestEmailChange,
   requestPasswordReset,
   resetPassword,
-} from '../../network/legacy'
+} from '../../network/pageAccount'
 import { md5 } from '../../utils/md5'
 import { t as i18nT } from '../../i18n'
 import './AuthPage.css'
 
-/* reg.html 是「多模式单页」：按 URL 切换 5 套表单，全部保留。 */
 type Mode = 'login' | 'reg' | 'forget' | 'reset_psw' | 'change_email'
 type Rec = Record<string, string>
 type TipDef = { text: string; err: boolean }
 
-/* 逐条对应 reg.html 里 .g_tip 下的 span（顺序即 showTip 的下标）。
- * 必须每次 render 重算：i18nT 是模块级同步函数，切换语言时 Provider 会重挂载
- * 子树，但模块级常量不会重新求值，缓存成常量会导致提示停留在旧语言。 */
 const tipsFor = (): Record<Mode, TipDef[]> => ({
   login: [
     { text: i18nT('Invalid Email or Password'), err: true },
@@ -33,7 +29,6 @@ const tipsFor = (): Record<Mode, TipDef[]> => ({
     { text: i18nT('Invalid email'), err: true },
     { text: i18nT('reg_3'), err: true },
     { text: i18nT('Password missmatching'), err: true },
-    // 老站索引 5 是 reg_4「验证码错误」；v3 没有验证码，此槽改作通用失败提示
     { text: i18nT('Operation failed'), err: true },
     { text: i18nT('reg_5'), err: true },
     { text: i18nT('Submitting...'), err: false },
@@ -60,7 +55,6 @@ const tipsFor = (): Record<Mode, TipDef[]> => ({
   ],
 })
 
-/* module/account/src/init.js 中 showTip(n) 的下标映射。 */
 const SUBMIT_TIP: Record<Mode, number> = { login: 1, reg: 7, forget: 2, reset_psw: 2, change_email: 2 }
 const SUCCESS_TIP: Record<Mode, number> = { login: 1, reg: 8, forget: 1, reset_psw: 3, change_email: 1 }
 const ERROR_TIP: Record<Mode, number> = { login: 0, reg: 5, forget: 3, reset_psw: 4, change_email: 0 }
@@ -71,19 +65,14 @@ const VALID_TIP: Record<Mode, Record<number, number>> = {
   reset_psw: { 3: 0, 4: 1 },
   change_email: { 2: 0 },
 }
-/* 注册接口返回码 -> .g_tip 下标。对齐 MaApi-go handler.Register 的实际返回：
- * -1 用户名非法/通用失败、-2 用户名已占用、-3 邮箱已占用、-5 邮箱格式、
- * -6 密码非 32 位 MD5、-7 设备封禁。老站的 -4 是验证码错误，Go 不再返回。 */
 const REG_ERR: Record<number, number> = {
   [-1]: 0, [-2]: 6, [-3]: 1, [-5]: 2, [-6]: 3, [-7]: 5,
 }
-/** 与 LoginModal 一致：code 存在且非 0 视为失败 */
 const failed = (res: any): boolean => res?.code !== undefined && Number(res.code) !== 0
 
 const NAME_RE = /^[a-zA-Z0-9\[\]\(\)\-_@]{3,30}$/
 const EMAIL_RE = /^[a-z0-9-_\.]+@[a-z0-9-_]+(\.[a-z]{1,3}){1,3}$/i
 
-/** 复刻 module/account validate()，密码在提交前 md5。返回错误码或提交数据。 */
 function validate(mode: Mode, form: Rec): number | Rec {
   const out: Rec = {}
   const name = (form.name ?? '').trim()
@@ -145,7 +134,6 @@ export default function AuthPage() {
   else if (pathname.indexOf('/accounts/password_reset') === 0) mode = 'reset_psw'
   else if (pathname.indexOf('/accounts/change_email') === 0) mode = 'change_email'
 
-  /* /accounts/password_reset/:uid-:token/ */
   const resetMatch = pathname.match(/\/accounts\/password_reset\/([^/]+)/)
   const resetRaw = resetMatch ? resetMatch[1] : ''
   const dash = resetRaw.indexOf('-')
@@ -156,6 +144,22 @@ export default function AuthPage() {
   const [form, setForm] = useState<Rec>({})
   const [tip, setTip] = useState<number | null>(null)
   const [busy, setBusy] = useState(false)
+  const redirectTimer = useRef<number | undefined>(undefined)
+  const mounted = useRef(true)
+
+  useEffect(() => {
+    mounted.current = true
+    return () => {
+      mounted.current = false
+      if (redirectTimer.current !== undefined) window.clearTimeout(redirectTimer.current)
+    }
+  }, [])
+
+  const scheduleRedirect = (to: string, delay: number) => {
+    if (!mounted.current) return
+    if (redirectTimer.current !== undefined) window.clearTimeout(redirectTimer.current)
+    redirectTimer.current = window.setTimeout(() => navigate(to), delay)
+  }
 
   const onField = (e: ChangeEvent<HTMLInputElement>) => {
     const key = e.target.name
@@ -222,15 +226,13 @@ export default function AuthPage() {
       if (mode === 'reg') {
         setTip(SUCCESS_TIP[mode])
         showNotify(tips[mode][SUCCESS_TIP[mode]].text, 'succ')
-        // 老站 module/account 也是延时 500ms 再跳 /index，让成功提示可见；
-        // 立刻跳转会让用户以为「点了没反应」。
-        window.setTimeout(() => navigate(URLS.index), 800)
+        scheduleRedirect(URLS.index, 800)
         return
       }
       setTip(SUCCESS_TIP[mode])
       showNotify(tips[mode][SUCCESS_TIP[mode]].text, 'succ')
       if (mode === 'reset_psw') {
-        window.setTimeout(() => navigate(URLS.login), 3000)
+        scheduleRedirect(URLS.login, 3000)
       }
     } catch {
       const idx = ERROR_TIP[mode]

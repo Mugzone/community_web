@@ -2,17 +2,15 @@ import { useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 import { Shell } from '../../components/Layout'
 import { URLS } from '../../lib/urls'
-import { useLoad } from '../../lib/legacy'
-import { activateAccount, confirmEmail } from '../../network/legacy'
+import { useLoad } from '../../lib/useLoad'
+import { activateAccount, confirmEmail } from '../../network/pageAccount'
 
-/* /accounts/activate/:key/ 与 /accounts/confirm_email/:key/：调用接口后按结果跳 wiki（老站行为） */
 export default function Activate() {
   const { pathname } = useLocation()
   const m = pathname.match(/\/(activate|confirm_email)\/([^/]+)/)
   const kind = m ? m[1] : 'activate'
   const key = m ? m[2] : ''
 
-  /* 老站 activeaccount/email_confirm：成功跳 GLOBAL_PAGE["welcome"](=1)，失败跳 page_id=0 */
   const { data: target, loading } = useLoad<string>(
     async () => {
       try {

@@ -1,4 +1,3 @@
-// Minimal MD5 implementation (adapted from blueimp-md5, MIT)
 const add32 = (a: number, b: number) => (a + b) & 0xffffffff
 
 const cmn = (q: number, a: number, b: number, x: number, s: number, t: number) =>

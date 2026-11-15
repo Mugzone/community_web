@@ -2,12 +2,16 @@ import { useEffect, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { Shell } from '../../components/Layout'
 import { SkeletonHead, SkeletonRows } from '../../components/Skeleton'
-import { asArray, formatTime, num, showNotify, useLoad } from '../../lib/legacy'
+import { asArray, formatTime, num } from '../../utils/data'
+import { useLoad } from '../../lib/useLoad'
+import { showNotify } from '../../lib/notify'
 import { staticUrl, URLS } from '../../lib/urls'
 import {
-  deleteSkin, fetchSkinDetail, fetchTalkList, purchaseSkin, saveTalk,
-  operateTalk, fetchTalkRaw,
-} from '../../network/legacy'
+  deleteSkin, fetchSkinDetail, purchaseSkin,
+} from '../../network/pageContent'
+import {
+  fetchTalkList, saveTalk, operateTalk, fetchTalkRaw,
+} from '../../network/pageAccount'
 import { t as i18nT } from '../../i18n'
 import { avatarUrl, coverUrl } from '../../utils/formatters'
 import { renderTalkHtml, renderTalkSmallHtml, useWikiOrLegacyHtml } from '../../utils/wikiRender'
@@ -22,7 +26,6 @@ type TalkItem = {
   uid?: number | string
   name?: string
   time?: number | string
-  /** 服务端返回的 raw 文本，由前端 renderTalkHtml 现算 HTML */
   content?: string
   renderer?: string
   num?: number | string
@@ -89,12 +92,7 @@ export default function SkinDetail() {
   const modeArr = asArray<number>(detail?.mode_arr ?? skin.mode_arr ?? [])
   const previewArr = asArray<string>(detail?.preview_arr ?? skin.preview_arr ?? [])
   const desc = String(detail?.desc ?? skin.desc ?? '')
-  // 简介是 wiki raw，和讨论区正文走同一套渲染管线（标记 + 换行）；
-  // 早期直接把字符串塞进 JSX，wiki 标记和换行都不会生效。
-  // 但接口实际返回的是老站已翻译好的 HTML（如 <h1>…</h1><p>…），再按 wiki 渲染
-  // 会把标签转义成文本；这种情况改走白名单清洗，raw wiki 仍按 wiki 渲染。
   const descHtml = useWikiOrLegacyHtml(desc)
-  // 简介里的 #hidden 折叠块（Click to display）同样需要点击切换
   const descRef = useRef<HTMLDivElement>(null)
   useEffect(() => bindHiddenToggles(descRef.current), [descHtml])
   const key = String(detail?.key ?? talkKey)
@@ -154,8 +152,6 @@ export default function SkinDetail() {
   const onSaveTalk = async () => {
     const text = content.trim()
     if (!text) return
-    // 与 WikiPage / UserMsg 的讨论组件一致：编辑带 tid、回复带 rep_id，
-    // 否则点「Edit」会变成新发一条评论。
     const payload: Record<string, string | number | undefined> = { key: talkKey, content: text }
     if (replyId) payload.rep_id = replyId
     if (editId) payload.tid = editId
@@ -206,7 +202,6 @@ export default function SkinDetail() {
     const bodyRaw = String(t.content ?? '')
     const bodyHtml = renderTalkHtml(bodyRaw, t.renderer)
     if (t.type === 1) {
-      // talk/like.tmpl.html：<p> 必须是 .g_wiki.meta 的直接子元素
       return (
         <li className="item small" data-id={tid} data-time={t.time} key={`${tid}-${idx}`}>
           <div className="bg right">
@@ -222,11 +217,9 @@ export default function SkinDetail() {
         </li>
       )
     }
-    // talk/item.tmpl.html
     return (
       <li className="item" data-id={tid} data-time={t.time} key={`${tid}-${idx}`}>
         <a className="bg left" href={URLS.user(uid)}>
-          {/* 老站 widget/discuss_item.html:5 {% avatar item.user 64 small=True %} */}
           <img src={avatarUrl(t.avatar, uid, 64)} style={{ background: 'none' }} alt="" />
         </a>
         <div className="bg right">
@@ -258,7 +251,6 @@ export default function SkinDetail() {
     <Shell page="skin_detail" variant="wide" title={`Skins - ${name}`} css={['wiki.css']}>
       <div className="song_title g_rblock">
         <div className="coverb">
-          {/* 加载中 cover 为空会回落到 cover.png（No Cover 图），先用骨架占位 */}
           {loading
             ? <div className="cover wb-skel"></div>
             : <div className="cover" style={{ backgroundImage: `url(${coverBg})` }}></div>}
@@ -352,7 +344,6 @@ export default function SkinDetail() {
           <a href="#" className="btn g_toolbtn e" data-type="edit" title={i18nT('Edit')} onClick={(e) => { e.preventDefault(); onDescEdit() }}><i></i></a>
         </div>
         <div className="g_wiki">
-          {/* 加载中 desc 也是空串，不能当成「没有简介」显示 Add description */}
           {loading
             ? <SkeletonRows count={3} />
             : desc

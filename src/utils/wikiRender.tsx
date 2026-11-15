@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { fetchWikiTemplate, type RespWikiTemplate } from '../network/api'
-import { fetchWikiLang } from '../network/legacy'
-import { showNotify } from '../lib/legacy'
+import { fetchWikiLang } from '../network/pageWeb'
+import { showNotify } from '../lib/notify'
 import { t as i18nT } from '../i18n'
 import {
   renderWiki, renderChat, wikiRenderOptions, escapeHtml, sanitizeUrl, sanitizeRenderedHtml,
@@ -10,17 +10,6 @@ import {
 } from './wiki'
 import { renderTemplateHtml, applyTemplateHtml } from './wikiTemplates'
 
-/* ------------------------------------------------------------------ *
- * 老站 lib/woc2baka.py translate(raw, False) + lib/w2b_template.py
- * parse_all_template() 的服务端两段落库/读取链路，统一搬到前端：
- * 接口只返回 raw，前端现算安全 HTML。
- *
- * 按需求不移植 use_magic_power=True（is_admin 放行原文 HTML）分支，
- * 所有 wiki 文本一律先 escape 再由标记语法生成可信标签。
- *
- * 全站 wiki 文本（普通页 / 歌曲 / 谱面 / 用户主页 / 多语言 / 模板 / 预览 /
- * 讨论 / 私信）都必须经过这里，禁止把服务端 html 字段直接塞进 innerHTML。
- * ------------------------------------------------------------------ */
 
 const FEISHU_PREFIX = '<p>https://cbo17ty22x.feishu.cn/wiki/'
 
@@ -48,7 +37,6 @@ export const tr = (key: string, vars?: Record<string, string | number>): string 
   return s
 }
 
-/** 模板正文里的业务参数 uid/key 与全局鉴权参数同名，发请求前改名，后端按新名读取。 */
 const TEMPLATE_PARAM_ALIAS: Record<string, string> = { uid: 'touid', key: 'tmplKey' }
 const templateQuery = (params: Record<string, string>): Record<string, string> => {
   const q: Record<string, string> = {}
@@ -59,19 +47,15 @@ const templateQuery = (params: Record<string, string>): Record<string, string> =
   return q
 }
 
-/** 复刻 wikipage.views.page_wiki：正文若是一个飞书文档链接，则整体换成 iframe */
 export function wikiToHtml(
   raw: string,
   options: Partial<WikiRenderOptions> = {},
 ): { html: string; templates: WikiTemplate[] } {
   const text = String(raw ?? '')
   const r = renderWiki(text, wikiRenderOptions({ ...RENDER_OPTIONS, ...options }))
-  // 输出兜底：所有 URL 型属性再过一次协议白名单，覆盖未来新增的语法分支
   const html = sanitizeRenderedHtml(r.html)
   if (html.startsWith(FEISHU_PREFIX)) {
     const url = sanitizeUrl(html.replace(/<\/?p>/g, '').trim())
-    // 只允许固定飞书域名的干净路径；正文里夹带的引号/空白会让 src 失效，
-    // 虽然 escapeHtml 已保证不能逃逸属性，但不应把垃圾 URL 塞进 iframe。
     if (!/^https:\/\/cbo17ty22x\.feishu\.cn\/wiki\/[A-Za-z0-9_?=&%#./-]*$/.test(url)) {
       return { html, templates: [] }
     }
@@ -83,7 +67,6 @@ export function wikiToHtml(
   return { html, templates: r.templates }
 }
 
-/** 用渲染器输出正文，并把 {{...}} 模板占位异步补成真实内容块 */
 export function useWikiHtml(raw: string, options: Partial<WikiRenderOptions> = {}): string {
   const { hiddenLabel, templateLabel, templateLoading, ignoreTemplates, literalTemplates } = options
   const result = useMemo(
@@ -97,8 +80,6 @@ export function useWikiHtml(raw: string, options: Partial<WikiRenderOptions> = {
     }),
     [raw, hiddenLabel, templateLabel, templateLoading, ignoreTemplates, literalTemplates],
   )
-  // 补完后的 HTML 记下它对应的 result；raw 一变就先返回新 result 的 html
-  // （模板位为占位骨架），不再沿用上一份 raw 的内容直到模板全部取回。
   const [filled, setFilled] = useState<{ src: typeof result; html: string } | null>(null)
   useEffect(() => {
     let alive = true
@@ -115,7 +96,6 @@ export function useWikiHtml(raw: string, options: Partial<WikiRenderOptions> = {
           return renderTemplateHtml(tr, tmpl, emptyResp)
         }
       }))
-      // 模板块是异步插入的，替换完成后再兜一次底（blocks 自身已在 renderTemplateHtml 出口过滤）
       if (alive) setFilled({ src: result, html: sanitizeRenderedHtml(applyTemplateHtml(result.html, blocks)) })
     })()
     return () => { alive = false }
@@ -123,13 +103,6 @@ export function useWikiHtml(raw: string, options: Partial<WikiRenderOptions> = {
   return filled?.src === result ? filled.html : result.html
 }
 
-/**
- * wiki / 歌曲 / 谱面页的多语言标签（LangTabs）。
- * 切换后拉取该语言的 raw，同样经 useWikiHtml 渲染，模板块才会被补完；
- * 早期直接用 wikiToHtml(raw).html，模板位一直停在占位状态（Loading template...）。
- * langHtml 为 null 表示仍显示默认语言正文。连续切换时只采用最后一次请求的结果。
- * 选择结果带上所属 key：页面 key 一变即视为初始状态，旧页面迟到的响应也不会套到新页面上。
- */
 type LangSelection = { key: string; lang: string; raw: string | null }
 
 export function useWikiLang(key: string): {
@@ -144,7 +117,6 @@ export function useWikiLang(key: string): {
 
   const changeLang = useCallback(async (code: string): Promise<void> => {
     const req = ++reqRef.current
-    // 请求返回前沿用当前正文，只先切换标签
     setSelection((prev) => ({ key, lang: code, raw: prev.key === key ? prev.raw : null }))
     try {
       const resp = await fetchWikiLang(key, code)
@@ -160,11 +132,6 @@ export function useWikiLang(key: string): {
   return { lang: current.lang, langHtml: current.raw === null ? null : rendered, changeLang }
 }
 
-/**
- * 字段可能是 wiki raw，也可能是老站落库的已翻译 HTML（如皮肤简介 desc）。
- * 以标签开头时按 HTML 走白名单清洗（sanitizeLegacyHtml），否则按 wiki 渲染。
- * 与其它入口一样由这里产出可注入的 HTML，页面不直接调用清洗函数。
- */
 export function useWikiOrLegacyHtml(raw: string, options: Partial<WikiRenderOptions> = {}): string {
   const isHtml = looksLikeLegacyHtml(raw)
   const wikiHtml = useWikiHtml(isHtml ? '' : raw, options)
@@ -174,11 +141,6 @@ export function useWikiOrLegacyHtml(raw: string, options: Partial<WikiRenderOpti
   )
 }
 
-/**
- * 讨论 / 评论 / 私信：老站 plugin.views.save_talk 用完整 woc2baka.translate()，
- * 老站 talk_item 用精简 w2b_chat.translate()。两者都由前端按 raw 现算。
- * renderer 由 Go 的 talkItemMap 给出；缺失时按完整 wiki 渲染。
- */
 export const renderTalkHtml = (raw: string, renderer?: string): string => {
   const text = String(raw ?? '')
   if (!text) return ''
@@ -191,16 +153,6 @@ export const renderTalkHtml = (raw: string, renderer?: string): string => {
   return sanitizeRenderedHtml(html)
 }
 
-/**
- * type=1 自动消息（点赞/推荐、活动提示）对应老站 talk/like.tmpl.html：
- * 模板把 translate() 的结果（单个 <p>…</p>）直接插进 .g_wiki.meta，
- * main.css 再把这个 p 设为 inline-block，与用户名、时间同处一行。
- *
- * v3 早期用 <div dangerouslySetInnerHTML> 包了一层，div 是块级元素：
- * 用户名 / 描述 / 时间被拆成三行，而 .meta 只有固定 16px 高，
- * 描述和时间就溢到白块外的灰底上。这里按老站结构一次拼好 innerHTML，
- * 用户名、时间、链接全部先转义，正文仍只来自前端可信渲染器。
- */
 export const renderTalkSmallHtml = (
   raw: string,
   renderer: string | undefined,

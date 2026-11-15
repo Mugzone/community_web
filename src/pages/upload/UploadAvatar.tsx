@@ -1,38 +1,26 @@
-import { useRef, useState, type ChangeEvent } from 'react'
+import { useRef, useState } from 'react'
 import { Shell } from '../../components/Layout'
-import { num, useLoad } from '../../lib/legacy'
+import { num } from '../../utils/data'
+import { useLoad } from '../../lib/useLoad'
 import { URLS } from '../../lib/urls'
-import { fetchUploadPage } from '../../network/legacy'
 import { avatarUidUrl } from '../../utils/formatters'
 import { onUpyunSubmit } from './upyunSubmit'
 import { t as i18nT } from '../../i18n'
-
-const IMG_HOST = 'http://v0.api.upyun.com/ma-img'
+import type { Rec } from '../../utils/response'
+import { EMPTY_UPLOAD, IMG_HOST, fileChangeHandler, loadUploadPage, signFieldsOf, type UploadTarget } from './uploadCommon'
 
 export default function UploadAvatar() {
   const [file, setFile] = useState<File | null>(null)
   const formRef = useRef<HTMLFormElement>(null)
 
-  const { data } = useLoad<Record<string, any>>(
-    async () => {
-      const resp = await fetchUploadPage('avatar')
-      return (resp?.data ?? resp ?? {}) as Record<string, any>
-    },
-    [],
-    {} as Record<string, any>,
-  )
+  const { data } = useLoad<Rec>(() => loadUploadPage('avatar'), [], EMPTY_UPLOAD)
 
-  const target: any = data.target ?? {}
-  const targetId = target.id ?? data.to_uid ?? ''
-  const toUid = data.to_uid ?? ''
-  const policy = String(data.policy ?? '')
-  const signature = String(data.signature ?? '')
-
-  const onFile = (e: ChangeEvent<HTMLInputElement>) => {
-    const f = e.target.files?.[0]
-    if (!f) return
-    setFile(f)
-  }
+  const target = (data.target ?? {}) as UploadTarget
+  const toUidRaw = data.to_uid ?? ''
+  const toUid = String(toUidRaw)
+  const targetId: number | string = target.id ?? toUid
+  const { policy, signature } = signFieldsOf(data)
+  const onFile = fileChangeHandler(setFile)
 
   return (
     <Shell variant="two-col" title={i18nT('Change Avatar')} css={['upload.css']}>
@@ -41,7 +29,7 @@ export default function UploadAvatar() {
         <div className="g_actbar">
           <a href={URLS.user(targetId)} className="g_btn">{i18nT('Cancel')}</a>
         </div>
-        {toUid ? <h1><label></label>Current user: {targetId}</h1> : null}
+        {toUidRaw ? <h1><label></label>Current user: {targetId}</h1> : null}
         <h1>
           <label htmlFor="">{i18nT('Current')}</label>
           <img className="g_round" src={avatarUidUrl(num(targetId, 0))} alt="" />

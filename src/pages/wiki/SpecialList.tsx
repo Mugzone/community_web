@@ -1,16 +1,18 @@
 import { useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { Shell, DefaultSidebar } from '../../components/Layout'
-import { useLoad, asArray, num, LoadingBlock, EmptyBlock, JustifyRow } from '../../lib/legacy'
+import { LinkPager } from '../../components/LinkPager'
+import { useLoad } from '../../lib/useLoad'
+import { asArray, num } from '../../utils/data'
+import { LoadingBlock, EmptyBlock, JustifyRow } from '../../components/fragments'
 import { URLS } from '../../lib/urls'
-import { fetchSpecialList } from '../../network/legacy'
+import { fetchSpecialList } from '../../network/pageWeb'
 import { t as i18nT } from '../../i18n'
 
 type SpecialItem = { id: number | string; name?: string }
 type Model = { items: SpecialItem[]; total: number }
 const FALLBACK: Model = { items: [], total: 1 }
 
-/** /page/special/<name> —— 老站 all_cate.html（name=cate）/ list/tmpl.html（name=tmpl） */
 export default function SpecialList() {
   const { name = 'cate' } = useParams()
   const isTmpl = name === 'tmpl'
@@ -64,21 +66,7 @@ export default function SpecialList() {
         </div>
         {loading && <LoadingBlock />}
         {!loading && items.length === 0 && <EmptyBlock />}
-        {total > 1 && (
-          <div className="g_more">
-            {page > 1 ? (
-              <a href={`${base}?page=${page - 1}`} className="g_round" data-type="back" onClick={(e) => { e.preventDefault(); goPage(page - 1) }}>{i18nT('Prev')}</a>
-            ) : (
-              <a className="fake" href="#"></a>
-            )}
-            <span>{page}/{total}</span>
-            {page < total ? (
-              <a href={`${base}?page=${page + 1}`} className="g_round" data-type="back" onClick={(e) => { e.preventDefault(); goPage(page + 1) }}>{i18nT('Next')}</a>
-            ) : (
-              <a className="fake" href="#"></a>
-            )}
-          </div>
-        )}
+        <LinkPager base={base} page={page} total={total} onChange={goPage} />
       </div>
     </Shell>
   )

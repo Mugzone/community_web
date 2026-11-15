@@ -4,19 +4,20 @@ import { Shell } from '../../components/Layout'
 import { ModIcons } from '../../components/ModIcons'
 import { useSession } from '../../components/SessionProvider'
 import { SkeletonHead, SkeletonRows } from '../../components/Skeleton'
-import { useLoad, asArray, num, formatTime, showNotify, LoadingBlock, JustifyRow, floatFormat } from '../../lib/legacy'
+import { useLoad } from '../../lib/useLoad'
+import { asArray, num, formatTime, floatFormat } from '../../utils/data'
+import { LoadingBlock, JustifyRow } from '../../components/fragments'
+import { showNotify } from '../../lib/notify'
 import { URLS, staticUrl } from '../../lib/urls'
 import { fetchChartInfo, fetchRankingList, fetchRankingFirst5, fetchChartDonateList, fetchWiki } from '../../network/api'
-import { fetchChartPage, operateWikiPage, operateScore } from '../../network/legacy'
+import { fetchChartPage, operateWikiPage } from '../../network/pageWeb'
+import { operateScore } from '../../network/pageContent'
 import { bindHiddenToggles } from '../../utils/wiki'
 import { avatarUidUrl, coverUrl } from '../../utils/formatters'
 import { useWikiHtml, useWikiLang } from '../../utils/wikiRender'
 import { LangTabs, TalkWidget } from './WikiPage'
 import { t as i18nT } from '../../i18n'
 
-/* ------------------------------------------------------------------ *
- * wiki/wiki_page_chart.html（base_width.html 宽版）+ module/wiki
- * ------------------------------------------------------------------ */
 
 type ScoreRow = {
   uid?: number | string
@@ -57,7 +58,6 @@ type ChartState = {
   canDel: boolean
   canMerge: boolean
   canEdit: boolean
-  /** Clear All Records：老站 perms.score.delete_scoremodelkey / Go webHIsAdmin */
   isAdmin: boolean
   sid: number | string
 }
@@ -69,7 +69,6 @@ const EMPTY_CHART: ChartState = {
   donate: [],
   percent: -1,
   gold: 0,
-  // 老站 {% if stat %} 恒渲染 first_area，加载中也保留三张 Empty 卡片，避免布局跳动
   stat: {},
   wikiRaw: '',
   canMark: false,
@@ -93,7 +92,6 @@ const percentLabel = (v: number): string => {
   return i18nT('Very Negative')
 }
 
-/** 老站 RunningDataChart.time3_str：time==0 → "Never"，否则本地时区 %Y-%m-%d %H:%M */
 const firstTimeStr = (ts?: number): string => {
   const n = num(ts, 0)
   if (n <= 0) return 'Never'
@@ -103,7 +101,6 @@ const firstTimeStr = (ts?: number): string => {
   return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`
 }
 
-/** /ranking/first5 → 老站 stat（first3/4/5 + time*_str），与 Go /community/chart/page 的 stat 同构 */
 const first5ToStat = (r: unknown): Record<string, any> => {
   const f: any = r ?? {}
   const toUser = (u: any): Record<string, any> | null =>
@@ -115,7 +112,6 @@ const first5ToStat = (r: unknown): Record<string, any> => {
   }
 }
 
-/** wiki/tmpl_first.html —— 首个达成者 */
 function FirstBlock({ user, time, pic }: { user: any; time: string; pic: string }) {
   return (
     <div className="g_tmpl_first g_rblock">
@@ -135,7 +131,6 @@ function FirstBlock({ user, time, pic }: { user: any; time: string; pic: string 
   )
 }
 
-/** score/items.html —— 成绩排名列表 */
 function ScoreList({ rows }: { rows: ScoreRow[] }) {
   return (
     <>
@@ -201,8 +196,6 @@ export default function ChartPage() {
         fetchChartInfo({ cid }).catch(() => ({})),
         fetchChartDonateList({ cid }).catch(() => ({})),
         fetchWiki({ cid, lang: 0 }).catch(() => ({})),
-        // 老站 wiki_page_chart.html:143-148 的「首个达成者」：Go /community/chart/page
-        // 已补 stat，旧后端（stat: nil）或 page 接口失败时用这份 /ranking/first5 兜底。
         fetchRankingFirst5({ cid }).catch(() => ({})),
       ])
       const p: any = (pageR as any)?.data ?? pageR ?? {}
@@ -228,14 +221,10 @@ export default function ChartPage() {
         donate: asArray<DonateRow>((donateR as any)?.data ?? p.donate ?? donateR),
         percent: num(p.percent, -1),
         gold: num(p.gold, 0),
-        // 老站 {% if stat %} 恒渲染 first_area；优先用 page 接口的完整 stat，
-        // 字段缺失（旧后端 stat: nil / 半截对象）时退回 /ranking/first5。
         stat: (p.stat && typeof p.stat === 'object' && 'time3_str' in p.stat
           ? p.stat
           : first5ToStat(first5R)) as Record<string, any>,
         wikiRaw: String((wikiR as any)?.wiki ?? p.content ?? ''),
-        // 老站 JSON 只在有权限时写 canXxx 字段，缺省即 False。
-        // 这里必须显式 === true：接口失败被 .catch(() => ({})) 吞掉时不能把管理按钮全露出。
         canMark: p.canMark === true,
         canTop: p.canTop === true,
         canDel: p.canDel === true,
@@ -251,27 +240,16 @@ export default function ChartPage() {
 
   const { data: scores, loading: scoresLoading, reload: reloadScores } = useLoad<ScoreRow[]>(
     async () => {
-      // 老站 score/views.py:31 from_to_platform：0=Pro Judge(platform 0,1)、1=Standard(2,3,4)；
-      // Go /ranking/list 的 pro 是「是否 Pro Judge」布尔（1=platform<2），故需反转。
-      // judge 是判定等级过滤（老站 filter(judge=judge)），不是 order 排序位掩码。
       const resp: any = await fetchRankingList({
         cid: Number(id) || 0,
         pro: platform === 0 ? 1 : 0,
         judge,
-        // 网页层没有排序选项，必须恒定按 score 排。Go 的 order 是排序位掩码
-        // (Combo=1/Acc=2/NoMod=4/NoSpeed=8)，一旦被传成 judge 的值就会切成
-        // acc/combo 排序，导致「总分」列看起来乱序。显式锁 0 = score DESC。
         order: 0,
       })
       const rows = asArray<ScoreRow>(resp?.data ?? resp?.items ?? resp)
-      // 老站 score/views.py:49-50 filter(judge=judge)。后端正常时已按 judge 过滤，
-      // 这里幂等再筛一次：旧版 Go 忽略 judge 参数、或缓存键未带 judge 维度时
-      // 会返回同一批数据，前端兜底保证 #g_judge 筛选器一定生效。
       const filtered = judge < 0
         ? rows
         : rows.filter((row) => num(row.judge, -1) === judge)
-      // 老站 score/views.py:51 order_by("-score", "-combo", "-time")。
-      // 前端再做一次按 score 的稳定降序，兜住服务端缓存 / 旧版本返回的非 score 顺序。
       return filtered
         .map((row, i) => ({ row, i }))
         .sort((a, b) => num(b.row.score, 0) - num(a.row.score, 0) || a.i - b.i)
@@ -309,7 +287,6 @@ export default function ChartPage() {
       if (!window.confirm('Are you sure to delete the page?')) return
       try {
         await operateWikiPage('del', { key })
-        // 老站 module/wiki/src/init.js:del：有 sid 时跳回所属歌曲页，否则回首页。
         const sid = Number(data.sid) || 0
         window.location.href = sid > 0 ? URLS.song(sid) : URLS.index
       } catch (e) {
@@ -343,7 +320,6 @@ export default function ChartPage() {
   const author: Record<string, any> = chart.author ?? {}
   const publisher: Record<string, any> = chart.publisher ?? {}
   const finalHtml = langHtml !== null ? langHtml : wikiHtml
-  // 加载中正文也是空串，此时只显示下方骨架，不能当成「还没有简介」
   const gWikiInner = finalHtml || (loading ? '' : '<div class="g_wiki_new btn" data-type="edit">Add description to the chart</div>')
 
   return (
@@ -355,7 +331,6 @@ export default function ChartPage() {
     >
       <div className="song_title g_rblock">
         <div className="coverb">
-          {/* 加载中 cover 为空会回落到 cover.png（No Cover 图），先用骨架占位 */}
           {loading
             ? <div className="cover wb-skel"></div>
             : <div className="cover" style={{ backgroundImage: `url(${cover})` }}></div>}
@@ -425,7 +400,6 @@ export default function ChartPage() {
         </div>
       </div>
 
-      {/* 加载中只留图标和标签，数值先空着：否则会先闪出 N/A、0 再变成真实值 */}
       <div className="g_cont2 g_rblock like_area">
         <div className="num">
           <img src={staticUrl('img/icon-love.png')} alt="" />
@@ -453,8 +427,6 @@ export default function ChartPage() {
       <div className="g_cont2 g_rblock">
         <h1 className="sec">{i18nT('Ranking')}</h1>
         <div className="g_actbar" id="score_actbar">
-          {/* 老站 {% if perms.score.delete_scoremodelkey %} / {% if user.is_authenticated %}；
-              后端 OperateScore 分别要求 webHIsAdmin 与 uid != 0，缺省一律收起 */}
           {data.isAdmin && <a href="#" className="g_btn btn" data-type="delall" onClick={(e) => { e.preventDefault(); void onTool('delall') }}>{i18nT('Clear All Records')}</a>}
           {isLogin && <a href="#" className="g_btn btn" data-type="delmy" onClick={(e) => { e.preventDefault(); void onTool('delmy') }}>{i18nT('Remove score')}</a>}
           <select id="g_judge" className="g_options" value={judge} onChange={(e) => onJudge(Number(e.target.value))}>
@@ -471,7 +443,6 @@ export default function ChartPage() {
           </select>
         </div>
         <div className="score_area">
-          {/* 只在首次加载（还没有任何行）时用骨架；切换筛选时保留旧列表直到新数据到达，避免闪烁 */}
           {scoresLoading && scores.length === 0 ? <SkeletonRows /> : <ScoreList rows={scores} />}
         </div>
       </div>

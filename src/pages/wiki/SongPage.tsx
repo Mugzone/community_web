@@ -2,19 +2,19 @@ import { useEffect, useRef } from 'react'
 import { useParams } from 'react-router-dom'
 import { Shell } from '../../components/Layout'
 import { SkeletonHead, SkeletonRows } from '../../components/Skeleton'
-import { useLoad, asArray, showNotify, LoadingBlock, floatFormat, formatTime } from '../../lib/legacy'
+import { useLoad } from '../../lib/useLoad'
+import { asArray, floatFormat, formatTime } from '../../utils/data'
+import { LoadingBlock } from '../../components/fragments'
+import { showNotify } from '../../lib/notify'
 import { URLS, staticUrl } from '../../lib/urls'
 import { fetchSongInfo, fetchSongCharts, fetchWiki } from '../../network/api'
-import { fetchSongPage, operateWikiPage } from '../../network/legacy'
+import { fetchSongPage, operateWikiPage } from '../../network/pageWeb'
 import { bindHiddenToggles } from '../../utils/wiki'
 import { useWikiHtml, useWikiLang } from '../../utils/wikiRender'
 import { LangTabs, TalkWidget } from './WikiPage'
 import { t as i18nT } from '../../i18n'
 import { coverUrl } from '../../utils/formatters'
 
-/* ------------------------------------------------------------------ *
- * wiki/wiki_page_song.html（base_width.html 宽版）+ module/wiki
- * ------------------------------------------------------------------ */
 
 type ChartRow = {
   id?: number | string
@@ -60,12 +60,6 @@ const EMPTY_SONG: SongState = {
 
 const TYPE_LABELS = ['Alpha', 'Beta', 'Stable']
 
-/**
- * 老站 wikipage/models.py:404 TempDataChart.display_version：
- * level=0 原样返回；否则去掉 version 里已有的 LV.<n>，再统一拼 " Lv.<level>"。
- * 后端 /community/song/page 的 chartlist 已带 display_version，这里只用于
- * /community/song/charts 兜底数据（该接口只有 version + level）。
- */
 const displayVersion = (c: ChartRow): string => {
   if (c.display_version) return String(c.display_version)
   const raw = String(c.version ?? '')
@@ -74,7 +68,6 @@ const displayVersion = (c: ChartRow): string => {
   return `${raw.replace(/LV\.\d+/gi, '')} Lv.${lv}`
 }
 
-/** wiki/display_chart_list.html —— 谱面列表 */
 function ChartList({ charts, songId }: { charts: ChartRow[]; songId: number | string }) {
   return (
     <div className="g_block chartlist">
@@ -131,8 +124,6 @@ export default function SongPage() {
       const title = String(songExRaw.title ?? info.title ?? song.title ?? '')
       const artist = String(songExRaw.artist ?? info.artist ?? song.artist ?? '')
       const hasOrg = Boolean(songExRaw.hasOrg) || (Boolean(song.titleOrg) && song.titleOrg !== song.title)
-      // 老站 display_chart_list.html 用后端算好的 display_version；
-      // /community/song/charts 只给 version+level（连 id 都没有），仅作兜底。
       const charts: ChartRow[] = asArray<ChartRow>(p.chartlist ?? (chartsR as any)?.data ?? chartsR)
       const tags: TagRow[] = asArray<any>(p.taglist ?? info.tagOptions ?? []).map((t: any) => {
         const inner = t?.tag ?? t
@@ -144,7 +135,6 @@ export default function SongPage() {
         charts,
         tags,
         wikiRaw: String((wikiR as any)?.wiki ?? p.content ?? ''),
-        // 老站 JSON 只在有权限时写 canXxx，缺省即 False；接口失败时保持收起
         canCover: p.canCover === true,
         canDel: p.canDel === true,
         canMerge: p.canMerge === true,
@@ -175,8 +165,6 @@ export default function SongPage() {
       if (!window.confirm('Are you sure to delete the page?')) return
       try {
         await operateWikiPage('del', { key })
-        // 老站 module/wiki/src/init.js:del 成功后跳回首页（song 页没有 sid）。
-        // 不跳转的话页面仍停留在已删除的歌曲上，看起来就是「删除无效」。
         window.location.href = URLS.index
       } catch (e) {
         showNotify(e instanceof Error && e.message ? e.message : 'Delete failed', 'err')
@@ -200,7 +188,6 @@ export default function SongPage() {
   const title = String(song.title ?? '')
   const artist = String(song.artist ?? '')
   const finalHtml = langHtml !== null ? langHtml : wikiHtml
-  // 加载中正文也是空串，此时只显示下方骨架，不能当成「还没有简介」
   const gWikiInner = finalHtml || (loading ? '' : '<div class="g_wiki_new btn" data-type="edit">Add description to the song</div>')
 
   return (
@@ -212,7 +199,6 @@ export default function SongPage() {
     >
       <div className="song_title g_rblock">
         <div className="coverb">
-          {/* 加载中 cover 为空会回落到 cover.png（No Cover 图），先用骨架占位 */}
           {loading
             ? <div className="cover wb-skel"></div>
             : <div className="cover" style={{ backgroundImage: `url(${cover})` }}></div>}
@@ -254,7 +240,6 @@ export default function SongPage() {
         </div>
       </div>
 
-      {/* 加载中谱面列表为空，不能当成「还没有谱面」显示添加入口 */}
       {loading ? (
         <div className="g_cont2 g_rblock">
           <SkeletonRows count={3} />

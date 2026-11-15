@@ -1,14 +1,15 @@
 import { useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { Shell } from '../../components/Layout'
-import { asArray, num, Pager, useLoad } from '../../lib/legacy'
+import { Pager } from '../../components/fragments'
+import { useLoad } from '../../lib/useLoad'
 import { URLS, staticUrl } from '../../lib/urls'
-import { fetchEventRank } from '../../network/legacy'
+import { fetchEventRank } from '../../network/pageContent'
 import { avatarUrl, coverUrl } from '../../utils/formatters'
 import { t as i18nT } from '../../i18n'
+import { asString as s, num as n, asArray } from '../../utils/data'
+import type { AnyRec as Rec } from '../../utils/data'
 
-/* score/event_rank.html：extended base_width.html，含 wiki/tmpl_event_chart.html 与 wiki/tmpl_eventsum.html */
-type Rec = Record<string, any>
 type EventRankData = {
   record: Rec
   charts: Rec[]
@@ -18,8 +19,6 @@ type EventRankData = {
 }
 const FALLBACK: EventRankData = { record: {}, charts: [], list: [], cover: '', total: 1 }
 
-const s = (v: unknown, fb = ''): string => (v === undefined || v === null ? fb : String(v))
-const n = (v: unknown, fb = 0): number => num(v, fb)
 const coverSrc = (v: unknown): string => {
   const raw = s(v)
   if (!raw) return staticUrl('img/cover.png')

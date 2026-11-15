@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { Shell, DefaultSidebar } from '../../components/Layout'
-import { useLoad, showNotify } from '../../lib/legacy'
+import { useLoad } from '../../lib/useLoad'
+import { showNotify } from '../../lib/notify'
 import { URLS } from '../../lib/urls'
-import { fetchWikiTmplPage, saveWikiTemplate } from '../../network/legacy'
+import { fetchWikiTmplPage, saveWikiTemplate } from '../../network/pageWeb'
 import { wikiToHtml } from '../../utils/wikiRender'
 import { t as i18nT } from '../../i18n'
 
@@ -23,7 +24,6 @@ const TOOLS: Tool[] = [
   { type: 'table', title: i18nT('Table'), cls: 'tool-table' },
 ]
 
-/** /page/tmpl/edit —— 老站 wiki/wiki_tmpl_edit.html（模板编辑 + 预览） */
 export default function TmplEdit() {
   const [sp] = useSearchParams()
   const tid = sp.get('tid') ?? ''
@@ -61,7 +61,6 @@ export default function TmplEdit() {
     }
   }
 
-  /** 老站 edit_tmpl 预览走 translate(..., ignore_tmpl=True)，现由前端按 raw 现算 */
   const preview = () => {
     setPreviewHtml(wikiToHtml(content, { ignoreTemplates: true }).html)
   }

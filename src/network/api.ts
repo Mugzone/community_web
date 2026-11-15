@@ -1,8 +1,3 @@
-/**
- * 请求基址。生产构建不设置 VITE_API_BASE，走下面的独立 API 域名；
- * 本地 .env.development 覆盖成 /api 由 vite proxy 转发。
- * 注意：import.meta.env.VITE_* 是构建时静态替换，部署后改环境变量无效，必须重新 build。
- */
 const API_BASE = (import.meta.env.VITE_API_BASE ?? 'https://api.mugzone.net/api').replace(/\/$/, '')
 const resolveApiOrigin = () => {
   if (typeof window === 'undefined') return undefined
@@ -18,10 +13,8 @@ const canSendCustomHeaders = typeof window === 'undefined' || apiOrigin === wind
 
 type FetchOptions = {
   params?: Record<string, string | number | undefined>
-  /** Defaults to true for non-/wt endpoints */
   auth?: boolean
   headers?: Record<string, string>
-  /** 业务负码由调用方自己处理（登录/注册要按 code 显示具体原因），不抛异常 */
   allowBizError?: boolean
 }
 
@@ -163,13 +156,9 @@ const buildVersionHeader = (clientVersion?: string) => {
   return { Malody: clientVersion ?? MALODY_VERSION }
 }
 
-/** -1000：MaApi-go token 中间件判定的「未登录 / 会话 token 失效」
- *  （internal/middleware/token.go），写操作对游客也返回该码。 */
 export const CODE_NOT_LOGIN = -1000
-/** 登录态失效广播；SessionProvider 监听后同步 React 状态并给出可见提示。 */
 export const SESSION_EXPIRED_EVENT = 'malody:session-expired'
 
-/** 带业务码的异常，对齐老站 util.ajax 的 error 回调（回调参数就是 code）。 */
 export class BizError extends Error {
   constructor(readonly code: number, message?: string) {
     super(message ?? `Request failed: ${code}`)
@@ -187,35 +176,19 @@ const parseBizPack = (text: string): PackBase | undefined => {
       }
     }
   } catch {
-    // 纯文本 / 空体：保持原行为
   }
   return undefined
 }
 
-/**
- * 已登录会话收到 -1000，说明服务端已不认这份 token。此前旧登录态仍留在
- * localStorage，页面又把 assertBizOk 抛出的异常吞掉，表现为「顶部一直显示
- * 已登录、请求却全部静默失败」。这里在请求层统一清 session 并广播事件，
- * 让 UI 立即退回游客态且给出提示，后续请求会重新签发游客 token。
- *
- * 两种情况不触发退出：
- * - auth:false 的公开端点（登录/注册/激活、/wt 数据接口）：它的 -1000 与当前会话无关；
- * - 游客态（uid<=1）：POST 被中间件拒绝本就是「请先登录」，没有登录态可退，
- *   清掉 guest token 只会让下一个请求重新签发后再撞一次 -1000。
- */
 const expireSessionIfNeeded = (requiresAuth: boolean) => {
   if (!requiresAuth || typeof window === 'undefined') return
   const current = loadStoredSession()
   if (!current || current.uid <= 1) return
-  // 与「用户恰好重新登录」竞态时，只清触发该请求的那一套凭据
   if (loadStoredSession() !== current) return
   setSession(undefined)
   window.dispatchEvent(new Event(SESSION_EXPIRED_EVENT))
 }
 
-/** 老站 util.ajax：HTTP 200 但 data.code 为负数时走 error 回调。
- *  非 JSON 响应 / 无 code 字段 / 非负数一律不处理，保持原行为。
- *  allowBizError 的接口仍把负码原样交给页面，只是 -1000 会先触发上面的退出。 */
 const handleBizCode = (text: string, opts: { requiresAuth: boolean; allowBizError?: boolean }) => {
   const pack = parseBizPack(text)
   if (!pack || pack.code >= 0) return
@@ -264,7 +237,6 @@ export const postForm = async <T>(path: string, options?: PostOptions): Promise<
   }
   const text = await res.text()
   handleBizCode(text, { requiresAuth, allowBizError: options?.allowBizError })
-  // 兼容后端返回纯文本 / 空体的 post 接口
   try {
     return JSON.parse(text) as T
   } catch {
@@ -406,14 +378,12 @@ export type RespPlayerChartItem = {
   level?: number
   length?: number
   hot?: number
-  /** /community/player/chart 的实际字段名（老站模板叫 lastedit_str） */
   time?: number
   time_str?: string
   lastedit?: number
   lastedit_str?: string
 }
 
-/** /score/player/recent：老站 profile/index.html 的「最近高分」 */
 export type RespPlayerRecentScore = {
   chart_id: number
   mode?: number
@@ -447,7 +417,6 @@ export type RespPlayerAllRankItem = {
   acc?: number
   combo?: number
   level?: number
-  /** /ranking/player/all 的实际字段名（老站模板叫 playcount / exp_rank） */
   pc?: number
   playcount?: number
   exp?: number
@@ -681,7 +650,6 @@ export type RespChartInfo = {
   dislike?: number
   hot?: number
   likeState?: number
-  /** 老站 general_meta 的四个 UI 露出标志，缺省即无权限 */
   isAss?: boolean
   isPub?: boolean
   isSelf?: boolean
@@ -760,15 +728,12 @@ export type RespChartDonateList = {
   data?: RespChartDonate[]
 }
 
-/** /community/wiki 恒定返回 raw 正文，不再有 raw/html 双模式标记 */
 export type RespWiki = {
   code: number
   wiki?: string
   title?: string
   locked?: boolean
-  /** 老站 conf["isorg"]（is_commu），控制 Lock/Unlock 按钮露出 */
   isorg?: boolean
-  /** 老站 object.limit，>= 16 表示页面由 Malody 团队维护 */
   limit?: number
 }
 
@@ -838,26 +803,25 @@ export const fetchStoreList = (
     headers: buildVersionHeader(options?.clientVersion),
   })
 
-/** V2版本的store list接口，支持更丰富的筛选条件 */
 export const fetchStoreListV2 = (
   params?: {
-    word?: string       // 搜索关键词(匹配title,artist,creator,version,tag)
-    org?: number        // 是否显示原始标题 (0/1)
-    mode?: number       // 模式过滤(-1表示全部)
-    type?: string       // chart状态过滤,逗号分隔(0=alpha,1=beta,2=stable)
-    free?: number       // Freestyle过滤(-1表示全部)
-    lvmin?: number      // 最低难度
-    lvmax?: number      // 最高难度
-    bpmmin?: number     // 最低BPM
-    bpmmax?: number     // 最高BPM
-    lenmin?: number     // 最短时长(秒)
-    lenmax?: number     // 最长时长(秒)
-    author?: number     // 谱师ID
-    mcver?: number      // 客户端版本
-    sort?: string       // 排序字段(time,hot,level)
-    order?: string      // 排序方向(asc,desc)
-    from?: number       // 分页起点(offset)
-    limit?: number      // 每页数量
+    word?: string
+    org?: number
+    mode?: number
+    type?: string
+    free?: number
+    lvmin?: number
+    lvmax?: number
+    bpmmin?: number
+    bpmmax?: number
+    lenmin?: number
+    lenmax?: number
+    author?: number
+    mcver?: number
+    sort?: string
+    order?: string
+    from?: number
+    limit?: number
   },
   options?: { clientVersion?: string },
 ) =>
@@ -883,7 +847,6 @@ export const fetchPlayerInfo = (params: { uid: number; ver?: number; bver?: numb
 export const fetchPlayerActivity = (params: { uid: number }) =>
   getJson<RespPlayerActivity>('/player/activity', { params: { touid: params.uid } })
 
-/** 个人主页「Recent high scores」：老站直接查 score_key，新站由 webpage 层提供 */
 export const fetchPlayerRecentScores = (params: { uid: number }) =>
   getJson<{ code: number; data?: RespPlayerRecentScore[] }>('/score/player/recent', {
     params: { touid: params.uid },
@@ -913,8 +876,6 @@ export const savePlayerInfo = (payload: {
   tab?: number
 }) =>
   postForm<PackBase>('/player/info', {
-    // 负码是业务结果（金币不足/重名/生日非法等），交给页面按 code 显示具体提示，
-    // 不能让 assertBizOk 抛异常后统一退化成「保存失败」。
     allowBizError: true,
     body: {
       name: payload.name,
@@ -968,8 +929,6 @@ export type RespCommand = {
   data?: string
 }
 
-/** v3 /emiri/command 指令台。老站 /lolicon/exec 的等价端点是
- *  /api/emiria/command/exec；负码由页面自行提示，故 allowBizError=true。 */
 export const execCommand = (cmd: string) =>
   postForm<RespCommand>('/emiria/command/exec', {
     body: { cmd },
@@ -1001,12 +960,9 @@ export const fetchSkinHashList = () =>
 
 export type RespSkinHashSave = { code: number }
 
-/** 老站 init.js 的 act=del|save；负码（不存在 / 参数错误）由页面提示。 */
 export const saveSkinHash = (payload: {
   act: 'del' | 'save'
   id: number
-  // 原样传输入框字符串，由后端 Atoi 解析（对齐老站 FieldReader.getInt），
-  // 避免前端 Number() 把 "0x10" / "1e3" 之类解析成与 Python int() 不同的值。
   skin?: string
   hash?: string
 }) =>
@@ -1120,8 +1076,6 @@ export const clearChartRanking = (payload: { cid: number }) =>
     },
   })
 
-/** 老站 wikipage/views.py:promote：作者花金币给自己的非 Stable 谱买广告位。
- *  与商店侧栏已下线的 Chart Promotion（竞价活动）不是同一个功能。 */
 export const promoteChart = (payload: { cid: number }) =>
   postForm<PackBase>('/community/chart/promote', {
     body: { cid: payload.cid },
@@ -1266,8 +1220,6 @@ export const deleteWikiPage = (payload: { pid: number; uid: number }) =>
     body: { pid: payload.pid },
   })
 
-/** 上下架新闻：code=1 上架 / 2 下架 / -1 页面不存在 / -5 权限不足。
- *  负码是业务结果，页面要按 code 给不同提示，故不走 assertBizOk 抛异常。 */
 export const toggleWikiNews = (payload: { pid: number; uid: number }) =>
   postForm<RespPushNews>('/push/news', {
     allowBizError: true,

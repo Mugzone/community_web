@@ -1,18 +1,16 @@
 import { useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { Shell, DefaultSidebar } from '../../components/Layout'
-import { asArray, num, useLoad, floatFormat } from '../../lib/legacy'
+import { useLoad } from '../../lib/useLoad'
 import { URLS } from '../../lib/urls'
-import { fetchEventPage } from '../../network/legacy'
+import { fetchEventPage } from '../../network/pageContent'
 import { t as i18nT } from '../../i18n'
+import { asString as s, num as n, asArray, floatFormat } from '../../utils/data'
+import type { AnyRec as Rec } from '../../utils/data'
 
-/* score/event3.html 与 score/event.html：extended base.html（两栏 + 默认侧栏），两个视图共用 fetchEventPage */
-type Rec = Record<string, any>
 type EventData = { players: Rec[]; records: Rec[]; back: string }
 const FALLBACK: EventData = { players: [], records: [], back: '' }
 
-const s = (v: unknown, fb = ''): string => (v === undefined || v === null ? fb : String(v))
-const n = (v: unknown, fb = 0): number => num(v, fb)
 const fmt2 = (v: unknown): string => floatFormat(v, 2)
 
 export default function EventPage() {
@@ -56,7 +54,6 @@ export default function EventPage() {
         </div>
 
         {view === 'players' ? (
-          /* score/event3.html */
           <>
             <div className="list_head" style={{ width: '300px' }}>
               <span className="chart">{i18nT('Player')}</span>
@@ -75,7 +72,6 @@ export default function EventPage() {
             </ul>
           </>
         ) : (
-          /* score/event.html + score/event_item.html */
           data.records.length > 0 ? (
             <>
               <div className="list_head">

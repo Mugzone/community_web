@@ -1,7 +1,3 @@
-/* ChartTalk.css — talk/chart.html 的页面样式，作用域名 "chart_talk"。
-   原先是组件里的内联 <style>，现随组件同目录静态加载。
-   body 规则用于抵消 simple.css 的 body 居中；本文件在 index.css 中排在
-   simple.css 之后，同权重时由此规则生效。 */
 html[data-styles~="chart_talk"] body {
   margin: 10px;
   text-align: left;

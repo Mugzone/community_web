@@ -1,7 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { Shell } from '../../components/Layout'
-import { useLoad, asArray, formatTime, num, showNotify, LoadingBlock } from '../../lib/legacy'
+import { useLoad } from '../../lib/useLoad'
+import { asArray, formatTime, num } from '../../utils/data'
+import { LoadingBlock } from '../../components/fragments'
+import { showNotify } from '../../lib/notify'
 import { URLS } from '../../lib/urls'
 import {
   fetchTalkMessage,
@@ -9,20 +12,18 @@ import {
   fetchTalkRaw,
   saveTalk,
   operateTalk,
-} from '../../network/legacy'
+} from '../../network/pageAccount'
 import { t as i18nT } from '../../i18n'
 import { avatarUrl } from '../../utils/formatters'
 import { renderTalkHtml, renderTalkSmallHtml } from '../../utils/wikiRender'
 import './UserMsg.css'
 
-/** talk/usermsg.html + widget/talk.html + widget/edittool_simple.html + module/talk/src/init.js */
 type TalkMessageItem = {
   tid: number
   uid?: number | string
   name?: string
   avatar?: string
   time?: number | string
-  /** 服务端返回的 raw 文本，由前端 renderTalkHtml 现算 HTML */
   content?: string
   renderer?: string
   num?: number | string
@@ -59,10 +60,6 @@ const normalize = (msgRes: any, listRes: any): UserMsgState => {
   }
 }
 
-/**
- * 讨论正文一律从 raw 经前端渲染器生成（老站 translate() / w2b_chat.translate()）。
- * 渲染器先整体 escape 再生成可信标签，不再注入服务端 html，也无需正则过滤脚本。
- */
 const talkBodyHtml = (item: TalkMessageItem): string =>
   renderTalkHtml(String(item.content ?? ''), item.renderer)
 
@@ -108,9 +105,7 @@ function TalkItemView({
   const href = URLS.user(item.uid ?? 0)
   const time = formatTime(item.time)
 
-  // type == 1 为 like.tmpl.html 的精简样式
   if (item.type === 1) {
-    // talk/like.tmpl.html：<p> 必须是 .g_wiki.meta 的直接子元素
     return (
       <li className="item small" data-id={item.tid} data-time={item.time ?? ''}>
         <div className="bg right">
@@ -130,7 +125,6 @@ function TalkItemView({
   return (
     <li className="item" data-id={item.tid} data-time={item.time ?? ''}>
       <a className="bg left" href={href}>
-        {/* 老站 widget/discuss_item.html:5 {% avatar item.user 64 small=True %} */}
         <img src={avatarUrl(item.avatar, item.uid ?? 0, 64)} style={{ background: 'none' }} alt="" />
       </a>
       <div className="bg right">
@@ -183,6 +177,15 @@ export default function UserMsg() {
   const [replyId, setReplyId] = useState(0)
   const [editId, setEditId] = useState(0)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const focusFrame = useRef<number | undefined>(undefined)
+  const selectFrame = useRef<number | undefined>(undefined)
+
+  useEffect(() => {
+    return () => {
+      if (focusFrame.current !== undefined) window.cancelAnimationFrame(focusFrame.current)
+      if (selectFrame.current !== undefined) window.cancelAnimationFrame(selectFrame.current)
+    }
+  }, [])
 
   useEffect(() => {
     setItems(data.items)
@@ -192,7 +195,8 @@ export default function UserMsg() {
   const openEditor = (show: boolean) => {
     setEditorShow(show)
     if (show) {
-      window.requestAnimationFrame(() => textareaRef.current?.focus())
+      if (focusFrame.current !== undefined) window.cancelAnimationFrame(focusFrame.current)
+      focusFrame.current = window.requestAnimationFrame(() => textareaRef.current?.focus())
     }
   }
 
@@ -217,7 +221,8 @@ export default function UserMsg() {
     if (type === 'bold') replacement = `**${selected}**`
     else if (type === 'italic') replacement = `//${selected}//`
     setText(text.slice(0, start) + replacement + text.slice(end))
-    window.requestAnimationFrame(() => {
+    if (selectFrame.current !== undefined) window.cancelAnimationFrame(selectFrame.current)
+    selectFrame.current = window.requestAnimationFrame(() => {
       el?.focus()
       el?.setSelectionRange(start + replacement.length, start + replacement.length)
     })
@@ -238,7 +243,6 @@ export default function UserMsg() {
         uid: d.uid,
         name: (d.name ?? d.username ?? '') as string,
         time: d.time ?? Math.floor(Date.now() / 1000),
-        // 保存响应返回 raw 文本，前端统一渲染
         content: String(d.content ?? content),
         isOwn: true,
         canEdit: true,
@@ -301,7 +305,6 @@ export default function UserMsg() {
       }
       setItems((prev) => [...prev, ...more])
     } catch {
-      /* ignore */
     }
   }
 

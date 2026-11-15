@@ -2,12 +2,11 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { login } from '../network/api'
 import { md5 } from '../utils/md5'
-import { showNotify } from '../lib/legacy'
+import { showNotify } from '../lib/notify'
 import { URLS } from '../lib/urls'
 import { useSession } from './SessionProvider'
 import { t as i18nT } from '../i18n'
 
-/** 复刻老站 templates/widget/login.html */
 export function LoginModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [email, setEmail] = useState('')
   const [psw, setPsw] = useState('')

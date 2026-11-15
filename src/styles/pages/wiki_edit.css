@@ -1,7 +1,3 @@
-/* wiki_edit.css — 老站样式，作用域名 "wiki_edit"。
-   规则以 html[data-styles~="wiki_edit"] 限定，
-   Shell 依据 variant / page / css prop 生成 <html data-styles="...">。
- */
 html[data-styles~="wiki_edit"] .clear {
   clear: both;
   display: block;

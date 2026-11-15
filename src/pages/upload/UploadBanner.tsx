@@ -1,36 +1,26 @@
-import { useRef, useState, type ChangeEvent } from 'react'
+import { useRef, useState } from 'react'
 import { Shell } from '../../components/Layout'
-import { num, showNotify, useLoad } from '../../lib/legacy'
-import { deleteBanner, fetchUploadPage } from '../../network/legacy'
+import { num } from '../../utils/data'
+import { useLoad } from '../../lib/useLoad'
+import { showNotify } from '../../lib/notify'
+import { deleteBanner } from '../../network/pageContent'
 import { onUpyunSubmit } from './upyunSubmit'
 import { t as i18nT } from '../../i18n'
-
-const IMG_HOST = 'http://v0.api.upyun.com/ma-img'
+import type { Rec } from '../../utils/response'
+import { EMPTY_UPLOAD, IMG_HOST, fileChangeHandler, loadUploadPage, signFieldsOf } from './uploadCommon'
 
 export default function UploadBanner() {
   const [file, setFile] = useState<File | null>(null)
   const [deleted, setDeleted] = useState(false)
   const formRef = useRef<HTMLFormElement>(null)
 
-  const { data } = useLoad<Record<string, any>>(
-    async () => {
-      const resp = await fetchUploadPage('banner')
-      return (resp?.data ?? resp ?? {}) as Record<string, any>
-    },
-    [],
-    {} as Record<string, any>,
-  )
+  const { data } = useLoad<Rec>(() => loadUploadPage('banner'), [], EMPTY_UPLOAD)
 
-  const toUid = data.to_uid ?? ''
+  const toUidRaw = data.to_uid ?? ''
+  const toUid = String(toUidRaw)
   const banner = deleted ? '' : String(data.banner ?? '')
-  const policy = String(data.policy ?? '')
-  const signature = String(data.signature ?? '')
-
-  const onFile = (e: ChangeEvent<HTMLInputElement>) => {
-    const f = e.target.files?.[0]
-    if (!f) return
-    setFile(f)
-  }
+  const { policy, signature } = signFieldsOf(data)
+  const onFile = fileChangeHandler(setFile)
 
   const onDelete = async () => {
     try {
@@ -48,7 +38,7 @@ export default function UploadBanner() {
         <div className="g_actbar">
           <a href="/accounts/config/profile" className="g_btn">{i18nT('Cancel')}</a>
         </div>
-        {toUid ? <h1><label></label>Current user: {toUid}</h1> : null}
+        {toUidRaw ? <h1><label></label>Current user: {toUid}</h1> : null}
         {banner ? (
           <h1><label htmlFor="">{i18nT('Current')}</label><img src={banner} alt="" /></h1>
         ) : (

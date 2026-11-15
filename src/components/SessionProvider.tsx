@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react'
 import { SESSION_EXPIRED_EVENT, getSession, setSession, type AuthSession } from '../network/api'
-import { showNotify } from '../lib/legacy'
+import { showNotify } from '../lib/notify'
 import { t as i18nT } from '../i18n'
 
 type SessionCtx = {
@@ -26,7 +26,6 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const refresh = useCallback(() => setS(getSession()), [])
 
   useEffect(() => {
-    // 游客 token 是异步签发的，签发后同步一次顶部导航状态
     const timer = window.setTimeout(refresh, 400)
     const onStorage = () => refresh()
     window.addEventListener('storage', onStorage)
@@ -51,8 +50,6 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   }, [])
 
   useEffect(() => {
-    /** 请求层撞到 -1000 时已清掉 localStorage；这里同步 React 状态并给出
-     *  可见提示，避免「顶部仍显示已登录、请求全部静默失败」。 */
     const onSessionExpired = () => {
       signOut()
       showNotify(i18nT('Please login'), 'err')

@@ -2,7 +2,10 @@ import { useEffect, useState, type ChangeEvent } from 'react'
 import { useLocation } from 'react-router-dom'
 import { Shell } from '../../components/Layout'
 import { useSession } from '../../components/SessionProvider'
-import { LoadingBlock, num, showNotify, useLoad } from '../../lib/legacy'
+import { LoadingBlock } from '../../components/fragments'
+import { num } from '../../utils/data'
+import { useLoad } from '../../lib/useLoad'
+import { showNotify } from '../../lib/notify'
 import { URLS } from '../../lib/urls'
 import {
   createEvent,

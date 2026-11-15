@@ -1,14 +1,15 @@
 import { useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { Shell, DefaultSidebar } from '../../components/Layout'
-import { useLoad, asArray, showNotify, LoadingBlock, EmptyBlock, JustifyRow } from '../../lib/legacy'
+import { LinkPager } from '../../components/LinkPager'
+import { useLoad } from '../../lib/useLoad'
+import { asArray } from '../../utils/data'
+import { LoadingBlock, EmptyBlock, JustifyRow } from '../../components/fragments'
+import { showNotify } from '../../lib/notify'
 import { URLS } from '../../lib/urls'
-import { fetchWikiCategory, deleteWikiCategory, mergeWikiCategory } from '../../network/legacy'
+import { fetchWikiCategory, deleteWikiCategory, mergeWikiCategory } from '../../network/pageWeb'
 import { t as i18nT } from '../../i18n'
 
-/* ------------------------------------------------------------------ *
- * wiki_cate.html（base.html 两栏, akari.css）+ module/wikiCate
- * ------------------------------------------------------------------ */
 
 type CateItem = { id?: number | string; title?: string }
 type CateState = {
@@ -50,7 +51,6 @@ export default function WikiCate() {
     setPage(p)
   }
 
-  /* module/wikiCate —— 删除 / 合并分类 */
   const onDelete = async (): Promise<void> => {
     try {
       await deleteWikiCategory(cateId)
@@ -105,21 +105,7 @@ export default function WikiCate() {
           {!loading && data.items.length === 0 && <EmptyBlock />}
         </div>
 
-        {total > 1 && (
-          <div className="g_more">
-            {page > 1 ? (
-              <a href={`${URLS.cate(data.id)}?page=${page - 1}`} className="g_round" data-type="back" onClick={(e) => { e.preventDefault(); goPage(page - 1) }}>{i18nT('Prev')}</a>
-            ) : (
-              <a className="fake" href="#"></a>
-            )}
-            <span>{page}/{total}</span>
-            {page < total ? (
-              <a href={`${URLS.cate(data.id)}?page=${page + 1}`} className="g_round" data-type="back" onClick={(e) => { e.preventDefault(); goPage(page + 1) }}>{i18nT('Next')}</a>
-            ) : (
-              <a className="fake" href="#"></a>
-            )}
-          </div>
-        )}
+        <LinkPager base={URLS.cate(data.id)} page={page} total={total} onChange={goPage} />
       </div>
     </Shell>
   )

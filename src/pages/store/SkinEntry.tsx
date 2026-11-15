@@ -1,23 +1,22 @@
 import { useEffect, useState, type ChangeEvent } from 'react'
 import { Shell } from '../../components/Layout'
-import { asArray, num, showNotify, useLoad } from '../../lib/legacy'
-import { fetchUploadSign, removeSkinPreview, setSkinStatus, submitSkin } from '../../network/legacy'
+import { asArray, num } from '../../utils/data'
+import { useLoad } from '../../lib/useLoad'
+import { showNotify } from '../../lib/notify'
+import { fetchUploadSign, removeSkinPreview, setSkinStatus, submitSkin } from '../../network/pageContent'
 import { t as i18nT } from '../../i18n'
 import './SkinEntry.css'
 
-/** const.MODE_BITS，老站 skin_submit.html 排除位值 2 / 4 */
 const MODE_BITS: { bit: number; label: string }[] = [
   { bit: 1, label: 'Key' }, { bit: 8, label: 'Catch' }, { bit: 16, label: 'Pad' },
   { bit: 32, label: 'Taiko' }, { bit: 64, label: 'Ring' }, { bit: 128, label: 'Slide' },
   { bit: 256, label: 'Live' }, { bit: 512, label: 'Cube' },
 ]
-/** const.PLATFORM_BITS */
 const PLATFORM_BITS: { bit: number; label: string }[] = [
   { bit: 1, label: 'PC' }, { bit: 2, label: i18nT('Pad Horizontal') }, { bit: 4, label: i18nT('Pad Portrait') },
   { bit: 8, label: i18nT('Phone Horizontal') }, { bit: 16, label: i18nT('Phone Portrait') },
 ]
 
-/** 老站 skin_submit.html 的 window.malody.tip，取 locale/en 的实际英文文案 */
 const TIP = {
   MSG_DELETE_CONFIRM: 'Do you want to delete this image?',
   MSG_SET_STATUS: 'Do you want to change status? Unsaved changes will be lost.',
@@ -59,7 +58,6 @@ export default function SkinEntry() {
     {} as Record<string, any>,
   )
 
-  // 编辑态（带 id）时把接口返回的表单值填回老站原有的输入框
   useEffect(() => {
     const skin: any = pageData.skin ?? {}
     if (!skin || Object.keys(skin).length === 0) return
@@ -74,7 +72,6 @@ export default function SkinEntry() {
     const rawPreview = pageData.preview
       ?? (typeof skin.preview === 'string' ? skin.preview.split('|') : skin.preview)
     setPreview(asArray<string>(rawPreview))
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pageData])
 
   const modeValue = modeBits.reduce((sum, b) => sum + b, 0)
@@ -153,7 +150,6 @@ export default function SkinEntry() {
       return
     }
     try {
-      // 老站改变文件即 form.submit()；这里先取上传签名再反馈
       await fetchUploadSign({ type: kind, ...(skinId ? { id: skinId } : {}) })
       if (kind === 'preview') setPreview((list) => [...list, URL.createObjectURL(file)])
       if (kind === 'cover') setCoverSrc(URL.createObjectURL(file))

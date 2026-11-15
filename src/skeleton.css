@@ -1,5 +1,3 @@
-/* SPA 加载骨架：老站是服务端直出，没有加载态；新站异步取数期间用骨架占位，
-   避免空白区块和布局跳动。颜色跟随站点浅色主题。 */
 .wb-skel {
   position: relative;
   overflow: hidden;
@@ -24,26 +22,17 @@
   .wb-skel::after { animation: none; }
 }
 
-/* 卡片骨架：复用老站 .g_map / .cover / .meta 的尺寸，
-   首页 192x240、谱面列表按各自页面 CSS，自动对齐真实卡片。 */
-/* 老站 main.css 的 .g_map .cover 带 background-image: url(cover.png)（No Cover 占位图）。
-   老站 CSS 是运行时动态插入的 link，.wb-skel-card .cover 与它优先级相同且排在前面，
-   只设 background-color 会被盖掉、骨架露出「No Cover」图。这里提高选择器优先级
-   并强制清掉背景图。 */
 html[data-styles] .g_map.wb-skel-card .cover {
   background-image: none;
   background-color: #e8edf4;
   border-radius: 4px;
 }
 
-/* 真实卡片的白底来自 .g_map .link 子元素，骨架没有该结构；
-   补一个白底让灰块封面 + 灰条文字仍是完整的一张卡片。 */
 .g_map.wb-skel-card {
   background-color: #fff;
   border-radius: 4px;
 }
 
-/* .g_map:before/:after 是老站给真实卡片加的双层底部投影，骨架不需要 */
 .g_map.wb-skel-card::before,
 .g_map.wb-skel-card::after {
   display: none;
@@ -57,7 +46,6 @@ html[data-styles] .g_map.wb-skel-card .cover {
 
 .wb-skel-card .wb-skel-line.is-short { width: 62%; }
 
-/* 行骨架：列表 / 表格 / 正文区域 */
 .wb-skel-rows { padding: 6px 0; }
 
 .wb-skel-row {
@@ -69,10 +57,8 @@ html[data-styles] .g_map.wb-skel-card .cover {
 .wb-skel-row:nth-child(3n) { width: 88%; }
 .wb-skel-row:nth-child(4n) { width: 72%; }
 
-/* 承载行骨架的白底卡片（用于老站没有内边距规则的容器） */
 .wb-skel-block { padding: 10px; }
 
-/* 详情页头部（皮肤 / 用户主页）的文字骨架：标题一条宽条，其余为短条 */
 .wb-skel-text {
   width: 40%;
   height: 16px;
@@ -85,16 +71,11 @@ html[data-styles] .g_map.wb-skel-card .cover {
   margin-bottom: 18px;
 }
 
-/* 用户主页头像位：老站 {% avatar to_user 150 %} 的 150px 方块 */
 .wb-skel-avatar {
   width: 150px;
   height: 150px;
 }
 
-/* wiki 模板块（{{ name:... }}）异步补完前的占位：与其它加载态一样显示骨架，
-   不把 "Template xxx / Loading template..." 文案露给读者。
-   占位 div 的结构由 applyTemplateHtml 按正则整段替换，这里只改样式不改结构；
-   文案仅视觉隐藏，读屏仍可读到。 */
 html[data-styles] .g_wiki .wiki-template-placeholder {
   position: relative;
   overflow: hidden;
@@ -126,10 +107,6 @@ html[data-styles] .g_wiki .wiki-template-placeholder > p {
   html[data-styles] .g_wiki .wiki-template-placeholder::after { animation: none; }
 }
 
-/* type=1 自动消息（老站 talk/like.tmpl.html）：<p> 直接是 .g_wiki.meta 的
-   子元素，和用户名、时间同处一行。老站 main.css 是运行时动态插入的 link，
-   同权重规则会覆盖 Vite 打包的 CSS，这里提高优先级并清掉 .g_wiki p 的
-   20px 行高 / 5px 下边距，保证整行都落在白色卡片内。 */
 .g_talk #g_talk_list .item.small div.right .g_wiki.meta {
   height: auto;
   min-height: 16px;
@@ -145,17 +122,10 @@ html[data-styles] .g_wiki .wiki-template-placeholder > p {
   vertical-align: middle;
 }
 
-/* wiki 的 #hidden 折叠块：渲染器生成 .hidden > .hide-top + .hide-body，
-   bindHiddenToggles 给 .hidden 切 open class。老站 CSS 只写了
-   .hidden .hide-body { display:none }，没有 open 态规则，导致点了展不开。
-   老站样式表是运行时动态插入的，这里提高优先级并强制展开。 */
 html[data-styles] .g_wiki .hidden.open > .hide-body {
   display: block;
 }
 
-/* 谱面页 Supporters / 推荐评价卡片：tmpl.css 的 .g_tmpl_user 固定 height:52px，
-   但卡片里还有第二行 .msg 正文，长文本会溢出卡片框。改为高度自适应并让
-   正文在固定宽度内换行；同时给 wiki/讨论正文加长单词换行兜底。 */
 html[data-styles] #center .donate_area .g_tmpl_user {
   height: auto;
   min-height: 52px;

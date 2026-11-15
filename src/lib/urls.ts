@@ -1,4 +1,5 @@
-/** 老站 URL 常量。v3 保持路径不变，外链与书签继续可用。 */
+import { buildUrl } from '../network/api'
+
 export const URLS = {
   intro: '/',
   index: '/index',
@@ -44,12 +45,8 @@ export const URLS = {
   userpageEdit: (id: number | string) => `/page/userpage/edit/${id}`,
 } as const
 
-/** 老站静态资源路径（原样拷贝 web/static 到 public/static） */
 export const staticUrl = (p: string) => `/static/${p.replace(/^\//, '')}`
 
-import { buildUrl } from '../network/api'
-
-/** 老站 window.malody.urls：搬迁过来的页面逻辑仍可能读取 */
 declare global {
   interface Window {
     malody: {

@@ -1,22 +1,21 @@
 import { useState } from 'react'
 import { Shell } from '../../components/Layout'
-import { asArray, EmptyBlock, LoadingBlock, num, useLoad } from '../../lib/legacy'
+import { asArray, num } from '../../utils/data'
+import { EmptyBlock, LoadingBlock } from '../../components/fragments'
+import { useLoad } from '../../lib/useLoad'
 import { staticUrl, URLS } from '../../lib/urls'
-import { fetchSkinList } from '../../network/legacy'
+import { fetchSkinList } from '../../network/pageContent'
 import { avatarUidUrl } from '../../utils/formatters'
 import { t as i18nT } from '../../i18n'
 import './SkinList.css'
 
-/** const_json.MODE_BITS / PLATFORM_BITS 的英文原文（lib/enum.py） */
 const MODE_LABELS = ['Key', 'Step', 'DJ', 'Catch', 'Pad', 'Taiko', 'Ring', 'Slide', 'Live', 'Cube']
 const PLATFORM_LABELS = ['PC', i18nT('Pad Horizontal'), i18nT('Pad Portrait'), i18nT('Phone Horizontal'), i18nT('Phone Portrait')]
 
-/** all_skins.html #mode_list：data-id 为位值，图片为 mode-<index>.png */
 const MODE_OPTIONS: { bit: number; img: number }[] = [
   { bit: 1, img: 0 }, { bit: 8, img: 3 }, { bit: 16, img: 4 }, { bit: 32, img: 5 },
   { bit: 64, img: 6 }, { bit: 128, img: 7 }, { bit: 256, img: 8 }, { bit: 512, img: 9 },
 ]
-/** all_skins.html #plat_list：PLATFORM_BITS 顺序，图片为 plat-<forloop.counter0>.png */
 const PLATFORM_OPTIONS: { bit: number; img: number; label: string }[] = [
   { bit: 1, img: 0, label: 'PC' },
   { bit: 2, img: 1, label: i18nT('Pad Horizontal') },
@@ -181,8 +180,6 @@ export default function SkinList() {
                 </a>
                 <div className="name">
                   <div id={`avatar_${item.id}`}>
-                    {/* 老站 skinstore.py:155 format_avatar(item.author, 36, "avatar")：36px 上限 + !avatar64 缩略图；
-                        skinlist.css 里 #skins span 行高只有 48px，不能塞原始尺寸大图 */}
                     <img
                       className="avatar"
                       src={item.author_id ? avatarUidUrl(num(item.author_id, 0), 36) : '/static/img/avatar.png'}

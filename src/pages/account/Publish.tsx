@@ -1,16 +1,16 @@
 import { useState, type ChangeEvent } from 'react'
 import { Shell } from '../../components/Layout'
-import { asArray, showNotify, useLoad } from '../../lib/legacy'
+import { useLoad } from '../../lib/useLoad'
+import { showNotify } from '../../lib/notify'
 import { URLS } from '../../lib/urls'
-import { fetchPublisher, operatePublisher } from '../../network/legacy'
+import { fetchPublisher, operatePublisher } from '../../network/pageAccount'
 import { t as i18nT } from '../../i18n'
+import { asString as s, asArray } from '../../utils/data'
+import type { AnyRec as Rec } from '../../utils/data'
 
-/* admin/admin_pub.html：extended base_width.html，交互对应 module/publish/src/init.js */
-type Rec = Record<string, any>
 type PubData = { assistants: Rec[]; activities: Rec[] }
 const FALLBACK: PubData = { assistants: [], activities: [] }
 
-const s = (v: unknown, fb = ''): string => (v === undefined || v === null ? fb : String(v))
 
 export default function Publish() {
   const { data, reload } = useLoad<PubData>(

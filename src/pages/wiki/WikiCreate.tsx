@@ -1,15 +1,12 @@
 import { useState, type ReactNode } from 'react'
 import { Shell, DefaultSidebar } from '../../components/Layout'
-import { useLoad, showNotify, LoadingBlock } from '../../lib/legacy'
+import { useLoad } from '../../lib/useLoad'
+import { LoadingBlock } from '../../components/fragments'
+import { showNotify } from '../../lib/notify'
 import { URLS } from '../../lib/urls'
 import { createWikiPage, fetchSongInfo, getSession } from '../../network/api'
 import { t as i18nT } from '../../i18n'
 
-/* ------------------------------------------------------------------ *
- * wiki_create/wiki_create.html / wiki_create_song.html /
- * wiki_create_chart.html（base.html 两栏, akari.css）+ module/wikiCreate
- * 按 type=1/2/3 切换表单
- * ------------------------------------------------------------------ */
 
 const query = (k: string): string => new URLSearchParams(window.location.search).get(k) ?? ''
 
@@ -17,7 +14,6 @@ const CREATE_01 = 'The songs in Malody have respective introduction pages which 
 const CREATE_02 = 'The charts in Malody have respective introduction pages which are wiki-based, where could be edited by all users. The version name of that relevant chart is required when creating the page. Plus, more updating is available to enrich the content after creating page. Please be aware that blank pages may be merged or removed by administrators without further notification.'
 const CREATE_03 = 'You can upload your chart and create chart page with Malody editor (NoteArt) automatically'
 
-/** GLOBAL_PAGE：intro3=3 / intro2=3 / lang=5 / editor=1368 —— 保持老站 /wiki/<id> URL */
 const HELP_LINKS = (
   <>
     <a href={URLS.wiki(3)}>{i18nT('How to create a new article')}</a>,{' '}
@@ -103,7 +99,6 @@ export default function WikiCreate() {
     </div>
   )
 
-  /* wiki_create.html —— type=1（含 5/6 分支） */
   const articleForm = (
     <>
       <h1 className="help">Help: {HELP_LINKS}</h1>
@@ -122,7 +117,6 @@ export default function WikiCreate() {
     </>
   )
 
-  /* wiki_create_song.html —— type=2 */
   const songForm = (
     <>
       <h1 className="help">{CREATE_01}</h1>
@@ -136,7 +130,6 @@ export default function WikiCreate() {
     </>
   )
 
-  /* wiki_create_chart.html —— type=3 */
   const songLabel = String(parentSong.title ?? query('title'))
   const chartForm = (
     <>

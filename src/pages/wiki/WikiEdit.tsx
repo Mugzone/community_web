@@ -1,24 +1,19 @@
 import { useEffect, useState } from 'react'
 import { Shell, DefaultSidebar } from '../../components/Layout'
-import { useLoad, showNotify, LoadingBlock } from '../../lib/legacy'
+import { useLoad } from '../../lib/useLoad'
+import { LoadingBlock } from '../../components/fragments'
+import { showNotify } from '../../lib/notify'
 import { URLS } from '../../lib/urls'
 import { fetchWiki, saveWiki, getSession } from '../../network/api'
 import { EditTool } from './WikiPage'
 import { wikiToHtml } from '../../utils/wikiRender'
 import { t as i18nT } from '../../i18n'
 
-/* ------------------------------------------------------------------ *
- * wiki/wiki_page_edit.html（预览/保存/工具条）+ module/wiki_edit
- * ------------------------------------------------------------------ */
 
 const query = (k: string): string => new URLSearchParams(window.location.search).get(k) ?? ''
 
 type WikiTarget = { pid?: number; sid?: number; cid?: number; touid?: number; prefix?: string }
 
-/** 各显示页点 Edit 时传的是完整 key（wiki_N / song_N / chart_N / skin_N / user_N），
- *  /community/wiki 的 key 则由 pid / sid / cid / touid / prefix 五选一生成。
- *  早期只从 key 里抠数字当 pid，导致 song/chart/skin 都读写到 wiki_<数字>，
- *  原文为空且保存落到错误的 key。读写必须共用这一组参数。 */
 const parseWikiKey = (raw: string): WikiTarget => {
   const m = raw.match(/^(wiki|song|chart|user)_(\d+)$/)
   if (m) {
@@ -30,11 +25,9 @@ const parseWikiKey = (raw: string): WikiTarget => {
       case 'user': return { touid: n }
     }
   }
-  // skin_N 等前缀型 key 直接作为 prefix（后端按裸 plugin_wiki key 读写）
   return raw ? { prefix: raw } : {}
 }
 
-/** 保存后的落地页；from 由各显示页透传，兼容直接打开编辑页的情况 */
 const backUrl = (raw: string, from: string): string => {
   if (from.startsWith('/')) return from
   const m = raw.match(/^(wiki|song|chart|skin|user)_(\d+)$/)
@@ -88,8 +81,6 @@ export default function WikiEdit() {
     setContent((c) => c + (inserts[type] ?? ''))
   }
 
-  /** 老站 preview() 用 translate(content, conf={"ignore_tmpl": True})；
-   *  渲染器已搬到前端，且按需求不走 is_admin 原文 HTML 特权分支。 */
   const onPreview = (): void => {
     setMode('preview')
     setPreviewHtml(wikiToHtml(content, { ignoreTemplates: true }).html)
@@ -101,8 +92,6 @@ export default function WikiEdit() {
     showNotify(i18nT('Saving...'), 'succ')
     try {
       await saveWiki({ wiki: content, ...target, uid, lang: 0 })
-      // 用 replace 整页重载来源页，确保拿到刚保存的内容；
-      // history.back() 可能命中 bfcache 直接恢复旧 DOM，看起来像「保存没生效」。
       window.location.replace(backUrl(key, from))
     } catch {
       showNotify(i18nT('Failed to save, please try again later.'), 'err')
@@ -133,7 +122,6 @@ export default function WikiEdit() {
       <div className="g_cont">
         <h1 className="msg">{i18nT('Your are editing this page, sidebar has some articles for you to learn our markup language and our edit principles.')}</h1>
 
-        {/* module/wiki_edit —— 编辑/预览切换 */}
         <div className="button">
           <a href="#" className="g_btn btn" data-type="edit" onClick={(e) => { e.preventDefault(); setMode('edit') }}>{i18nT('Edit')}</a>
           <a href="#" className="g_btn btn" data-type="preview" onClick={(e) => { e.preventDefault(); onPreview() }}>{i18nT('Preview')}</a>

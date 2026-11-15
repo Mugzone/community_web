@@ -1,10 +1,13 @@
 import { useState } from 'react'
 import { Shell } from '../../components/Layout'
-import { asArray, EmptyBlock, LoadingBlock, num, Pager, useLoad } from '../../lib/legacy'
+import { asArray, num } from '../../utils/data'
+import { EmptyBlock, LoadingBlock, Pager } from '../../components/fragments'
+import { useLoad } from '../../lib/useLoad'
 import { staticUrl, URLS } from '../../lib/urls'
-import { fetchSubmissionPage } from '../../network/legacy'
+import { fetchSubmissionPage } from '../../network/pageContent'
 import { coverUrl } from '../../utils/formatters'
 import { t as i18nT } from '../../i18n'
+import { payloadOf } from '../../utils/response'
 
 type SubmissionRow = {
   chart?: Record<string, any>
@@ -20,12 +23,11 @@ export default function SubmitAll() {
 
   const { data, loading, error } = useLoad<SubmissionData>(
     async () => {
-      const resp = await fetchSubmissionPage(page)
-      const d: any = resp?.data ?? resp ?? {}
+      const d = payloadOf(await fetchSubmissionPage(page))
       return {
-        items: asArray<SubmissionRow>(d?.items ?? d?.list ?? d),
-        total: Math.max(1, num(d?.total, 1)),
-        page: num(d?.page, page - 1),
+        items: asArray<SubmissionRow>(d.items ?? d.list ?? d),
+        total: Math.max(1, num(d.total, 1)),
+        page: num(d.page, page - 1),
       }
     },
     [page, mode, status],

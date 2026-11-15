@@ -3,7 +3,6 @@ import { Shell, DefaultSidebar } from '../../components/Layout'
 import { URLS, staticUrl } from '../../lib/urls'
 import { t as i18nT } from '../../i18n'
 
-/** /visit/<key> —— 老站 wiki_short 短链跳转，未知 key 显示 404 风格提示 */
 const SHORT_LINKS: Record<string, number> = {
   stable: 965,
   skin: 1936,

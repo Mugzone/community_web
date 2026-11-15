@@ -1,15 +1,14 @@
 import { useState } from 'react'
 import { Shell, DefaultSidebar } from '../../components/Layout'
-import { useLoad, asArray, num, LoadingBlock, Pager, JustifyRow } from '../../lib/legacy'
+import { useLoad } from '../../lib/useLoad'
+import { asArray, num } from '../../utils/data'
+import { LoadingBlock, Pager, JustifyRow } from '../../components/fragments'
 import { URLS } from '../../lib/urls'
 import { searchWiki, searchPlayer } from '../../network/api'
-import { fetchWikiSearch } from '../../network/legacy'
+import { fetchWikiSearch } from '../../network/pageWeb'
 import { t as i18nT } from '../../i18n'
 import './WikiSearch.css'
 
-/* ------------------------------------------------------------------ *
- * wiki_search.html / wiki_404.html（base.html 两栏, akari.css）
- * ------------------------------------------------------------------ */
 
 const query = (k: string): string => new URLSearchParams(window.location.search).get(k) ?? ''
 

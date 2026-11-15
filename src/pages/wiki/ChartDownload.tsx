@@ -1,16 +1,17 @@
 import type { MouseEvent } from 'react'
 import { useParams } from 'react-router-dom'
 import { Shell, DefaultSidebar } from '../../components/Layout'
-import { useLoad, asArray, LoadingBlock } from '../../lib/legacy'
+import { useLoad } from '../../lib/useLoad'
+import { asArray } from '../../utils/data'
+import { LoadingBlock } from '../../components/fragments'
 import { URLS, staticUrl } from '../../lib/urls'
-import { fetchChartDownload } from '../../network/legacy'
+import { fetchChartDownload } from '../../network/pageWeb'
 import { t as i18nT } from '../../i18n'
 
 type DownloadItem = { name?: string; url?: string }
 type Model = { backId: number | string; list: DownloadItem[] }
 const FALLBACK: Model = { backId: '', list: [] }
 
-/** /page/download/<id> —— 老站 temp_download.html / wiki_404.html + 下载确认 */
 export default function ChartDownload() {
   const { id = '' } = useParams()
 

@@ -1,27 +1,27 @@
 import { useState } from 'react'
 import { Shell, DefaultSidebar } from '../../components/Layout'
-import { useLoad, asArray, num, LoadingBlock, EmptyBlock, JustifyRow } from '../../lib/legacy'
+import { LinkPager } from '../../components/LinkPager'
+import { useLoad } from '../../lib/useLoad'
+import { LoadingBlock, EmptyBlock, JustifyRow } from '../../components/fragments'
 import { URLS } from '../../lib/urls'
-import { fetchAllPages } from '../../network/legacy'
+import { fetchAllPages } from '../../network/pageWeb'
 import { t as i18nT } from '../../i18n'
+import { listOf, pageCountOf } from '../../utils/response'
 
 type PageItem = { id: number | string; title?: string }
 type Model = { items: PageItem[]; total: number }
 const FALLBACK: Model = { items: [], total: 1 }
 
-/** /page/all —— 老站 all_page.html（base.html 两栏） */
 export default function AllPage() {
   const [type, setType] = useState<'wiki' | 'song'>('wiki')
   const [page, setPage] = useState(1)
 
-  // 接口响应形状由后端决定，统一用 any 承接，再显式收敛成 items/total。
   const { data, loading } = useLoad<Model>(
     async () => {
-      const resp: any = await fetchAllPages(page, type)
-      const p: any = resp?.data ?? resp
+      const resp = await fetchAllPages(page, type)
       return {
-        items: asArray<PageItem>(p?.items ?? p?.list ?? p),
-        total: num(p?.total ?? resp?.total, 1),
+        items: listOf<PageItem>(resp, ['items', 'list']),
+        total: pageCountOf(resp, true),
       }
     },
     [page, type],
@@ -74,21 +74,7 @@ export default function AllPage() {
         </div>
         {loading && <LoadingBlock />}
         {!loading && items.length === 0 && <EmptyBlock />}
-        {total > 1 && (
-          <div className="g_more">
-            {page > 1 ? (
-              <a href={`${URLS.allPage}?page=${page - 1}&type=${type}`} className="g_round" data-type="back" onClick={(e) => { e.preventDefault(); goPage(page - 1) }}>{i18nT('Prev')}</a>
-            ) : (
-              <a className="fake" href="#"></a>
-            )}
-            <span>{page}/{total}</span>
-            {page < total ? (
-              <a href={`${URLS.allPage}?page=${page + 1}&type=${type}`} className="g_round" data-type="back" onClick={(e) => { e.preventDefault(); goPage(page + 1) }}>{i18nT('Next')}</a>
-            ) : (
-              <a className="fake" href="#"></a>
-            )}
-          </div>
-        )}
+        <LinkPager base={URLS.allPage} page={page} total={total} extraQuery={`type=${type}`} onChange={goPage} />
       </div>
     </Shell>
   )

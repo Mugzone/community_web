@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { Shell, DefaultSidebar } from '../../components/Layout'
-import { useLoad, showNotify } from '../../lib/legacy'
+import { useLoad } from '../../lib/useLoad'
+import { showNotify } from '../../lib/notify'
 import { URLS } from '../../lib/urls'
-import { fetchUserPageWiki, saveUserPageWiki } from '../../network/legacy'
+import { fetchUserPageWiki, saveUserPageWiki } from '../../network/pageWeb'
 import { wikiToHtml } from '../../utils/wikiRender'
 import { t as i18nT } from '../../i18n'
 
@@ -23,7 +24,6 @@ const TOOLS: Tool[] = [
   { type: 'table', title: i18nT('Table'), cls: 'tool-table' },
 ]
 
-/** /page/userpage/edit/<id> —— 老站 userpage_edit.html + module/wiki_edit（用户主页 wiki 编辑） */
 export default function UserpageEdit() {
   const { id = '' } = useParams()
   const [content, setContent] = useState('')
@@ -44,14 +44,11 @@ export default function UserpageEdit() {
 
   useEffect(() => setContent(data.content ?? ''), [data.content])
 
-  // 老站预览由服务端 translate() 生成，现在按 raw 在前端现算（不解析业务模板）
   const previewHtml = wikiToHtml(content, { ignoreTemplates: true }).html
 
   const save = async () => {
     try {
       await saveUserPageWiki(id, content)
-      // 整页重载用户主页，确保拿到刚保存的内容；history.back() 在直接打开
-      // 编辑页时会跳到 about:blank，命中 bfcache 时又会显示旧正文。
       window.location.replace(URLS.user(id))
     } catch {
       showNotify(i18nT('Failed to save, please try again later.'), 'err')

@@ -1,7 +1,3 @@
-/* tmpl.css — 老站样式，作用域名 "tmpl"。
-   规则以 html[data-styles~="tmpl"] 限定，
-   Shell 依据 variant / page / css prop 生成 <html data-styles="...">。
- */
 html[data-styles~="tmpl"] .clear {
   clear: both;
   display: block;

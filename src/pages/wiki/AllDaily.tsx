@@ -1,21 +1,18 @@
 import { Shell } from '../../components/Layout'
-import { useLoad, asArray, LoadingBlock, EmptyBlock } from '../../lib/legacy'
+import { useLoad } from '../../lib/useLoad'
+import { LoadingBlock, EmptyBlock } from '../../components/fragments'
 import { URLS, staticUrl } from '../../lib/urls'
-import { fetchDailyList } from '../../network/legacy'
+import { fetchDailyList } from '../../network/pageWeb'
 import { t as i18nT } from '../../i18n'
 import { coverUrl } from '../../utils/formatters'
+import { listOf } from '../../utils/response'
 
 type DailyItem = { id: number | string; title?: string; version?: string; cover?: string; mode?: number }
 const FALLBACK: DailyItem[] = []
 
-/** /page/all/daily —— 老站 list/daily.html（base_width.html 宽版） */
 export default function AllDaily() {
   const { data, loading } = useLoad<DailyItem[]>(
-    async () => {
-      const resp: any = await fetchDailyList()
-      const p: any = resp?.data ?? resp
-      return asArray<DailyItem>(p?.items ?? p?.list ?? p)
-    },
+    async () => listOf<DailyItem>(await fetchDailyList(), ['items', 'list']),
     [],
     FALLBACK,
   )

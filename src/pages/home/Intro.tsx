@@ -1,11 +1,10 @@
 import { useEffect, useState } from 'react'
 import { Shell } from '../../components/Layout'
-import { useLoad } from '../../lib/legacy'
+import { useLoad } from '../../lib/useLoad'
 import { URLS, staticUrl } from '../../lib/urls'
-import { fetchIntroData } from '../../network/legacy'
+import { fetchIntroData } from '../../network/pageWeb'
 import './Intro.css'
 
-/** homepage.views.intro —— WebConfig(type=0) 的 key/value */
 type IntroState = {
   version_win_emiria?: string | number
   version_ios_emiria?: string | number
@@ -22,7 +21,6 @@ const unwrap = (res: any): IntroState => {
   return (raw && typeof raw === 'object' ? raw : {}) as IntroState
 }
 
-/** module/intro/src/init.js —— #banner / #banner2 两个独立轮播 */
 function IntroSlider({ id, images }: { id: string; images: string[] }) {
   const [curr, setCurr] = useState(0)
 
@@ -36,9 +34,6 @@ function IntroSlider({ id, images }: { id: string; images: string[] }) {
 
   return (
     <div id={id} className="list_wrap">
-      {/* Intro.css 的 .list_wrap ul 是 width:100%（一张图宽），li 浮动后会竖着叠起来，
-          translateX 平移后只剩空白。这里把 ul 撑成 n 张宽、li 各占 1/n，横向排成一行；
-          translateX 的百分比相对 ul 自身宽度，所以每页平移 100/n %。 */}
       <ul
         style={{
           width: `${images.length * 100}%`,

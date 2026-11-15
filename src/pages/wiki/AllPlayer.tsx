@@ -1,6 +1,8 @@
 import { Fragment, useState } from 'react'
 import { Shell, DefaultSidebar } from '../../components/Layout'
-import { useLoad, asArray, LoadingBlock, EmptyBlock, floatFormat } from '../../lib/legacy'
+import { useLoad } from '../../lib/useLoad'
+import { asArray, floatFormat } from '../../utils/data'
+import { LoadingBlock, EmptyBlock } from '../../components/fragments'
 import { URLS, staticUrl } from '../../lib/urls'
 import { fetchGlobalRank } from '../../network/api'
 import { avatarUrl } from '../../utils/formatters'
@@ -29,12 +31,10 @@ const uidOf = (it: PlayerItem): number | string => it.uid ?? it.user_id ?? it.us
 const nameOf = (it: PlayerItem): string => it.username ?? it.user?.username ?? ''
 const expOf = (it: PlayerItem): number | string => it.exp ?? it.value ?? ''
 
-/** /page/all/player —— 老站 all_player.html（玩家排行） */
 export default function AllPlayer() {
   const [mode, setMode] = useState(0)
   const [from] = useState(0)
 
-  // fetchGlobalRank 返回 RespGlobalRank（data 为玩家数组），收敛成数组兜底。
   const { data, loading } = useLoad<PlayerItem[]>(
     async () => {
       const resp: any = await fetchGlobalRank({ mode, from })
@@ -52,7 +52,6 @@ export default function AllPlayer() {
 
   const renderTop = (it: PlayerItem, rank: number) => (
     <div className="item-top g_round">
-      {/* 老站 rank_item_top.html:5 {% avatar item.user 90 %}：后端只给短文件名，需拼 CDN + !avatar128 */}
       <span className="avatar"><img src={avatarUrl(it.avatar, uidOf(it), 90)} style={{ maxWidth: 90, maxHeight: 90 }} alt="" /></span>
       <i className={`label top-${rank}`}></i>
       <div className="right">
@@ -68,7 +67,6 @@ export default function AllPlayer() {
   const renderRow = (it: PlayerItem, rank: number) => (
     <div className="item">
       <span className="rank">{rank}</span>
-      {/* 老站 rank_item.html:6 {% avatar item.user 48 small=True %}：!avatar64 + 内联 48px */}
       <span className="avatar"><img src={avatarUrl(it.avatar, uidOf(it), 48)} style={{ maxWidth: 48, maxHeight: 48 }} alt="" /></span>
       <span className="name textfix"><a href={URLS.user(uidOf(it))}>{nameOf(it)}</a></span>
       <span className="lv">{floatFormat(it.level, 0)}</span>

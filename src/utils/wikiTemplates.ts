@@ -36,23 +36,16 @@ const field = (d: Loose, p: Record<string, string>, key: string): string => {
   return dv === undefined || dv === null || dv === "" ? p[key] ?? "" : String(dv);
 };
 
-/** CSS url() 与 href/src 一律过协议白名单，不再只靠 escapeHtml 防属性逃逸 */
 const cssUrl = (v: string) => sanitizeCssUrl(v);
 const chartLink = (id: string) => sanitizeUrl(URLS.chartPage(id));
 const userLink = (uid: string) => sanitizeUrl(URLS.user(uid));
 
-/** 老站 {% avatar %}：按 uid 取头像，无 uid 时留空（由 CSS 背景兜底） */
 const avatarImg = (uid: string, username: string, avatar?: string): string => {
   if (!uid) return "";
   const src = avatar && avatar.length ? avatarUrl(avatar, uid) : avatarUidUrl(n2(uid));
   return `<img src="${sanitizeUrl(src)}" alt="${escapeHtml(username)}"/>`;
 };
 
-/**
- * 按老站 tmpl_*.html 1:1 生成模板 DOM。
- * 名字先归一化（去前导下划线），数据优先取 resp.data，缺失字段用 tmpl.params 兜底，
- * 空数据也返回完整骨架，绝不返回空串。用户可控文本一律 escapeHtml。
- */
 const buildTemplateHtml = (
   t: TranslateFn,
   tmpl: WikiTemplate,
@@ -65,7 +58,6 @@ const buildTemplateHtml = (
   const g = (key: string) => field(obj, p, key);
 
   const chart = () => {
-    // 后端查不到谱面（历史活动谱面已下线）时 id 会回落成 0，此时用 wiki 正文里写的 id
     const pickId = (...vals: (string | undefined)[]) =>
       vals.find((v) => v !== undefined && v !== "" && n2(v) > 0) ?? "";
     const id =
@@ -83,16 +75,12 @@ const buildTemplateHtml = (
     };
   };
 
-  // 1. action —— 数据全在 params，本地合成，不发请求
   if (n === "action") {
-    // link 直接来自 wiki 正文 {{name:action / link:...}}，必须过协议白名单，
-    // 否则 javascript: 会变成可点击的存储型 XSS。
     return `<a href="${sanitizeUrl(g("link") || "#")}" class="g_round g_action">${escapeHtml(
       g("title")
     )}</a>`;
   }
 
-  // 1a. achieve —— 老站动态模板 tmpl_achieve：$uid$ 取当前登录用户，未登录回退 login 模板
   if (n === "achieve") {
     const uid = n2(obj.uid);
     if (uid <= 1) {
@@ -103,7 +91,6 @@ const buildTemplateHtml = (
     )}</a>`;
   }
 
-  // 2. activity
   if (n === "activity") {
     const c = chart();
     const conds = c.condition.split("|").map((x) => x.trim()).filter(Boolean);
@@ -124,7 +111,6 @@ const buildTemplateHtml = (
     )}</p><p class="goal">Goal:</p>${condHtml}${desc}</div></a></div>`;
   }
 
-  // 3. chart
   if (n === "chart") {
     const c = chart();
     return `<div class="g_tmpl_activity"><a href="${chartLink(
@@ -140,7 +126,6 @@ const buildTemplateHtml = (
     )} in game to download</p></div></a></div>`;
   }
 
-  // 4. event
   if (n === "event") {
     const c = chart();
     const cover = c.cover ? cssUrl(coverUrl(c.cover)) : "";
@@ -157,7 +142,6 @@ const buildTemplateHtml = (
     )} in game to download</p>${fin}</div></div>`;
   }
 
-  // 5. event_chart
   if (n === "event_chart") {
     const c = chart();
     const cover = cssUrl(c.cover ? coverUrl(c.cover) : "/static/img/cover.png");
@@ -169,7 +153,6 @@ const buildTemplateHtml = (
     )}</span>-${escapeHtml(c.version)}</p>${fin}</div></div>`;
   }
 
-  // 6. event3
   if (n === "event3") {
     const total = n2(obj.total ?? p.total);
     const items = asArr(obj.items ?? obj.list ?? p.items);
@@ -186,7 +169,6 @@ const buildTemplateHtml = (
         )}</span></li>`;
       })
       .join("");
-    // 老站 tmpl_event3.html：{% if total > 0 %} 才渲染表头和列表
     const listHtml =
       total > 0
         ? `<div class="list_head"><span style="width:180px;">Chart</span><span style="width: 80px">Point</span></div><ul class="list">${lis}</ul>`
@@ -194,7 +176,6 @@ const buildTemplateHtml = (
     return `<div class="g_normallist"><div>Current: ${total} point(s)</div>${listHtml}</div>`;
   }
 
-  // 7. eventsum
   if (n === "eventsum") {
     const items = arr.length ? arr : asArr(obj.list ?? obj.items);
     const lis = items
@@ -222,7 +203,6 @@ const buildTemplateHtml = (
     return `<span class="clear"></span><div class="score_area" style="display: inline-block"><div class="list_head"><span class="rank">Rank</span><span class="name">Player</span><span class="score">Score</span></div><ul class="list">${lis}</ul></div>`;
   }
 
-  // 8. first
   if (n === "first") {
     const logoSrc = sanitizeUrl(`/static/img/${g("pic")}`);
     const time = g("time");
@@ -252,7 +232,6 @@ const buildTemplateHtml = (
     return `<div class="g_tmpl_first g_rblock"><img class="logo" src="${logoSrc}"/>${body}</div>`;
   }
 
-  // 9. grouplist
   if (n === "grouplist") {
     const users = asArr(obj.users ?? obj.list ?? p.users);
     const cards = users
@@ -272,7 +251,6 @@ const buildTemplateHtml = (
     return `<div class="g_tmpl_grouplist">${cards}</div>`;
   }
 
-  // 10. level
   if (n === "level") {
     const levels = asArr(obj.levels ?? obj.list ?? p.levels);
     const lis = levels
@@ -295,12 +273,10 @@ const buildTemplateHtml = (
     return `<div class="g_normallist"><div class="list_head"><span style="width: 100px;">Level</span><span style="width: 100px">Charts</span></div><ul class="list">${lis}</ul></div>`;
   }
 
-  // 11. login
   if (n === "login") {
     return `<div class="g_tmpl_login">Please login to view the content</div>`;
   }
 
-  // 12. user
   if (n === "user") {
     const uid = g("uid") || g("id");
     const username = g("username");
@@ -313,7 +289,6 @@ const buildTemplateHtml = (
     )}</a></div>`;
   }
 
-  // 13. vote
   if (n === "vote") {
     const eid = g("eid");
     const choice = g("choice") || "1";
@@ -325,7 +300,6 @@ const buildTemplateHtml = (
     }</a>`;
   }
 
-  // 14. voted
   if (n === "voted") {
     const records = asArr(obj.records ?? obj.list ?? p.records);
     const rows = records
@@ -334,7 +308,6 @@ const buildTemplateHtml = (
         const choice = s(r.choice);
         const percent = n2(r.percent);
         const count = s(r.voted ?? r.count);
-        // 老站 {% widthratio 3 1 record.percent %}：进度条宽度 = percent * 3
         return `<div><span>${escapeHtml(
           choice
         )}</span><i style="width:${percent * 3}px"></i>${escapeHtml(count)}</div>`;
@@ -343,20 +316,17 @@ const buildTemplateHtml = (
     return `<div class="g_tmpl_votedlist">${rows}</div>`;
   }
 
-  // 兜底：未知名字也返回非空的老站骨架
   return `<div class="g_tmpl_login">${escapeHtml(
     t("wiki.template.unknown")
   )}</div>`;
 };
 
-/** 模板块是异步插入 wiki 正文的，出口统一再过一次 URL 白名单兜底 */
 export const renderTemplateHtml = (
   t: TranslateFn,
   tmpl: WikiTemplate,
   resp: RespWikiTemplate
 ): string => sanitizeRenderedHtml(buildTemplateHtml(t, tmpl, resp));
 
-/** 总是替换每个 data-template-idx 占位（含空串也清空），移除 "Loading template..." 文案 */
 export const applyTemplateHtml = (
   html: string,
   templateBlocks: Array<string | undefined>

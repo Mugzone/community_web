@@ -46,29 +46,12 @@ export const regionMap: Record<number, RegionMeta> = {
   39: { labelKey: 'player.region.39', fallback: 'Macau' },
 }
 
-/**
- * 老站 account/views.py:user_page：
- *   ma_user.active_type != MalodyUserProfile.ACTIVE_TYPE_NORMAL(0) 时
- *   context["red_name"] = True，profile/index.html 与 profile/user.html 把
- *   用户名染成 #ef6666（0=NORMAL / 1=CODE / 2=STB）。
- * MaApi-go 的 /player/info 用 `active` 返回同一列 active_type，并不返回
- * red_name；兼容老 web 可能直接给出 red_name / active_type 的情况。
- */
 export const isRedName = (info: Record<string, unknown>): boolean => {
   if (info.red_name ?? info.redName) return true
   const active = Number(info.active ?? info.active_type ?? 0)
   return Number.isFinite(active) && active !== 0
 }
 
-/**
- * 生成 POST /player/info 的 birth 载荷。
- *
- * MaApi-go 的 PlayerSaveInfo 用 time.Parse("2006-1-2", birth) 解析，
- * 解析失败或生日在未来一律返回 code:-2。老站 /accounts/config/profile
- * 收的是 age（Unix 时间戳），那是另一个接口，v3 不能照搬。
- *
- * 返回 undefined 表示「不改生日」或「输入非法」，调用方据此决定是否拦截。
- */
 export const formatBirthPayload = (value: string): string | undefined => {
   const trimmed = value.trim()
   if (!trimmed) return undefined
@@ -77,7 +60,6 @@ export const formatBirthPayload = (value: string): string | undefined => {
   const year = Number(m[1])
   const month = Number(m[2])
   const day = Number(m[3])
-  // 用 UTC 构造，避免本地时区把日期挪一天；同时挡掉 2000-2-30 这类非法日期
   const d = new Date(Date.UTC(year, month - 1, day))
   if (d.getUTCFullYear() !== year || d.getUTCMonth() !== month - 1 || d.getUTCDate() !== day) return undefined
   if (d.getTime() > Date.now()) return undefined

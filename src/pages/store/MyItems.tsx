@@ -1,10 +1,13 @@
 import { useState } from 'react'
 import { DefaultSidebar, Shell } from '../../components/Layout'
-import { asArray, EmptyBlock, JustifyRow, LoadingBlock, num, showNotify, useLoad } from '../../lib/legacy'
-import { fetchMyItems, useStoreItem } from '../../network/legacy'
+import { asArray, num } from '../../utils/data'
+import { EmptyBlock, JustifyRow, LoadingBlock } from '../../components/fragments'
+import { useLoad } from '../../lib/useLoad'
+import { showNotify } from '../../lib/notify'
+import { fetchMyItems, useStoreItem } from '../../network/pageContent'
 import { t as i18nT } from '../../i18n'
+import { payloadOf } from '../../utils/response'
 
-/** 老站 list/items.html：items 里每项是 {item: {...}, endtime_str, count}。 */
 type MyItemRow = {
   item?: {
     id?: number | string
@@ -22,10 +25,7 @@ type MyItemRow = {
 
 export default function MyItems() {
   const { data: rows, loading, error, reload } = useLoad<MyItemRow[]>(
-    async () => {
-      const resp = await fetchMyItems()
-      return asArray<MyItemRow>(resp?.data ?? resp)
-    },
+    async () => asArray<MyItemRow>(payloadOf(await fetchMyItems())),
     [],
     [] as MyItemRow[],
   )
@@ -33,7 +33,6 @@ export default function MyItems() {
 
   const onUse = async (id: number | string) => {
     const sid = num(id, 0)
-    // 老站 module/store：部分道具点击后直接跳转或仅提示
     if (sid === 1) {
       window.location.href = '/upload/banner'
       return

@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react'
 import { Shell, DefaultSidebar } from '../../components/Layout'
-import { useLoad, num, showNotify, LoadingBlock } from '../../lib/legacy'
+import { useLoad } from '../../lib/useLoad'
+import { num } from '../../utils/data'
+import { LoadingBlock } from '../../components/fragments'
+import { showNotify } from '../../lib/notify'
 import { URLS } from '../../lib/urls'
-import { fetchTalkNotify, deleteUserMsg } from '../../network/legacy'
+import { fetchTalkNotify, deleteUserMsg } from '../../network/pageAccount'
 import { t as i18nT } from '../../i18n'
 
-/** notify.html + module/notify/src/init.js */
 type NotifyItem = {
   read?: boolean
   talk?: {
@@ -37,7 +39,6 @@ const normalize = (res: any): NotifyState => {
   }
 }
 
-/** module/notify/src/init.js 对 data-key 的解析 */
 const keyToUrl = (key: string): string => {
   const arr = String(key ?? '').split('_')
   if (arr[0] === 'topic') return `/talk/topic/${arr[1]}`

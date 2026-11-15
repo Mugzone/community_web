@@ -1,17 +1,16 @@
 import { useState, type ChangeEvent } from 'react'
 import { Shell } from '../../components/Layout'
-import { asArray, showNotify, useLoad } from '../../lib/legacy'
-import { activateInvite, fetchInviteInfo } from '../../network/legacy'
+import { useLoad } from '../../lib/useLoad'
+import { showNotify } from '../../lib/notify'
+import { activateInvite, fetchInviteInfo } from '../../network/pageAccount'
 import { t as i18nT } from '../../i18n'
+import { asString as s, asArray } from '../../utils/data'
+import type { AnyRec as Rec } from '../../utils/data'
 
-/* profile/invite.html：extended base_width.html，交互复用 module/account init.js 的 J_code 分支 */
-type Rec = Record<string, any>
 type InviteData = { needInvite: boolean; list: Rec[] }
 const FALLBACK: InviteData = { needInvite: true, list: [] }
 
-const s = (v: unknown, fb = ''): string => (v === undefined || v === null ? fb : String(v))
 
-/* .g_tip 的 3 个 span，顺序即 util.showTip(n) 下标 */
 const TIPS: { text: string; err: boolean }[] = [
   { text: i18nT('Submitting...'), err: false },
   { text: 'Code been used', err: true },
@@ -55,7 +54,6 @@ export default function Invite() {
       const res = await activateInvite(c)
       const rc = res?.code
       if (rc !== undefined && Number(rc) !== 0) {
-        // module/account init.js J_code 分支：-2 码不存在，-3 码已用
         const idx = Number(rc) === -2 ? 2 : 1
         setTip(idx)
         showNotify(TIPS[idx].text, 'err')

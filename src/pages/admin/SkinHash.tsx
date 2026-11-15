@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { Shell, DefaultSidebar } from '../../components/Layout'
 import Error404 from '../errors/Error404'
-import { showNotify, useLoad } from '../../lib/legacy'
+import { useLoad } from '../../lib/useLoad'
+import { showNotify } from '../../lib/notify'
 import {
   fetchSkinHashList,
   saveSkinHash,
@@ -13,15 +14,12 @@ import './SkinHash.css'
 type Access = { allowed: boolean; rows: SkinHashRow[] }
 const FALLBACK: Access = { allowed: false, rows: [] }
 
-/** 编辑态：skin 用字符串保存输入中间态，提交时按 FieldReader.getInt 回落 0。 */
 type EditRow = { id: number; skin: string; hash: string }
 
 const toEditRows = (rows: SkinHashRow[]): EditRow[] =>
   rows.map((r) => ({ id: r.id, skin: String(r.skin), hash: r.hash }))
 
 export default function SkinHash() {
-  // useLoad 只负责首次裁决与初始数据；之后不再调它的 reload（fire-and-forget，
-  // 无法 await），保存后的刷新走下面自己的 refreshRows。
   const { data, loading } = useLoad<Access>(
     async () => {
       const res = await fetchSkinHashList()
@@ -34,10 +32,8 @@ export default function SkinHash() {
   const [rows, setRows] = useState<EditRow[]>([])
   const [selected, setSelected] = useState(-1)
   const [busy, setBusy] = useState(false)
-  // 同步锁：React state 批处理下 busy 挡不住同一帧内的双击。
   const inFlight = useRef(false)
 
-  // 首次加载完成时把本地编辑态初始化为服务端数据。
   useEffect(() => {
     setRows(toEditRows(data.rows))
     setSelected(-1)
@@ -45,7 +41,6 @@ export default function SkinHash() {
 
   const list = rows
 
-  /** 保存/删除成功后重新拉列表；返回 false 只提示，不改 allowed（不误变 404）。 */
   const refreshRows = async (): Promise<boolean> => {
     try {
       const res = await fetchSkinHashList()
@@ -81,7 +76,6 @@ export default function SkinHash() {
       return
     }
     const row = list[selected]
-    // 老站 Add 出来的空行（id=0）删除只操作本地 DOM，不发请求。
     if (act === 'del' && row.id === 0) {
       removeLocal(selected)
       showNotify('success', 'succ')
@@ -90,11 +84,10 @@ export default function SkinHash() {
     inFlight.current = true
     setBusy(true)
     try {
-      // postForm 在响应不是 JSON 时会把原文当字符串返回，先用 unknown 收窄。
       const raw: unknown = await saveSkinHash({
         act,
         id: row.id,
-        skin: row.skin, // 原样交给后端 Atoi，对齐老站 FieldReader.getInt
+        skin: row.skin,
         hash: row.hash,
       })
       const res = raw as { code?: number } | null
@@ -103,8 +96,6 @@ export default function SkinHash() {
         return
       }
       showNotify('success', 'succ')
-      // 必须等列表真正回来再解锁：否则新建行（id=0）在 GET 未返回时被再次
-      // Save 会重复插入；同时刷新失败只提示，不把已可见的页面变成 Error404。
       if (!(await refreshRows())) {
         showNotify('Please try again later', 'err')
       }
@@ -116,7 +107,6 @@ export default function SkinHash() {
     }
   }
 
-  // 校验期间不提前渲染 404（避免闪屏），也不渲染表格（避免越权用户短暂看到）。
   if (loading) {
     return (
       <Shell variant="two-col" title="Skin Valid Hash" sidebar={<DefaultSidebar />}>

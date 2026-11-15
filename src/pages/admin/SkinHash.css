@@ -1,6 +1,3 @@
-/* SkinHash.css — 老站 admin.css 的 .adm_table / .adm_table_control 区块，
-   作用域名 "skinhash"（Shell 的 page prop 写入 html[data-styles]）。
-   三列与 admin_skinhash.html 一致：ID / Skin ID / Hash。 */
 html[data-styles~="skinhash"] .adm_table {
   width: 100%;
   margin-top: 24px;

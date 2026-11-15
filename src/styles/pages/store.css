@@ -1,7 +1,3 @@
-/* store.css — 老站样式，作用域名 "store"。
-   规则以 html[data-styles~="store"] 限定，
-   Shell 依据 variant / page / css prop 生成 <html data-styles="...">。
- */
 html[data-styles~="store"] .c_pm {
   padding: 10px;
   text-align: left;

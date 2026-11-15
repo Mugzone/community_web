@@ -1,35 +1,21 @@
-import { useRef, useState, type ChangeEvent } from 'react'
+import { useRef, useState } from 'react'
 import { Shell } from '../../components/Layout'
-import { useLoad } from '../../lib/legacy'
-import { fetchUploadPage } from '../../network/legacy'
+import { useLoad } from '../../lib/useLoad'
 import { onUpyunSubmit } from './upyunSubmit'
 import { t as i18nT } from '../../i18n'
-
-const STATIC_HOST = 'http://v0.api.upyun.com/ma-static'
+import type { Rec } from '../../utils/response'
+import { EMPTY_UPLOAD, STATIC_HOST, fileChangeHandler, loadUploadPage, signFieldsOf } from './uploadCommon'
 
 export default function UploadInternal() {
   const [file, setFile] = useState<File | null>(null)
   const formRef = useRef<HTMLFormElement>(null)
   const queryName = new URLSearchParams(window.location.search).get('name') ?? ''
 
-  const { data } = useLoad<Record<string, any>>(
-    async () => {
-      const resp = await fetchUploadPage('internal')
-      return (resp?.data ?? resp ?? {}) as Record<string, any>
-    },
-    [],
-    {} as Record<string, any>,
-  )
+  const { data } = useLoad<Rec>(() => loadUploadPage('internal'), [], EMPTY_UPLOAD)
 
   const name = queryName || String(data.name ?? '')
-  const policy = String(data.policy ?? '')
-  const signature = String(data.signature ?? '')
-
-  const onFile = (e: ChangeEvent<HTMLInputElement>) => {
-    const f = e.target.files?.[0]
-    if (!f) return
-    setFile(f)
-  }
+  const { policy, signature } = signFieldsOf(data)
+  const onFile = fileChangeHandler(setFile)
 
   return (
     <Shell
@@ -38,7 +24,6 @@ export default function UploadInternal() {
       css={['upload.css']}
       sidebar={
         <div className="tool">
-          {/* 老站指向 /lolicon/home（后台首页）；v3 不移植该页，改回站点首页 */}
           <a href="/index" className="g_btn">Home</a>
         </div>
       }

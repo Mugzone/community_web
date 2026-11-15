@@ -1,6 +1,5 @@
 import { Shell } from '../../components/Layout'
 
-/** ddos.html（base_simple.html） */
 export default function DDoS() {
   return (
     <Shell variant="simple" css={['akari.css']} simpleFrame>

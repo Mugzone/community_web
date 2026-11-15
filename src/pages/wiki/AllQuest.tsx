@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react'
 import { Shell } from '../../components/Layout'
-import { useLoad, asArray, LoadingBlock, EmptyBlock, JustifyRow } from '../../lib/legacy'
+import { useLoad } from '../../lib/useLoad'
+import { LoadingBlock, EmptyBlock, JustifyRow } from '../../components/fragments'
 import { URLS } from '../../lib/urls'
-import { fetchQuestList } from '../../network/legacy'
+import { fetchQuestList } from '../../network/pageWeb'
 import { t as i18nT } from '../../i18n'
+import { listOf } from '../../utils/response'
 
 type QuestItem = {
   id: number | string
@@ -17,14 +19,9 @@ type QuestItem = {
 }
 const FALLBACK: QuestItem[] = []
 
-/** /page/all/quest —— 老站 list/quest.html + module/quest（base_width.html 宽版） */
 export default function AllQuest() {
   const { data, loading } = useLoad<QuestItem[]>(
-    async () => {
-      const resp: any = await fetchQuestList()
-      const p: any = resp?.data ?? resp
-      return asArray<QuestItem>(p?.items ?? p?.list ?? p)
-    },
+    async () => listOf<QuestItem>(await fetchQuestList(), ['items', 'list']),
     [],
     FALLBACK,
   )

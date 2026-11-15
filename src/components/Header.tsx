@@ -77,7 +77,7 @@ export function Header() {
             <a href={URLS.talk}><i className="icon-ta"></i>{i18nT('Talk')}</a>
             {isLogin && <a href={URLS.store}><i className="icon-st"></i>{i18nT('Store')}</a>}
             <a href={URLS.skin}><i className="icon-sk"></i>{i18nT('Skin')}</a>
-            <a href={`${URLS.chart}?type=3`}><i className="icon-ch"></i>{i18nT('Chart')}</a>
+            <a href={URLS.chart}><i className="icon-ch"></i>{i18nT('Chart')}</a>
             <a href={URLS.event}><i className="icon-qu"></i>{i18nT('Events')}</a>
             <a href={URLS.player}><i className="icon-pl"></i>{i18nT('Player')}</a>
           </div>

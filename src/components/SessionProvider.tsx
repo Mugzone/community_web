@@ -1,5 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react'
-import { getSession, setSession, type AuthSession } from '../network/api'
+import { SESSION_EXPIRED_EVENT, getSession, setSession, type AuthSession } from '../network/api'
+import { showNotify } from '../lib/legacy'
+import { t as i18nT } from '../i18n'
 
 type SessionCtx = {
   session?: AuthSession
@@ -47,6 +49,17 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     setS(undefined)
     window.dispatchEvent(new Event('malody:session'))
   }, [])
+
+  useEffect(() => {
+    /** 请求层撞到 -1000 时已清掉 localStorage；这里同步 React 状态并给出
+     *  可见提示，避免「顶部仍显示已登录、请求全部静默失败」。 */
+    const onSessionExpired = () => {
+      signOut()
+      showNotify(i18nT('Please login'), 'err')
+    }
+    window.addEventListener(SESSION_EXPIRED_EVENT, onSessionExpired)
+    return () => window.removeEventListener(SESSION_EXPIRED_EVENT, onSessionExpired)
+  }, [signOut])
 
   return (
     <Ctx.Provider value={{ session, isLogin: !!session && session.uid > 1, signIn, signOut, refresh }}>

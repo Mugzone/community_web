@@ -1,0 +1,287 @@
+html[data-styles~="allchart"] .chart_filters {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 0 0 4px;
+}
+
+html[data-styles~="allchart"] .chart_filter_head,
+html[data-styles~="allchart"] .chart_advanced_head {
+  height: 20px;
+  line-height: 20px;
+  text-align: left;
+}
+
+html[data-styles~="allchart"] .chart_filter_head span,
+html[data-styles~="allchart"] .chart_advanced_head span {
+  display: inline-block;
+  line-height: 20px;
+  color: #2b6cb0;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+html[data-styles~="allchart"] .chart_filter_columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
+}
+
+html[data-styles~="allchart"] .chart_basic {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+html[data-styles~="allchart"] .chart_field {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+  text-align: left;
+  font-size: 13px;
+  font-weight: bold;
+  color: #45617c;
+}
+
+html[data-styles~="allchart"] .chart_field_full {
+  width: 100%;
+}
+
+html[data-styles~="allchart"] .chart_field input,
+html[data-styles~="allchart"] .chart_field select,
+html[data-styles~="allchart"] .chart_range_input {
+  box-sizing: border-box;
+  width: 100%;
+  height: 28px;
+  padding: 0 8px;
+  border: 1px solid #4190e7;
+  border-radius: 4px;
+  background: #fff;
+  color: #333;
+  font-size: 13px;
+  font-weight: normal;
+}
+
+html[data-styles~="allchart"] .chart_field input:focus,
+html[data-styles~="allchart"] .chart_field select:focus,
+html[data-styles~="allchart"] .chart_range_input:focus {
+  outline: 2px solid #b9d8f8;
+}
+
+html[data-styles~="allchart"] .chart_field select {
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 24px;
+  background-image: linear-gradient(45deg, transparent 50%, #4190e7 50%), linear-gradient(135deg, #4190e7 50%, transparent 50%);
+  background-position: calc(100% - 14px) 11px, calc(100% - 9px) 11px;
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+}
+
+html[data-styles~="allchart"] .chart_filter_grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+html[data-styles~="allchart"] .chart_status.g_select {
+  display: flex;
+  gap: 5px;
+  width: 100%;
+}
+
+html[data-styles~="allchart"] .chart_status.g_select span {
+  flex: 1;
+  width: auto;
+  min-width: 0;
+  height: 28px;
+  line-height: 26px;
+  margin: 0;
+  font-size: 12px;
+  font-weight: normal;
+}
+
+html[data-styles~="allchart"] .chart_advanced {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+html[data-styles~="allchart"] .chart_range {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: left;
+}
+
+html[data-styles~="allchart"] .chart_range_label {
+  font-size: 13px;
+  font-weight: bold;
+  color: #45617c;
+}
+
+html[data-styles~="allchart"] .chart_range_row {
+  display: grid;
+  grid-template-columns: 88px minmax(0, 1fr) 88px;
+  gap: 10px;
+  align-items: center;
+}
+
+html[data-styles~="allchart"] .chart_range_input {
+  text-align: center;
+  -moz-appearance: textfield;
+}
+
+html[data-styles~="allchart"] .chart_range_input::-webkit-inner-spin-button,
+html[data-styles~="allchart"] .chart_range_input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+html[data-styles~="allchart"] .chart_range_track_wrap {
+  padding: 10px 10px;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+html[data-styles~="allchart"] .chart_range_track {
+  position: relative;
+  height: 6px;
+  background: #dbe7f6;
+  border-radius: 3px;
+  cursor: pointer;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+html[data-styles~="allchart"] .chart_range_fill {
+  position: absolute;
+  height: 100%;
+  background: #4190e7;
+  border-radius: 3px;
+  pointer-events: none;
+}
+
+html[data-styles~="allchart"] .chart_range_thumb {
+  position: absolute;
+  top: 50%;
+  width: 16px;
+  height: 16px;
+  background: #4190e7;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  box-shadow: 0 1px 4px rgba(20, 50, 90, 0.35);
+  transform: translate(-50%, -50%);
+  cursor: grab;
+  z-index: 2;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+html[data-styles~="allchart"] .chart_range_thumb_max {
+  z-index: 3;
+}
+
+html[data-styles~="allchart"] .chart_range_thumb.active {
+  cursor: grabbing;
+  box-shadow: 0 0 0 5px rgba(65, 144, 231, 0.22);
+}
+
+html[data-styles~="allchart"] .chart_actions {
+  display: flex;
+  gap: 10px;
+}
+
+html[data-styles~="allchart"] .chart_actions .g_btn {
+  display: inline-block;
+  width: auto;
+  min-width: 120px;
+  margin: 0;
+  padding: 0 22px;
+}
+
+html[data-styles~="allchart"] .chart_actions .chart_reset {
+  border-color: #b9cde4;
+  color: #5b7290;
+  background: #eef3f9;
+}
+
+html[data-styles~="allchart"] .chart_actions .chart_reset:hover {
+  background: #dce8f5;
+  color: #35506f;
+}
+
+html[data-styles~="allchart"] .chart_result {
+  margin: 12px 0 2px;
+  text-align: right;
+}
+
+html[data-styles~="allchart"] .chart_result span {
+  display: inline-block;
+  color: #2b6cb0;
+  font-size: 12px;
+}
+
+html[data-styles~="allchart"] .g_memo .chart_retry {
+  display: inline-block;
+  width: auto;
+  min-width: 80px;
+  height: 26px;
+  line-height: 26px;
+  margin: 0 0 0 10px;
+  padding: 0 14px;
+  font-size: 13px;
+}
+
+html[data-styles~="allchart"] #maps .g_map {
+  height: 236px;
+}
+
+html[data-styles~="allchart"] #maps .g_map .meta {
+  height: 52px;
+  margin-top: 6px;
+}
+
+html[data-styles~="allchart"] #maps .g_map .meta p {
+  margin: 0;
+  height: 16px;
+  line-height: 16px;
+  font-size: 12px;
+}
+
+html[data-styles~="allchart"] #maps .g_map .meta .title {
+  font-weight: bold;
+  color: #333;
+}
+
+html[data-styles~="allchart"] #maps .g_map .meta .version,
+html[data-styles~="allchart"] #maps .g_map .meta .extra {
+  color: #6b829c;
+}
+
+html[data-styles~="allchart"] #maps .g_map .meta .extra {
+  font-size: 11px;
+}
+
+@media (max-width: 900px) {
+  html[data-styles~="allchart"] .chart_filter_columns {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  html[data-styles~="allchart"] .chart_filter_grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  html[data-styles~="allchart"] .chart_range_row {
+    grid-template-columns: 76px minmax(0, 1fr) 76px;
+    gap: 6px;
+  }
+}

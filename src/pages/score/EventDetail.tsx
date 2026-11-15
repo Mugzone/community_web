@@ -1,8 +1,10 @@
 import { useLocation } from 'react-router-dom'
 import { Shell } from '../../components/Layout'
 import { useSession } from '../../components/SessionProvider'
-import { LoadingBlock, num, useLoad } from '../../lib/legacy'
+import { asArray, LoadingBlock, num, useLoad } from '../../lib/legacy'
 import { URLS } from '../../lib/urls'
+import { fetchEventRank } from '../../network/legacy'
+import { isOrgMember } from '../../utils/auth'
 import {
   fetchEventCharts,
   fetchEventRanking,
@@ -40,7 +42,8 @@ const typeLabel = (value?: string | number): string => {
 
 export default function EventDetail() {
   const { search } = useLocation()
-  const { isLogin } = useSession()
+  const { session } = useSession()
+  const canManage = isOrgMember(session?.groups ?? [])
   const params = new URLSearchParams(search)
   const eid = num(params.get('eid') ?? params.get('id'), 0)
 
@@ -72,13 +75,24 @@ export default function EventDetail() {
     [] as RespEventChartItem[],
   )
 
-  const scoreId = infoData.info ? num(infoData.info.scoreId ?? infoData.info.scoreID, 0) : 0
+  const scoreId = infoData.info ? num(infoData.info.scoreId ?? infoData.info.scoreID, eid) : 0
 
   const { data: ranking, loading: rankingLoading, error: rankingError } = useLoad<RespRankingEventItem[]>(
     async () => {
       if (!scoreId) return []
-      const resp = await fetchEventRanking({ eid: scoreId })
-      return resp.code === 0 && resp.data ? resp.data : []
+      const primary = await fetchEventRanking({ eid: scoreId }).catch(() => undefined)
+      if (primary?.code === 0 && primary.data && primary.data.length > 0) return primary.data
+      const legacy = await fetchEventRank(scoreId)
+      const d: Record<string, any> = (legacy?.data && !Array.isArray(legacy.data) && typeof legacy.data === 'object')
+        ? legacy.data as Record<string, any>
+        : {}
+      const rows = asArray<Record<string, any>>(d.list ?? d.rank ?? (legacy as Record<string, any>)?.list ?? [])
+      return rows.map((row, i) => ({
+        index: i + 1,
+        uid: num(row.user_id ?? row.uid ?? row.user, 0),
+        username: String(row.user_id__username ?? row.username ?? row.name ?? ''),
+        score: num(row.total ?? row.score, 0),
+      }))
     },
     [scoreId],
     [] as RespRankingEventItem[],
@@ -93,7 +107,7 @@ export default function EventDetail() {
       <h4>{i18nT('Events')}</h4>
       <div className="option">
         <a href={URLS.event}>{i18nT('Back to events')}</a>
-        {isLogin && eid > 0 && <a href={URLS.eventEdit(eid)}>{i18nT('Edit event')}</a>}
+        {canManage && eid > 0 && <a href={URLS.eventEdit(eid)}>{i18nT('Edit event')}</a>}
         {scoreId > 0 && <a href={URLS.eventRank(scoreId)}>{i18nT('Event rank')}</a>}
       </div>
     </>
@@ -105,35 +119,37 @@ export default function EventDetail() {
       <div className="g_cont">
         <div className="g_actbar">
           <a className="g_btn" href={URLS.event}>{i18nT('Back to events')}</a>
-          {isLogin && eid > 0 && <a className="g_btn btn" href={URLS.eventEdit(eid)}>{i18nT('Edit event')}</a>}
+          {canManage && eid > 0 && <a className="g_btn btn" href={URLS.eventEdit(eid)}>{i18nT('Edit event')}</a>}
           {scoreId > 0 && <a className="g_btn btn" href={URLS.eventRank(scoreId)}>{i18nT('Event rank')}</a>}
         </div>
 
         {infoLoading && !info && <LoadingBlock />}
         {(infoData.error || infoError) && <p className="event_msg">{infoData.error || i18nT('Failed to load events')}</p>}
 
-        <div className="event_hero">
-          <div className="event_hero_cover" style={{ backgroundImage: `url(${cover})` }}></div>
-          <div className="event_hero_info">
-            <h3 className="textfix">{info?.name ?? i18nT('Unknown')}</h3>
-            <div className="event_meta_row">
-              <span className={`event_tag ${status === 'ongoing' ? 'solid' : 'muted'}`}>{statusLabel(status)}</span>
-              <span className="event_tag">{formatDate(info?.start)} — {formatDate(info?.end)}</span>
-              <span className="event_tag">{i18nT('Type')}: {typeLabel(info?.type)}</span>
-              <span className="event_tag">#{eid}</span>
+        {info && (
+          <div className="event_hero">
+            <div className="event_hero_cover" style={{ backgroundImage: `url(${cover})` }}></div>
+            <div className="event_hero_info">
+              <h3 className="textfix">{info.name ?? i18nT('Unknown')}</h3>
+              <div className="event_meta_row">
+                <span className={`event_tag ${status === 'ongoing' ? 'solid' : 'muted'}`}>{statusLabel(status)}</span>
+                <span className="event_tag">{formatDate(info.start)} — {formatDate(info.end)}</span>
+                <span className="event_tag">{i18nT('Type')}: {typeLabel(info.type)}</span>
+                <span className="event_tag">#{eid}</span>
+              </div>
+              {info.wiki ? <a href={URLS.wiki(info.wiki)}>{i18nT('Wiki page')}</a> : null}
             </div>
-            {info?.wiki ? <a href={URLS.wiki(info.wiki)}>{i18nT('Wiki page')}</a> : null}
           </div>
-        </div>
+        )}
 
         <div className="event_section">
           <p className="label">{i18nT('Event charts')}</p>
           {chartsLoading && charts.length === 0 && <LoadingBlock />}
-          {!chartsLoading && charts.length === 0 && (
+          {chartsError && <p className="event_msg">{i18nT('Operation failed')}</p>}
+          {!chartsLoading && !chartsError && !(infoData.error || infoError) && charts.length === 0 && (
             <div className="g_memo"><span className="g_round">{i18nT('No charts')}</span></div>
           )}
           <div className="event_chart_grid">
-            {chartsError && <p className="event_msg">{i18nT('Operation failed')}</p>}
             {charts.map((chart) => {
               const badge = chartTypeBadge(chart.type)
               const typeCls = chart.type === 0 ? 'alpha' : chart.type === 1 ? 'beta' : chart.type === 2 ? 'stable' : ''
@@ -146,7 +162,7 @@ export default function EventDetail() {
                     <div className="event_chart_tags">
                       {chart.mode !== undefined && <span className="event_tag">{modeLabel(chart.mode)}</span>}
                       {chart.version && <span className="event_tag">{chart.version}</span>}
-                      {chart.level !== undefined && <span className="event_tag">Lv.{chart.level}</span>}
+                      {chart.level !== undefined && <span className="event_tag">{i18nT('Lv.{{value}}', { value: chart.level })}</span>}
                       {badge && <span className={`event_tag ${typeCls}`}>{badge.label}</span>}
                     </div>
                   </div>
@@ -158,9 +174,9 @@ export default function EventDetail() {
 
         <div className="event_section event_rank">
           <p className="label">{i18nT('Event ranking')}</p>
-          {rankingLoading && ranking.length === 0 && <LoadingBlock />}
+          {(rankingLoading || infoLoading) && ranking.length === 0 && <LoadingBlock />}
           {rankingError && <p className="event_msg">{i18nT('Operation failed')}</p>}
-          {!rankingLoading && !rankingError && ranking.length === 0 && (
+          {!rankingLoading && !rankingError && !infoLoading && !(infoData.error || infoError) && ranking.length === 0 && (
             <div className="g_memo"><span className="g_round">{i18nT('No ranking')}</span></div>
           )}
           {ranking.length > 0 && (

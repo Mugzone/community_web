@@ -11,6 +11,9 @@ import { t as i18nT } from '../../i18n'
 
 const query = (k: string): string => new URLSearchParams(window.location.search).get(k) ?? ''
 
+/** 后端 JSON 是 true/false，老站模板与 POST 用的是 "True"/"False" */
+const isTrue = (v: unknown): boolean => v === true || v === 1 || String(v).toLowerCase() === 'true'
+
 type TagOption = { id?: number | string; name?: string; type?: number }
 type MetaState = {
   info: Record<string, any>
@@ -34,9 +37,10 @@ export default function WikiMeta() {
 
   const { data, loading } = useLoad<MetaState>(
     async () => {
+      // meta=1 才会下发 tagOptions / tags，否则 Tags 区域为空且保存时会把已有标签清空
       const resp: any = metaType === 'song'
-        ? await fetchSongInfo({ sid: id }).catch(() => ({}))
-        : await fetchChartInfo({ cid: id }).catch(() => ({}))
+        ? await fetchSongInfo({ sid: id, meta: 1 }).catch(() => ({}))
+        : await fetchChartInfo({ cid: id, meta: 1 }).catch(() => ({}))
       const info: Record<string, any> = (resp ?? {}) as Record<string, any>
       const tags: TagOption[] = asArray<TagOption>(info.tagOptions ?? resp?.tagOptions)
       const selected: (number | string)[] = asArray<any>(info.tags ?? []).map((t: any) => (
@@ -67,6 +71,11 @@ export default function WikiMeta() {
   useEffect(() => {
     const f: Record<string, string> = {}
     Object.entries(data.info).forEach(([k, v]) => { f[k] = v === undefined || v === null ? '' : String(v) })
+    // GET /community/chart/info 下发的是 freeStyle（omitempty，值为 0 时整个字段不下发），
+    // 而老站模板和 POST /community/chart/info 用的字段名是 free。不映射会让
+    // Free Style 下拉恒显示 None，点保存时又把库里已有的 RM Style 静默写回 0。
+    f.free = String(num(data.info.free ?? data.info.freeStyle, 0))
+    f.hide = isTrue(data.info.hide) ? 'True' : 'False'
     setForm(f)
   }, [data.info])
   useEffect(() => setCurrTags(data.selected), [data.selected])
@@ -96,7 +105,8 @@ export default function WikiMeta() {
           bpm: num(form.bpm, 0),
           titleOrg: form.titleOrg,
           artistOrg: form.artistOrg,
-          tags: currTags.map((t) => Number(t)).filter((n) => Number.isFinite(n)),
+          // 标签选项没加载出来时不提交 tags，避免把已有标签静默清空
+          tags: data.tags.length > 0 ? currTags.map((t) => Number(t)).filter((n) => Number.isFinite(n)) : undefined,
         })
       } else {
         // 与老站一致：模板里被权限隐藏的控件根本不会出现在表单里，
@@ -110,11 +120,11 @@ export default function WikiMeta() {
           mode: num(form.mode, 0),
           free: num(form.free, 0),
           offset: num(form.offset, 0),
-          tags: currTags.map((t) => Number(t)).filter((n) => Number.isFinite(n)),
+          tags: data.tags.length > 0 ? currTags.map((t) => Number(t)).filter((n) => Number.isFinite(n)) : undefined,
         }
         if (canHide) {
           payload.creator = num(form.uid, 0)
-          payload.hide = form.hide === 'True'
+          payload.hide = isTrue(form.hide)
         }
         if (isAss) payload.type = num(form.type, 0)
         await saveChartInfo(payload)

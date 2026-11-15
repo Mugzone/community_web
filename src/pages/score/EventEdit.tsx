@@ -2,20 +2,20 @@ import { useEffect, useState, type ChangeEvent } from 'react'
 import { useLocation } from 'react-router-dom'
 import { Shell } from '../../components/Layout'
 import { useSession } from '../../components/SessionProvider'
-import { num, showNotify, useLoad } from '../../lib/legacy'
+import { LoadingBlock, num, showNotify, useLoad } from '../../lib/legacy'
 import { URLS } from '../../lib/urls'
 import {
   createEvent,
   fetchEventCharts,
-  fetchEventCoverUpload,
   fetchStoreEvents,
   fetchWikiTemplate,
-  finishImageUpload,
   type RespEventChartItem,
   type RespStoreEventItem,
 } from '../../network/api'
+import { isOrgMember } from '../../utils/auth'
 import { coverUrl, modeLabel } from '../../utils/formatters'
 import { t as i18nT } from '../../i18n'
+import { uploadEventCover } from './uploadEventCover'
 import './Event.css'
 
 type EventForm = {
@@ -64,7 +64,8 @@ const toPreview = (chart: RespEventChartItem): ChartPreview => ({
 
 export default function EventEdit() {
   const { search } = useLocation()
-  const { isLogin } = useSession()
+  const { session, isLogin } = useSession()
+  const canManage = isOrgMember(session?.groups ?? [])
   const params = new URLSearchParams(search)
   const eventId = num(params.get('eid') ?? params.get('id'), 0)
 
@@ -122,7 +123,7 @@ export default function EventEdit() {
   }, [initial])
 
   const effectiveEventId = eventId || createdId
-  const loadError = initial.error || initialError || ''
+  const loadError = initial.error || (initialError ? i18nT('Failed to load events') : '')
 
   const updateField = (key: keyof EventForm, value: string) => {
     setForm((prev) => ({ ...prev, [key]: value }))
@@ -146,6 +147,7 @@ export default function EventEdit() {
   }
 
   const addChartId = () => {
+    if (!canManage) return
     const raw = chartInput.trim()
     const id = Number(raw)
     if (!raw || !Number.isFinite(id) || id <= 0) {
@@ -165,6 +167,7 @@ export default function EventEdit() {
   }
 
   const removeChartId = (id: number) => {
+    if (!canManage) return
     setChartIds((prev) => prev.filter((item) => item !== id))
     setChartPreviews((prev) => {
       const next = { ...prev }
@@ -182,50 +185,30 @@ export default function EventEdit() {
   }
 
   const handleCoverUpload = async () => {
+    if (!canManage) {
+      setCoverError(i18nT('No permission to manage events'))
+      return
+    }
     if (!effectiveEventId) {
-      setCoverError(i18nT('Missing required fields'))
+      setCoverError(i18nT('Save the event before uploading a cover'))
       return
     }
     if (!coverFile) {
-      setCoverError(i18nT('Missing required fields'))
+      setCoverError(i18nT('Select a cover image first'))
       return
     }
     setCoverUploading(true)
     setCoverError('')
     setCoverMsg('')
     try {
-      const sign = await fetchEventCoverUpload({ eid: effectiveEventId, type: 1 })
-      if (sign.code !== 0 || !sign.url || !sign.meta) {
-        setCoverError(sign.code === -3 ? i18nT('No permission to manage events') : i18nT('Upload failed'))
+      const result = await uploadEventCover(effectiveEventId, coverFile)
+      if (result.code !== 0) {
+        const message = Math.abs(result.code) % 1000 === 3 ? i18nT('No permission to manage events') : i18nT('Upload failed')
+        setCoverError(message)
+        showNotify(message, 'err')
         return
       }
-      const formData = new FormData()
-      Object.entries(sign.meta).forEach(([key, value]) => formData.append(key, value))
-      formData.append('file', coverFile)
-      const res = await fetch(sign.url, { method: 'POST', body: formData })
-      if (!res.ok) {
-        setCoverError(i18nT('Upload failed'))
-        return
-      }
-      let saveKey = ''
-      if (sign.meta.policy) {
-        try {
-          const decoded = atob(sign.meta.policy)
-          saveKey = (JSON.parse(decoded) as { 'save-key'?: string })['save-key'] ?? ''
-        } catch {
-          saveKey = ''
-        }
-      }
-      if (!saveKey) {
-        setCoverError(i18nT('Upload failed'))
-        return
-      }
-      const finishResp = await finishImageUpload({ path: saveKey })
-      if (finishResp.code !== 0) {
-        setCoverError(i18nT('Upload failed'))
-        return
-      }
-      updateField('cover', saveKey)
+      updateField('cover', result.cover ?? '')
       setCoverFile(undefined)
       setCoverMsg(i18nT('Cover uploaded'))
       showNotify(i18nT('Cover uploaded'), 'succ')
@@ -244,8 +227,10 @@ export default function EventEdit() {
   }
 
   const handleSave = async () => {
-    if (!isLogin) {
-      setSaveError(i18nT('Editing is available for active account'))
+    if (!canManage) {
+      const message = i18nT(isLogin ? 'No permission to manage events' : 'Editing is available for active account')
+      setSaveError(message)
+      showNotify(message, 'err')
       return
     }
     if (loadError) {
@@ -304,149 +289,141 @@ export default function EventEdit() {
 
   const typeOptions = ['Default', 'Section', 'New default', 'New section', 'Combo']
 
-  const sidebar = (
-    <>
-      <h4>{i18nT('Events')}</h4>
-      <div className="option">
-        <a href={URLS.event}>{i18nT('Back to events')}</a>
-        {eventId > 0 && <a href={URLS.eventDetail(eventId)}>{i18nT('View event')}</a>}
-        {createdId > 0 && <a href={URLS.eventDetail(createdId)}>{i18nT('View event')}</a>}
-      </div>
-    </>
-  )
-
   return (
-    <Shell variant="two-col" title={eventId ? i18nT('Edit event') : i18nT('Create event')} page="event" contCls="" sidebar={sidebar}>
-      <div className="g_title">{eventId ? i18nT('Edit event') : i18nT('Create event')}</div>
-      <div className="g_cont">
-        <div className="g_actbar">
-          <a className="g_btn" href={URLS.event}>{i18nT('Back to events')}</a>
-          {eventId > 0 && <a className="g_btn btn" href={URLS.eventDetail(eventId)}>{i18nT('View event')}</a>}
-        </div>
-
-        {loadingInfo && <p className="event_hint">{i18nT('Loading')}</p>}
+    <Shell variant="wide" title={eventId ? i18nT('Edit event') : i18nT('Create event')} page="event" css={['wiki_edit.css', 'tmpl.css']}>
+      <div className="g_cont2 g_rblock" data-type="event">
+        {loadingInfo && <LoadingBlock />}
         {loadError && <p className="event_msg">{loadError}</p>}
-        {isLogin
-          ? <p className="event_hint">{i18nT('Only organization members can save events')}</p>
-          : <p className="event_hint">{i18nT('Editing is available for active account')}</p>}
+        {!canManage && (
+          <p className="event_hint">{i18nT(isLogin ? 'No permission to manage events' : 'Editing is available for active account')}</p>
+        )}
+        {eventId > 0 && <p className="event_hint"><a href={URLS.eventDetail(eventId)}>{i18nT('View event')}</a></p>}
 
-        <div className="g_temp event_form">
-          <div className="bg">
-            <h2>
-              <label htmlFor="event_name">{i18nT('Name')}</label>
-              <input id="event_name" value={form.name} onChange={(e) => updateField('name', e.target.value)} placeholder={i18nT('Name')} />
-            </h2>
-            <h2>
-              <label htmlFor="event_type">{i18nT('Type')}</label>
-              <select id="event_type" value={form.type} onChange={(e) => updateField('type', e.target.value)}>
-                {typeOptions.map((label, index) => <option value={index} key={label}>{i18nT(label)}</option>)}
-              </select>
-            </h2>
-            <h2>
-              <label htmlFor="event_start">{i18nT('Start')}</label>
-              <input id="event_start" value={form.start} onChange={(e) => updateField('start', e.target.value)} placeholder="YYYY-MM-DD" />
-            </h2>
-            <h2>
-              <label htmlFor="event_end">{i18nT('End')}</label>
-              <input id="event_end" value={form.end} onChange={(e) => updateField('end', e.target.value)} placeholder="YYYY-MM-DD" />
-            </h2>
-            <h2>
-              <label htmlFor="event_cover">{i18nT('Cover')}</label>
-              <input id="event_cover" value={form.cover} onChange={(e) => updateField('cover', e.target.value)} placeholder="cover/123!small" />
-            </h2>
-            <h2>
-              <label htmlFor="event_wiki">{i18nT('Wiki page')}</label>
-              <input id="event_wiki" value={form.wiki} onChange={(e) => updateField('wiki', e.target.value)} placeholder="0" />
-            </h2>
-            <h2>
-              <label htmlFor="event_cid">{i18nT('Chart IDs')}</label>
-              <span className="event_field_extra">
-                <input
-                  id="event_cid"
-                  value={chartInput}
-                  onChange={(e) => { setChartInput(e.target.value); setChartInputError('') }}
-                  onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addChartId() } }}
-                  placeholder="123"
-                />
-                <a href="#" className="g_btn" onClick={(e) => { e.preventDefault(); addChartId() }}>{i18nT('Add chart')}</a>
-              </span>
-            </h2>
-          </div>
+        <div className="temp" data-type="event" data-id={eventId}>
+          <h2>
+            <label htmlFor="event_name">{i18nT('Name')}</label>
+            <input id="event_name" disabled={!canManage} value={form.name} onChange={(e) => updateField('name', e.target.value)} placeholder={i18nT('Name')} />
+          </h2>
+          <h2>
+            <label htmlFor="event_type">{i18nT('Type')}</label>
+            <select id="event_type" disabled={!canManage} value={form.type} onChange={(e) => updateField('type', e.target.value)}>
+              {typeOptions.map((label, index) => <option value={index} key={label}>{i18nT(label)}</option>)}
+            </select>
+          </h2>
+          <h2>
+            <label htmlFor="event_start">{i18nT('Start')}</label>
+            <input id="event_start" disabled={!canManage} value={form.start} onChange={(e) => updateField('start', e.target.value)} placeholder="YYYY-MM-DD" />
+          </h2>
+          <h2>
+            <label htmlFor="event_end">{i18nT('End')}</label>
+            <input id="event_end" disabled={!canManage} value={form.end} onChange={(e) => updateField('end', e.target.value)} placeholder="YYYY-MM-DD" />
+          </h2>
+          <h2>
+            <label htmlFor="event_cover">{i18nT('Cover')}</label>
+            <input id="event_cover" disabled={!canManage} value={form.cover} onChange={(e) => updateField('cover', e.target.value)} placeholder="cover/123!small" />
+          </h2>
+          <h2>
+            <label htmlFor="event_wiki">{i18nT('Wiki page')}</label>
+            <input id="event_wiki" disabled={!canManage} value={form.wiki} onChange={(e) => updateField('wiki', e.target.value)} placeholder="0" />
+          </h2>
+          <h2 className="tagh2">
+            <label htmlFor="event_cid">{i18nT('Chart IDs')}</label>
+            <span className="event_cid_input">
+              <input
+                id="event_cid"
+                disabled={!canManage}
+                value={chartInput}
+                onChange={(e) => { setChartInput(e.target.value); setChartInputError('') }}
+                onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addChartId() } }}
+                placeholder="123"
+              />
+              {canManage && <a href="#" className="g_btn" onClick={(e) => { e.preventDefault(); addChartId() }}>{i18nT('Add chart')}</a>}
+            </span>
+          </h2>
         </div>
         {chartInputError && <p className="event_msg">{chartInputError}</p>}
 
-        <div className="event_cover_row">
-          <div className="event_cover_preview" style={{ backgroundImage: `url(${coverUrl(form.cover)})` }}></div>
-          <div className="event_cover_controls">
-            <label className="event_file_label">
-              {coverFile ? coverFile.name : i18nT('Change cover')}
-              <input type="file" accept="image/png,image/jpeg" onChange={handleCoverFileChange} />
-            </label>
-            <div>
-              <a href="#" className="g_btn" onClick={(e) => { e.preventDefault(); void handleCoverUpload() }}>
-                {coverUploading ? i18nT('Loading') : i18nT('Upload image')}
-              </a>
+        <div className="event_extra">
+          <div className="event_cover_row">
+            <div className="event_cover_preview" style={{ backgroundImage: `url(${coverUrl(form.cover)})` }}></div>
+            <div className="event_cover_controls">
+              <div className="event_cover_actions">
+                <label className="event_file_label">
+                  {coverFile ? coverFile.name : i18nT('Change cover')}
+                  <input type="file" disabled={!canManage} accept="image/png,image/jpeg" onChange={handleCoverFileChange} />
+                </label>
+                {canManage && (
+                  <a href="#" className="g_btn" onClick={(e) => { e.preventDefault(); void handleCoverUpload() }}>
+                    {coverUploading ? i18nT('Loading') : i18nT('Upload image')}
+                  </a>
+                )}
+              </div>
+              <p className="event_hint">{i18nT('Event cover')}</p>
+              {coverError && <p className="event_msg">{coverError}</p>}
+              {coverMsg && <p className="event_msg ok">{coverMsg}</p>}
             </div>
-            <p className="event_hint">{i18nT('Event cover')}</p>
-            {coverError && <p className="event_msg">{coverError}</p>}
-            {coverMsg && <p className="event_msg ok">{coverMsg}</p>}
           </div>
-        </div>
 
-        <div className="event_section">
-          <p className="label">{i18nT('Charts preview')}</p>
-          {chartIds.length === 0 && <div className="g_memo"><span className="g_round">{i18nT('No charts')}</span></div>}
-          <div className="event_chart_grid">
-            {chartIds.map((id) => {
-              const state = chartPreviews[id]
-              if (!state || state.status === 'loading') {
+          <div className="event_section">
+            <p className="label">{i18nT('Charts preview')}</p>
+            {loadingInfo && <LoadingBlock />}
+            {!loadingInfo && !loadError && chartIds.length === 0 && <div className="g_memo"><span className="g_round">{i18nT('No charts')}</span></div>}
+            <div className="event_chart_grid">
+              {chartIds.map((id) => {
+                const state = chartPreviews[id]
+                if (!state || state.status === 'loading') {
+                  return (
+                    <div className="event_chart_card" key={id}>
+                      <div className="event_chart_cover"></div>
+                      <div className="event_chart_body"><div className="event_chart_title">{i18nT('Loading')}</div></div>
+                      {canManage && <button type="button" className="event_remove" onClick={() => removeChartId(id)}>{i18nT('Remove')}</button>}
+                    </div>
+                  )
+                }
+                if (state.status === 'error') {
+                  return (
+                    <div className="event_chart_card" key={id}>
+                      <div className="event_chart_cover"></div>
+                      <div className="event_chart_body">
+                        <div className="event_chart_title">{i18nT('Chart not found')}</div>
+                        <div className="event_chart_artist">#{id}</div>
+                      </div>
+                      {canManage && <button type="button" className="event_remove" onClick={() => removeChartId(id)}>{i18nT('Remove')}</button>}
+                    </div>
+                  )
+                }
+                const chart = state.data
                 return (
                   <div className="event_chart_card" key={id}>
-                    <div className="event_chart_cover"></div>
-                    <div className="event_chart_body"><div className="event_chart_title">{i18nT('Loading')}</div></div>
-                    <button type="button" className="event_remove" onClick={() => removeChartId(id)}>{i18nT('Remove')}</button>
-                  </div>
-                )
-              }
-              if (state.status === 'error') {
-                return (
-                  <div className="event_chart_card" key={id}>
-                    <div className="event_chart_cover"></div>
+                    <div className="event_chart_cover" style={{ backgroundImage: `url(${coverUrl(chart?.cover)})` }}></div>
                     <div className="event_chart_body">
-                      <div className="event_chart_title">{i18nT('Chart not found')}</div>
-                      <div className="event_chart_artist">#{id}</div>
+                      <div className="event_chart_title textfix">{chart?.title ?? i18nT('Unknown')}</div>
+                      <div className="event_chart_artist textfix">{chart?.artist ?? i18nT('Unknown')}</div>
+                      <div className="event_chart_tags">
+                        {chart?.mode !== undefined && <span className="event_tag">{modeLabel(chart.mode)}</span>}
+                        {chart?.version && <span className="event_tag">{chart.version}</span>}
+                      </div>
                     </div>
-                    <button type="button" className="event_remove" onClick={() => removeChartId(id)}>{i18nT('Remove')}</button>
+                    {canManage && <button type="button" className="event_remove" onClick={() => removeChartId(id)}>{i18nT('Remove')}</button>}
                   </div>
                 )
-              }
-              const chart = state.data
-              return (
-                <div className="event_chart_card" key={id}>
-                  <div className="event_chart_cover" style={{ backgroundImage: `url(${coverUrl(chart?.cover)})` }}></div>
-                  <div className="event_chart_body">
-                    <div className="event_chart_title textfix">{chart?.title ?? i18nT('Unknown')}</div>
-                    <div className="event_chart_artist textfix">{chart?.artist ?? i18nT('Unknown')}</div>
-                    <div className="event_chart_tags">
-                      {chart?.mode !== undefined && <span className="event_tag">{modeLabel(chart.mode)}</span>}
-                      {chart?.version && <span className="event_tag">{chart.version}</span>}
-                    </div>
-                  </div>
-                  <button type="button" className="event_remove" onClick={() => removeChartId(id)}>{i18nT('Remove')}</button>
-                </div>
-              )
-            })}
+              })}
+            </div>
           </div>
         </div>
 
-        <div className="event_actions">
-          <a href="#" className="g_btn" onClick={(e) => { e.preventDefault(); void handleSave() }}>
-            {saving ? i18nT('Loading') : i18nT('Save')}
-          </a>
-          <a href={URLS.event} className="g_btn btn">{i18nT('Cancel')}</a>
-          {saveError && <p className="event_msg">{saveError}</p>}
-          {saveMsg && <p className="event_msg ok">{saveMsg}</p>}
-          {createdId > 0 && <p className="event_hint"><a href={URLS.eventDetail(createdId)}>#{createdId}</a></p>}
+        <div className="button">
+          {canManage && (
+            <div className="g_btn btn" data-type="save" onClick={() => { void handleSave() }}>
+              {saving ? i18nT('Loading') : i18nT('Save')}
+            </div>
+          )}
+          <a href={URLS.event} className="btn" data-type="cancel">{i18nT('Cancel')}</a>
+        </div>
+        <div className="g_tip">
+          {saveError && <span className="event_msg curr">{saveError}</span>}
+          {saveMsg && <span className="event_msg ok curr">{saveMsg}</span>}
+          {createdId > 0 && <span className="curr"><a href={URLS.eventDetail(createdId)}>#{createdId}</a></span>}
         </div>
       </div>
     </Shell>

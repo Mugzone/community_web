@@ -163,20 +163,68 @@ const buildVersionHeader = (clientVersion?: string) => {
   return { Malody: clientVersion ?? MALODY_VERSION }
 }
 
-/** 老站 util.ajax：HTTP 200 但 data.code 为负数时走 error 回调（如鉴权失败 code:-1000）。
- *  非 JSON 响应 / 无 code 字段 / 非负数一律不处理，保持原行为。 */
-const assertBizOk = (text: string): void => {
-  let data: unknown
-  try {
-    data = JSON.parse(text) as unknown
-  } catch {
-    return
+/** -1000：MaApi-go token 中间件判定的「未登录 / 会话 token 失效」
+ *  （internal/middleware/token.go），写操作对游客也返回该码。 */
+export const CODE_NOT_LOGIN = -1000
+/** 登录态失效广播；SessionProvider 监听后同步 React 状态并给出可见提示。 */
+export const SESSION_EXPIRED_EVENT = 'malody:session-expired'
+
+/** 带业务码的异常，对齐老站 util.ajax 的 error 回调（回调参数就是 code）。 */
+export class BizError extends Error {
+  constructor(readonly code: number, message?: string) {
+    super(message ?? `Request failed: ${code}`)
+    this.name = 'BizError'
   }
-  if (data && typeof data === 'object') {
-    const { code, message } = data as { code?: unknown; message?: string }
-    if (typeof code === 'number' && code < 0) {
-      throw new Error(message ?? 'Request failed: code')
+}
+
+const parseBizPack = (text: string): PackBase | undefined => {
+  try {
+    const data = JSON.parse(text) as unknown
+    if (data && typeof data === 'object') {
+      const { code, message } = data as { code?: unknown; message?: unknown }
+      if (typeof code === 'number') {
+        return { code, message: typeof message === 'string' ? message : undefined }
+      }
     }
+  } catch {
+    // 纯文本 / 空体：保持原行为
+  }
+  return undefined
+}
+
+/**
+ * 已登录会话收到 -1000，说明服务端已不认这份 token。此前旧登录态仍留在
+ * localStorage，页面又把 assertBizOk 抛出的异常吞掉，表现为「顶部一直显示
+ * 已登录、请求却全部静默失败」。这里在请求层统一清 session 并广播事件，
+ * 让 UI 立即退回游客态且给出提示，后续请求会重新签发游客 token。
+ *
+ * 两种情况不触发退出：
+ * - auth:false 的公开端点（登录/注册/激活、/wt 数据接口）：它的 -1000 与当前会话无关；
+ * - 游客态（uid<=1）：POST 被中间件拒绝本就是「请先登录」，没有登录态可退，
+ *   清掉 guest token 只会让下一个请求重新签发后再撞一次 -1000。
+ */
+const expireSessionIfNeeded = (requiresAuth: boolean) => {
+  if (!requiresAuth || typeof window === 'undefined') return
+  const current = loadStoredSession()
+  if (!current || current.uid <= 1) return
+  // 与「用户恰好重新登录」竞态时，只清触发该请求的那一套凭据
+  if (loadStoredSession() !== current) return
+  setSession(undefined)
+  window.dispatchEvent(new Event(SESSION_EXPIRED_EVENT))
+}
+
+/** 老站 util.ajax：HTTP 200 但 data.code 为负数时走 error 回调。
+ *  非 JSON 响应 / 无 code 字段 / 非负数一律不处理，保持原行为。
+ *  allowBizError 的接口仍把负码原样交给页面，只是 -1000 会先触发上面的退出。 */
+const handleBizCode = (text: string, opts: { requiresAuth: boolean; allowBizError?: boolean }) => {
+  const pack = parseBizPack(text)
+  if (!pack || pack.code >= 0) return
+  if (pack.code === CODE_NOT_LOGIN) expireSessionIfNeeded(opts.requiresAuth)
+  if (!opts.allowBizError) {
+    throw new BizError(
+      pack.code,
+      pack.code === CODE_NOT_LOGIN ? 'Session expired, please sign in again' : pack.message,
+    )
   }
 }
 
@@ -215,7 +263,7 @@ export const postForm = async <T>(path: string, options?: PostOptions): Promise<
     throw new Error(`Request failed: ${res.status}`)
   }
   const text = await res.text()
-  if (!options?.allowBizError) assertBizOk(text)
+  handleBizCode(text, { requiresAuth, allowBizError: options?.allowBizError })
   // 兼容后端返回纯文本 / 空体的 post 接口
   try {
     return JSON.parse(text) as T
@@ -242,7 +290,7 @@ export const getJson = async <T>(path: string, options?: FetchOptions): Promise<
     throw new Error(`Request failed: ${res.status}`)
   }
   const text = await res.text()
-  if (!options?.allowBizError) assertBizOk(text)
+  handleBizCode(text, { requiresAuth, allowBizError: options?.allowBizError })
   return JSON.parse(text) as T
 }
 
@@ -264,7 +312,7 @@ export const getText = async (path: string, options?: FetchOptions): Promise<str
     throw new Error(`Request failed: ${res.status}`)
   }
   const text = await res.text()
-  assertBizOk(text)
+  handleBizCode(text, { requiresAuth })
   return text
 }
 

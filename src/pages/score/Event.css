@@ -4,8 +4,7 @@ html[data-styles~="event"] .event_tools {
 }
 
 html[data-styles~="event"] .event_tools .g_btn,
-html[data-styles~="event"] .event_more .g_btn,
-html[data-styles~="event"] .event_actions .g_btn {
+html[data-styles~="event"] .event_more .g_btn {
   display: inline-block;
   width: auto;
   height: 28px;
@@ -270,63 +269,59 @@ html[data-styles~="event"] .event_hint {
   font-size: 12px;
 }
 
-html[data-styles~="event"] .event_form {
-  display: block;
-  width: 100%;
-  margin: 8px 0 18px;
+html[data-styles~="event"] .g_cont2 .event_extra {
+  position: relative;
+  left: 50%;
+  margin: 40px 0 0 -300px;
+  width: 640px;
+  text-align: left;
 }
 
-html[data-styles~="event"] .event_form div.bg {
-  padding: 6px 0;
-}
-
-html[data-styles~="event"] .event_form h2 {
-  display: flex;
-  align-items: center;
-  min-height: 30px;
-}
-
-html[data-styles~="event"] .event_form h2 label {
-  width: 140px;
-  flex: none;
-  line-height: 26px;
-}
-
-html[data-styles~="event"] .event_form h2 input,
-html[data-styles~="event"] .event_form h2 select {
-  width: auto;
-  flex: 1;
-  min-width: 0;
-  height: 26px;
-  line-height: 26px;
+html[data-styles~="event"] .g_cont2 .temp h2 input,
+html[data-styles~="event"] .g_cont2 .temp h2 select {
+  box-sizing: border-box;
+  width: 200px;
+  height: 30px;
+  line-height: 30px;
+  margin-left: 0;
   padding: 0 6px;
-  border: 1px solid #b2d2f5;
+  border: 1px solid #4190e7;
   border-radius: 3px;
   background-color: white;
   color: #333;
   font-size: 14px;
+  text-indent: 0;
 }
 
-html[data-styles~="event"] .event_form h2 .event_field_extra {
-  display: flex;
-  flex: 1;
-  gap: 6px;
+html[data-styles~="event"] .g_cont2 .temp h2 select {
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+html[data-styles~="event"] .g_cont2 .temp .event_cid_input {
+  display: inline-flex;
   align-items: center;
+  gap: 8px;
+  vertical-align: middle;
 }
 
-html[data-styles~="event"] .event_form h2 .event_field_extra input {
-  flex: 1;
+html[data-styles~="event"] .g_cont2 .temp .event_cid_input input {
+  width: 200px;
 }
 
-html[data-styles~="event"] .event_form h2 .event_field_extra .g_btn {
-  display: inline-block;
+html[data-styles~="event"] .g_cont2 .temp .event_cid_input .g_btn {
   width: auto;
-  height: 26px;
-  line-height: 26px;
+  height: 30px;
+  line-height: 30px;
   margin: 0;
-  padding: 0 10px;
-  font-size: 13px;
-  flex: none;
+  padding: 0 12px;
+  font-size: 14px;
+  vertical-align: middle;
+}
+
+html[data-styles~="event"] .g_tip {
+  height: auto;
+  min-height: 16px;
 }
 
 html[data-styles~="event"] .event_cover_row {
@@ -352,12 +347,19 @@ html[data-styles~="event"] .event_cover_controls {
   min-width: 0;
 }
 
+html[data-styles~="event"] .event_cover_actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
 html[data-styles~="event"] .event_cover_controls .g_btn {
   display: inline-block;
   width: auto;
   height: 28px;
   line-height: 28px;
-  margin: 8px 0 0;
+  margin: 0;
   padding: 0 12px;
   font-size: 14px;
 }
@@ -389,11 +391,6 @@ html[data-styles~="event"] .event_remove {
   color: #4190e7;
   font-size: 12px;
   cursor: pointer;
-}
-
-html[data-styles~="event"] .event_actions {
-  margin-top: 18px;
-  text-align: left;
 }
 
 html[data-styles~="event"] .event_chart_tags .event_tag.alpha {

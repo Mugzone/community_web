@@ -4,6 +4,7 @@ import { useSession } from '../../components/SessionProvider'
 import { LoadingBlock, useLoad } from '../../lib/legacy'
 import { URLS } from '../../lib/urls'
 import { fetchStoreEvents, type RespStoreEventItem } from '../../network/api'
+import { isOrgMember } from '../../utils/auth'
 import { buildEventStatus, parseEventDate, type EventStatus } from '../../utils/events'
 import { coverUrl } from '../../utils/formatters'
 import { t as i18nT } from '../../i18n'
@@ -32,7 +33,8 @@ const formatDate = (value?: string | number): string => {
 }
 
 export default function EventList() {
-  const { isLogin } = useSession()
+  const { session } = useSession()
+  const canManage = isOrgMember(session?.groups ?? [])
   const [activeOnly, setActiveOnly] = useState(true)
   const [from, setFrom] = useState(0)
   const [retry, setRetry] = useState(0)
@@ -61,9 +63,11 @@ export default function EventList() {
   }, [data])
 
   const changeFilter = (value: boolean) => {
+    if (value === activeOnly && from === 0 && !data.failed) return
     setItems([])
     setActiveOnly(value)
     setFrom(0)
+    setRetry((v) => v + 1)
   }
 
   const onMore = () => {
@@ -78,7 +82,7 @@ export default function EventList() {
       <div className="option">
         <a href={URLS.event} className={activeOnly ? 'curr' : ''} onClick={(e) => { e.preventDefault(); changeFilter(true) }}>{i18nT('Active only')}</a>
         <a href={URLS.event} className={!activeOnly ? 'curr' : ''} onClick={(e) => { e.preventDefault(); changeFilter(false) }}>{i18nT('All events')}</a>
-        {isLogin && <a href={URLS.eventEdit()}>{i18nT('Create event')}</a>}
+        {canManage && <a href={URLS.eventEdit()}>{i18nT('Create event')}</a>}
       </div>
     </>
   )
@@ -87,13 +91,14 @@ export default function EventList() {
     <Shell variant="two-col" title={i18nT('Events')} page="event" contCls="" sidebar={sidebar}>
       <div className="g_title">{i18nT('Events')}</div>
       <div className="g_cont">
-        <div className="event_tools">
-          {isLogin && <a className="g_btn" href={URLS.eventEdit()}>{i18nT('Create event')}</a>}
-          <div className="g_memo"><span className="g_round">{i18nT('{{count}} events', { count: items.length })}</span></div>
-        </div>
+        {canManage && (
+          <div className="event_tools">
+            <a className="g_btn" href={URLS.eventEdit()}>{i18nT('Create event')}</a>
+          </div>
+        )}
 
         {loading && from === 0 && <LoadingBlock />}
-        {data.failed && <p className="event_msg">{i18nT('Failed to load events')}</p>}
+        {data.failed && !loading && <p className="event_msg">{i18nT('Failed to load events')}</p>}
         {!data.failed && !loading && items.length === 0 && (
           <div className="g_memo"><span className="g_round">{i18nT('No events')}</span></div>
         )}

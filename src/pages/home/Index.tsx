@@ -193,7 +193,7 @@ export default function Index() {
             <a href={URLS.allPage}>{data.info.pages ?? ''}</a><span>{i18nT('Pages')}</span>
           </div>
           <div className="item">
-            <a href={`${URLS.chart}?type=3`}>{data.info.songs ?? ''}</a><span>{i18nT('Songs')}</span>
+            <a href={URLS.chart}>{data.info.songs ?? ''}</a><span>{i18nT('Songs')}</span>
           </div>
           <div className="item">
             <a href={URLS.player}>{data.info.players ?? ''}</a><span>{i18nT('Players')}</span>
@@ -214,7 +214,7 @@ export default function Index() {
       </div>
 
       <div id="newMap" className="g_rblock">
-        <p className="label">New Arrival <a href={`${URLS.chart}?type=2`} className="more">{i18nT('More')}</a></p>
+        <p className="label">New Arrival <a href={URLS.chart} className="more">{i18nT('More')}</a></p>
         <JustifyRow>
           {/* 加载中用卡片骨架占位，避免整块空白（老站服务端直出无此态） */}
           {loading && skeletonCardNodes(5)}

@@ -7,6 +7,7 @@ import { URLS } from '../../lib/urls'
 import { fetchWiki, saveWiki, getSession } from '../../network/api'
 import { EditTool } from './WikiPage'
 import { wikiToHtml } from '../../utils/wikiRender'
+import { wikiContentKey, wikiLangFromLocale } from '../../utils/wiki'
 import { t as i18nT } from '../../i18n'
 
 
@@ -46,14 +47,18 @@ const backUrl = (raw: string, from: string): string => {
 export default function WikiEdit() {
   const key = query('key')
   const from = query('from')
-  const target = parseWikiKey(key)
+  // 页面传来的 ?lang= 决定编辑哪个语言版本（老站 general_edit 的 key_<lang_idx>）。
+  // user_<uid> / skin_<id> 是裸 key，不带语言后缀；英文沿用原来的 lang: 0 路径。
+  const langCode = wikiLangFromLocale(query('lang')) ?? 'en'
+  const langKey = wikiContentKey(key, langCode)
+  const target: WikiTarget = langKey ? { prefix: langKey } : parseWikiKey(key)
 
   const { data, loading } = useLoad<Record<string, any>>(
     async () => {
       const resp = await fetchWiki({ ...target, lang: 0 })
       return (resp ?? {}) as Record<string, any>
     },
-    [key],
+    [key, langKey],
     {} as Record<string, any>,
   )
 

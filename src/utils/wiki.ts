@@ -1,3 +1,81 @@
+/* ------------------------------------------------------------------ *
+ * wiki 多语言
+ * 老站 lib.util.get_lang：URL ?lang > 域名前缀 > 浏览器语言；
+ * 网页 wiki 页按这个语言取 "<key>_<idx>" 正文，正文为空且 URL 未显式
+ * 指定 lang 时回退英文，并把下拉标签一并改回 English。
+ * ------------------------------------------------------------------ */
+
+export const WIKI_LANGS = ['en', 'sc', 'tc', 'jp', 'kr'] as const
+export type WikiLang = (typeof WIKI_LANGS)[number]
+
+/** 与 Go webHLangIdx / 老站 lang_to_idx 一致：plugin_wiki 的 key 后缀。 */
+export const WIKI_LANG_INDEX: Record<WikiLang, number> = {
+  en: 1, sc: 2, tc: 3, jp: 4, kr: 5,
+}
+
+export const isWikiLang = (value: string): value is WikiLang =>
+  (WIKI_LANGS as readonly string[]).includes(value)
+
+/** BCP-47 语言标签 / 站点 locale → wiki 语言代码；识别不了返回 null。 */
+export const wikiLangFromLocale = (value?: string | null): WikiLang | null => {
+  const raw = String(value ?? '').trim().toLowerCase().replace(/_/g, '-')
+  if (!raw) return null
+  if (isWikiLang(raw)) return raw
+  if (raw.startsWith('zh')) {
+    return /hant|cht|tw|hk|mo/.test(raw.slice(3)) ? 'tc' : 'sc'
+  }
+  if (raw.startsWith('ja')) return 'jp'
+  if (raw.startsWith('ko')) return 'kr'
+  if (raw.startsWith('en')) return 'en'
+  return null
+}
+
+export type WikiLangPreference = { lang: WikiLang; explicit: boolean }
+
+/**
+ * 纯函数，方便回归验证。explicit 表示 URL 显式指定语言：
+ * 老站此时即使该语言没有正文也不强制回退英文。
+ */
+export const detectWikiLang = (input: {
+  search?: string
+  hostname?: string
+  stored?: string | null
+  locales?: readonly (string | null | undefined)[]
+} = {}): WikiLangPreference => {
+  const urlLang = new URLSearchParams(input.search ?? '').get('lang')?.toLowerCase() ?? ''
+  if (isWikiLang(urlLang)) return { lang: urlLang, explicit: true }
+  const subdomain = String(input.hostname ?? '').split('.')[0]?.toLowerCase() ?? ''
+  if (isWikiLang(subdomain)) return { lang: subdomain, explicit: false }
+  const stored = wikiLangFromLocale(input.stored)
+  if (stored) return { lang: stored, explicit: false }
+  for (const locale of input.locales ?? []) {
+    const detected = wikiLangFromLocale(locale)
+    if (detected) return { lang: detected, explicit: false }
+  }
+  return { lang: 'en', explicit: false }
+}
+
+/**
+ * 首屏自动选语言的结果。raw 已由 strict 接口确认是该语言自己的正文。
+ * null 表示继续用页面已加载的英文正文（标签 English）；
+ * URL 显式指定语言时即使没有译文也选中该语言、显示空白并露出「创建」入口，
+ * 对齐老站「URL 指定 lang 不强制跳回英语」的口径，让用户能点编辑为该语言写文。
+ */
+export const resolveAutoWikiLang = (
+  raw: string,
+  lang: WikiLang,
+  explicit: boolean,
+): { lang: WikiLang; raw: string } | null => {
+  if (raw.trim() !== '') return { lang, raw }
+  return explicit ? { lang, raw: '' } : null
+}
+
+/** 编辑页定位非英文正文用的完整 plugin_wiki key；裸 key（user/skin）与英文返回空串。 */
+export const wikiContentKey = (key: string, lang: WikiLang): string =>
+  /^(wiki|song|chart)_\d+$/.test(key) && WIKI_LANG_INDEX[lang] > 1
+    ? `${key}_${WIKI_LANG_INDEX[lang]}`
+    : ''
+
 const BlockMode = {
   None: 0,
   List: 1,

@@ -5,8 +5,8 @@ import { showNotify } from '../lib/notify'
 import { t as i18nT } from '../i18n'
 import {
   renderWiki, renderChat, wikiRenderOptions, escapeHtml, sanitizeUrl, sanitizeRenderedHtml,
-  looksLikeLegacyHtml, sanitizeLegacyHtml,
-  type WikiTemplate, type WikiRenderOptions,
+  looksLikeLegacyHtml, sanitizeLegacyHtml, detectWikiLang, isWikiLang, resolveAutoWikiLang,
+  type WikiTemplate, type WikiRenderOptions, type WikiLang,
 } from './wiki'
 import { renderTemplateHtml, applyTemplateHtml } from './wikiTemplates'
 
@@ -103,7 +103,51 @@ export function useWikiHtml(raw: string, options: Partial<WikiRenderOptions> = {
   return filled?.src === result ? filled.html : result.html
 }
 
-type LangSelection = { key: string; lang: string; raw: string | null }
+type LangSelection = { key: string; lang: WikiLang; raw: string | null }
+
+type WikiLangResp = { text: string; strict: boolean }
+
+const readWikiLangResp = (resp: unknown): WikiLangResp => {
+  const pack = (resp ?? {}) as { data?: unknown; strict?: boolean }
+  return {
+    text: typeof pack.data === 'string' ? pack.data : '',
+    strict: pack.strict === true,
+  }
+}
+
+/**
+ * 后端 strict=1 会明确返回「该语言自己的正文」（缺失即空）。
+ * 旧后端忽略 strict、仍回退英文，用英文正文比对识别这种回退，
+ * 避免把英文内容挂到该语言标签下，也避免漏掉创建入口。
+ */
+const resolveLangText = (target: WikiLangResp, english: string, lang: WikiLang): string => {
+  if (target.strict || lang === 'en' || target.text === '') return target.text
+  return target.text === english ? '' : target.text
+}
+
+/** 老站 util.changeUrlLang：切换语言后写进 URL，刷新/复制链接仍停留在同一语言。 */
+const syncWikiLangUrl = (code: WikiLang): void => {
+  try {
+    const url = new URL(window.location.href)
+    url.searchParams.set('lang', code)
+    window.history.replaceState(null, '', `${url.pathname}${url.search}${url.hash}`)
+  } catch {
+    // 非浏览器环境（SSR / 冒烟测试）忽略
+  }
+}
+
+const browserWikiLang = (): { lang: WikiLang; explicit: boolean } => {
+  try {
+    return detectWikiLang({
+      search: window.location.search,
+      hostname: window.location.hostname,
+      stored: localStorage.getItem('malody.lang'),
+      locales: [navigator.language, ...(navigator.languages ?? [])],
+    })
+  } catch {
+    return { lang: 'en', explicit: false }
+  }
+}
 
 export function useWikiLang(key: string): {
   lang: string
@@ -113,18 +157,55 @@ export function useWikiLang(key: string): {
   const [selection, setSelection] = useState<LangSelection>({ key, lang: 'en', raw: null })
   const current: LangSelection = selection.key === key ? selection : { key, lang: 'en', raw: null }
   const reqRef = useRef(0)
+  const userChosenRef = useRef(false)
   const rendered = useWikiHtml(current.raw ?? '')
 
-  const changeLang = useCallback(async (code: string): Promise<void> => {
+  // 首屏按浏览器语言选一个「有值」的正文：对齐老站 page_wiki 的
+  // get_wiki(key_<request.LANG>)，该语言没有正文就继续显示英文 + English 标签；
+  // URL 显式指定语言时即使没译文也停留在该语言并显示空白，方便点编辑写文。
+  useEffect(() => {
+    userChosenRef.current = false
+    if (!key) return
+    const { lang, explicit } = browserWikiLang()
+    if (lang === 'en') return // 首屏 fetchWiki(lang: 0) 已经是英文正文
     const req = ++reqRef.current
-    setSelection((prev) => ({ key, lang: code, raw: prev.key === key ? prev.raw : null }))
+    void (async () => {
+      try {
+        const [resp, enResp] = await Promise.all([
+          fetchWikiLang(key, lang, true),
+          fetchWikiLang(key, 'en', true),
+        ])
+        if (req !== reqRef.current || userChosenRef.current) return
+        const raw = resolveLangText(readWikiLangResp(resp), readWikiLangResp(enResp).text, lang)
+        const resolved = resolveAutoWikiLang(raw, lang, explicit)
+        if (resolved) setSelection({ key, ...resolved })
+      } catch {
+        // 自动选择失败时保持英文默认，不打扰用户
+      }
+    })()
+    return () => { reqRef.current += 1 }
+  }, [key])
+
+  const changeLang = useCallback(async (code: string): Promise<void> => {
+    const lang: WikiLang = isWikiLang(code) ? code : 'en'
+    const req = ++reqRef.current
+    userChosenRef.current = true
+    // 请求期间不留上一语言的正文，没译文时直接停在空白 + 创建入口。
+    setSelection({ key, lang, raw: '' })
+    syncWikiLangUrl(lang)
     try {
-      const resp = await fetchWikiLang(key, code)
+      const target = readWikiLangResp(await fetchWikiLang(key, lang, true))
+      let raw = target.text
+      if (!target.strict && lang !== 'en' && raw !== '') {
+        const english = readWikiLangResp(await fetchWikiLang(key, 'en', true)).text
+        if (req !== reqRef.current) return
+        raw = raw === english ? '' : raw
+      }
       if (req !== reqRef.current) return
-      setSelection({ key, lang: code, raw: String(resp?.data ?? resp ?? '') })
+      setSelection({ key, lang, raw })
     } catch {
       if (req !== reqRef.current) return
-      setSelection({ key, lang: code, raw: null })
+      setSelection({ key, lang, raw: null })
       showNotify('Server error', 'err')
     }
   }, [key])

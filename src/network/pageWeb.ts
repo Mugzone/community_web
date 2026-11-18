@@ -14,8 +14,10 @@ export const fetchSpecialList = (name: string, page?: number, type?: string) => 
 
 export const fetchAllPages = (page = 1, type?: 'wiki' | 'song') => get<WebResp>('/web/all/wt', { page, type }, false)
 
-export const fetchWikiLang = (key: string, lang: string) =>
-  get<WebResp>('/web/lang/wt', { key, lang }, false)
+// strict=1：目标语言没有译文时返回空正文（而不是英文回退），
+// 前端据此露出「创建」入口，让用户为该语言写文。
+export const fetchWikiLang = (key: string, lang: string, strict = false) =>
+  get<WebResp>('/web/lang/wt', { key, lang, ...(strict ? { strict: 1 } : {}) }, false)
 
 export const fetchCaptcha = (key?: string) => get<WebResp>('/web/captcha/wt', { key }, false)
 

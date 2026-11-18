@@ -15,6 +15,8 @@ export type UpyunSubmitOptions = {
   defaultHost: string
   // 上传进度百分比；结束时回传 null 让页面清除进度条。
   onProgress?: (percent: number | null) => void
+  // 成功后跳转的目标页；不传则刷新当前上传页（老站 return-url 的等价行为）。
+  successUrl?: string
 }
 
 // OSS PostObject 只接受这些表单字段，多塞 host / expire 之类会被判为 Extra field。
@@ -66,7 +68,7 @@ const uploadToOSS = async (
 }
 
 export const submitUpyunForm = async (options: UpyunSubmitOptions): Promise<void> => {
-  const { form, file, signParams, defaultHost, onProgress } = options
+  const { form, file, signParams, defaultHost, onProgress, successUrl } = options
   if (!file) {
     showNotify('Please select a file', 'err')
     return
@@ -78,7 +80,10 @@ export const submitUpyunForm = async (options: UpyunSubmitOptions): Promise<void
     if (key) {
       await uploadToOSS(data, file, key, defaultHost, onProgress)
       showNotify('Upload succeeded', 'succ')
-      window.setTimeout(() => window.location.reload(), 600)
+      window.setTimeout(() => {
+        if (successUrl) window.location.href = successUrl
+        else window.location.reload()
+      }, 600)
       return
     }
     // ma-static 静态文件桶保留又拍云：签名响应无 key，走原生表单直传

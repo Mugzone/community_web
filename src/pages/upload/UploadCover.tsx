@@ -48,6 +48,8 @@ export default function UploadCover() {
             signParams: { type: 2, sid: songId },
             defaultHost: IMG_HOST,
             onProgress: setProgress,
+            // 老站封面上传后由 return-url 跳回歌曲页，切 OSS 后改为前端跳转。
+            successUrl: songId > 0 ? URLS.song(songId) : URLS.index,
           })}
         >
           <h1><label htmlFor="file">{i18nT('New cover')}</label><input type="file" name="file" accept="image/png, image/jpeg" onChange={onFile} /></h1>

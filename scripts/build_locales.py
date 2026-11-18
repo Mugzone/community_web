@@ -276,7 +276,6 @@ CHART_MESSAGES = {
         'Freestyle only': '仅 Freestyle',
         'Retry': '重试',
         'Select page': '选择页码',
-        'Updated {{date}}': '更新 {{date}}',
         'Previous': '上一页',
         'Next': '下一页',
     },
@@ -313,7 +312,6 @@ CHART_MESSAGES = {
         'Freestyle only': '僅 Freestyle',
         'Retry': '重試',
         'Select page': '選擇頁碼',
-        'Updated {{date}}': '更新 {{date}}',
         'Previous': '上一頁',
         'Next': '下一頁',
         'All': '所有',
@@ -352,13 +350,55 @@ CHART_MESSAGES = {
         'Freestyle only': 'Freestyle のみ',
         'Retry': '再試行',
         'Select page': 'ページを選択',
-        'Updated {{date}}': '更新 {{date}}',
         'Previous': '前へ',
         'Next': '次へ',
     },
 }
 
 for code, extra in CHART_MESSAGES.items():
+    OVERRIDES[code].update(extra)
+
+
+# WikiMeta「立刻推广」的业务错误提示。英文 key 即英文文案，en 块无需收录
+# （i18n 的 t() 对缺词条回退到 key 本身）；其余语言由这里注入。
+# 返回码对照见 src/pages/wiki/promoteMessages.ts。
+PROMOTE_MESSAGES = {
+    'zh-hans': {
+        'Session expired, please sign in again': '登录已过期，请重新登录',
+        'Only the chart author can promote a non-Stable chart': '只有谱面作者可以推广，Stable 谱面不可推广',
+        'Chart length must be at least 60 seconds': '谱面时长需至少 60 秒',
+        'Please set a level before promoting': '请先设置谱面等级再推广',
+        'The chart needs at least 60 seconds of length and a non-zero level': '谱面时长需至少 60 秒且等级不能为 0（请先保存元信息）',
+        'Save the chart info before promoting': '请先保存谱面信息再推广',
+        'Not enough gold for promotion': '金币不足，推广需要 {{price}} 金币',
+        'Please wait 24 hours before promoting again': '24 小时内只能推广一次，请稍后再试',
+        'Promotion failed, please try again later': '推广失败，请稍后重试',
+    },
+    'zh-hant': {
+        'Session expired, please sign in again': '登入已過期，請重新登入',
+        'Only the chart author can promote a non-Stable chart': '只有譜面作者可以推廣，Stable 譜面不可推廣',
+        'Chart length must be at least 60 seconds': '譜面時長需至少 60 秒',
+        'Please set a level before promoting': '請先設定譜面等級再推廣',
+        'The chart needs at least 60 seconds of length and a non-zero level': '譜面時長需至少 60 秒且等級不能為 0（請先儲存資訊）',
+        'Save the chart info before promoting': '請先儲存譜面資訊再推廣',
+        'Not enough gold for promotion': '金幣不足，推廣需要 {{price}} 金幣',
+        'Please wait 24 hours before promoting again': '24 小時內只能推廣一次，請稍後再試',
+        'Promotion failed, please try again later': '推廣失敗，請稍後重試',
+    },
+    'ja': {
+        'Session expired, please sign in again': 'ログインの有効期限が切れました。再度ログインしてください',
+        'Only the chart author can promote a non-Stable chart': '譜面の作者のみプロモーションできます（Stable 譜面は不可）',
+        'Chart length must be at least 60 seconds': '譜面の長さは 60 秒以上必要です',
+        'Please set a level before promoting': 'プロモーション前にレベルを設定してください',
+        'The chart needs at least 60 seconds of length and a non-zero level': '譜面の長さは 60 秒以上、レベルは 1 以上必要です（情報を保存してください）',
+        'Save the chart info before promoting': 'プロモーション前に譜面情報を保存してください',
+        'Not enough gold for promotion': 'ゴールドが足りません（{{price}} ゴールド必要）',
+        'Please wait 24 hours before promoting again': '24 時間以内に再度プロモーションすることはできません',
+        'Promotion failed, please try again later': 'プロモーションに失敗しました。しばらくしてからお試しください',
+    },
+}
+
+for code, extra in PROMOTE_MESSAGES.items():
     OVERRIDES[code].update(extra)
 
 

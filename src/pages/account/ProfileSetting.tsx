@@ -147,7 +147,7 @@ export default function ProfileSetting() {
     setBusy(true)
     try {
       const res = await savePlayerInfo({
-        name: form.name,
+        name: form.name.trim(),
         birth,
         gender: Number(form.gender),
         area: Number(form.country),

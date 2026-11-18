@@ -6,6 +6,7 @@ import { LoadingBlock } from '../../components/fragments'
 import { showNotify } from '../../lib/notify'
 import { fetchSongInfo, fetchChartInfo, saveSongInfo, saveChartInfo, promoteChart } from '../../network/api'
 import { t as i18nT } from '../../i18n'
+import { PROMOTE_FALLBACK_KEY, hasUnsavedPromoteMeta, promoteErrorKey, promotePrecheckKey } from './promoteMessages'
 
 
 const query = (k: string): string => new URLSearchParams(window.location.search).get(k) ?? ''
@@ -124,12 +125,31 @@ export default function WikiMeta() {
 
   const onPromote = async (): Promise<void> => {
     const price = num(form.mode, 0) === 0 ? 12000 : 6000
+    // 推广只读数据库、不读表单：本页改动过的时长/等级/版本名必须先保存。
+    // 接口数据未就绪时跳过本地预检，由服务端兜底。
+    if (num(data.info.cid, 0) > 0) {
+      const precheck = promotePrecheckKey({
+        length: num(form.length, 0),
+        level: num(form.level, 0),
+        version: form.version ?? '',
+        hasUnsavedMeta: hasUnsavedPromoteMeta(form, data.info),
+      })
+      if (precheck) {
+        showNotify(i18nT(precheck), 'err')
+        return
+      }
+    }
     if (!window.confirm(`Pay ${price} gold for the promotion?`)) return
     try {
-      await promoteChart({ cid: id })
+      const resp = await promoteChart({ cid: id })
+      const key = promoteErrorKey(resp?.code)
+      if (key) {
+        showNotify(i18nT(key, key === 'Not enough gold for promotion' ? { price } : undefined), 'err')
+        return
+      }
       showNotify('Success', 'succ')
     } catch {
-      showNotify('System error', 'err')
+      showNotify(i18nT(PROMOTE_FALLBACK_KEY), 'err')
     }
   }
 

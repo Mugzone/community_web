@@ -35,7 +35,8 @@ export const fetchSkinDetail = (sid: number | string) => get<WebResp>('/store/sk
 
 export const fetchUploadSign = (params: Params) => get<WebResp>('/upload/sign', params)
 
-export const fetchUploadPage = (type: string) => get<WebResp>('/upload/page', { type })
+export const fetchUploadPage = (type: string, params?: Params) =>
+  get<WebResp>('/upload/page', { type, ...params })
 
 export const deleteBanner = () => post<WebResp>('/upload/banner/delete')
 

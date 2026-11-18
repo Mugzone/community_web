@@ -4,6 +4,7 @@ import { asArray, num } from '../../utils/data'
 import { useLoad } from '../../lib/useLoad'
 import { showNotify } from '../../lib/notify'
 import { fetchUploadSign, removeSkinPreview, setSkinStatus, submitSkin } from '../../network/pageContent'
+import { finishImageUpload } from '../../network/api'
 import { t as i18nT } from '../../i18n'
 import './SkinEntry.css'
 
@@ -27,10 +28,25 @@ const TIP = {
   VALID_NUM: 'Required and should be a number',
   VALID_REQ: i18nT('Required'),
   SUCC_STATUS: 'Skin status changed successfully',
+  MSG_SAVE_FIRST: 'Please save the skin info first',
+  UPLOAD_SUCCESS: 'Upload succeeded',
+  UPLOAD_FAILED: 'Upload failed',
 }
 
-const IMG_HOST = 'http://v0.api.upyun.com/ma-img'
-const OSS_HOST = 'http://oss-cni.oss-cn-hongkong.aliyuncs.com'
+// 图片新上传走 ali OSS ma-img；皮肤包走 ma-skin，两者同在 oss-cn-shanghai。
+// 实际 host 由 /upload/sign 下发（upyun_host_img / param_oss.host），常量只是兜底。
+const IMG_HOST = 'https://ma-img.oss-cn-shanghai.aliyuncs.com'
+const OSS_HOST = 'https://ma-skin.oss-cn-shanghai.aliyuncs.com'
+
+// param_oss 里 host / expire 是给前端选域名用的元数据，不是 OSS 表单字段，
+// 混进 FormData 会被 OSS 判为 Extra field。
+const SKIP_FORM_FIELDS = new Set(['host', 'expire', 'accessid'])
+
+// 库里存的是不带域名的 key，按 SkinDetail 的口径拼缩略图域名与 !small 样式。
+const previewSrc = (img: string) =>
+  img.startsWith('http') || img.startsWith('//') || img.startsWith('blob:')
+    ? img
+    : `//cni.machart.top/${img.replace(/^\/+/, '')}!small`
 
 type UploadKind = 'cover' | 'skin' | 'preview'
 
@@ -48,6 +64,7 @@ export default function SkinEntry() {
   const [coverSrc, setCoverSrc] = useState('')
   const [skinLink, setSkinLink] = useState('')
   const [lock, setLock] = useState(false)
+  const [uploading, setUploading] = useState(false)
 
   const { data: pageData } = useLoad<Record<string, any>>(
     async () => {
@@ -142,23 +159,67 @@ export default function SkinEntry() {
     }
   }
 
-  const onFile = async (kind: UploadKind, e: ChangeEvent<HTMLInputElement>) => {
+  // 三类上传共用：重新取签名 → POST 到 OSS → /api/upload/finish 落库。
+  // 封面走 ma-img、预览图走 ma-img、皮肤包走 ma-skin，落库由服务端按 key 前缀区分。
+  const uploadFile = async (kind: UploadKind, file: File) => {
+    if (!skinId) {
+      showNotify(TIP.MSG_SAVE_FIRST, 'err')
+      return
+    }
+    setUploading(true)
+    try {
+      // 每次上传前重新取签名：预览图 key 含纳秒时间戳，避免多张互相覆盖。
+      const resp = await fetchUploadSign({ type: 'skin', id: skinId })
+      const data = (resp?.data ?? resp ?? {}) as Record<string, any>
+      const params: Record<string, any> = kind === 'cover'
+        ? data.param_img_cover
+        : kind === 'preview' ? data.param_img_preview : data.param_oss
+      const key = String(params?.key ?? '')
+      if (!key || !params?.policy) throw new Error('missing upload sign')
+
+      const host = kind === 'skin'
+        ? String(params.host ?? OSS_HOST)
+        : String(data.upyun_host_img ?? IMG_HOST)
+      const body = new FormData()
+      Object.entries(params).forEach(([k, v]) => {
+        if (!SKIP_FORM_FIELDS.has(k)) body.append(k, String(v))
+      })
+      body.append('file', file)
+
+      const res = await fetch(host, { method: 'POST', body })
+      if (!res.ok) throw new Error('oss upload failed')
+
+      const finish = await finishImageUpload({ path: key })
+      if (finish.code !== 0) throw new Error('upload finish failed')
+
+      // 用真实 key 更新本地状态，删除预览图时才能按原串从库里移除。
+      if (kind === 'cover') setCoverSrc(previewSrc(key))
+      if (kind === 'preview') setPreview((list) => [...list, key])
+      if (kind === 'skin') setSkinLink(`//file.mugzone.net/${key}`)
+      showNotify(TIP.UPLOAD_SUCCESS, 'succ')
+    } catch {
+      showNotify(TIP.UPLOAD_FAILED, 'err')
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  const onFile = (kind: UploadKind, e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
     if (kind === 'preview' && preview.length >= 5) {
       showNotify(TIP.MSG_IMG_LIMIT, 'err')
       return
     }
-    try {
-      await fetchUploadSign({ type: kind, ...(skinId ? { id: skinId } : {}) })
-      if (kind === 'preview') setPreview((list) => [...list, URL.createObjectURL(file)])
-      if (kind === 'cover') setCoverSrc(URL.createObjectURL(file))
-    } catch {
-      showNotify('Upload failed', 'err')
-    }
+    if (uploading) return
+    e.target.value = '' // 允许重复选同一个文件
+    void uploadFile(kind, file)
   }
 
   const ossParams: Record<string, any> = pageData.param_oss ?? {}
+  // 封面 / 预览图与头像、歌曲封面共用 ma-img 桶的 OSS 表单字段。
+  const imgCoverParams: Record<string, any> = pageData.param_img_cover ?? {}
+  const imgPreviewParams: Record<string, any> = pageData.param_img_preview ?? {}
   const imgHost: string = pageData.upyun_host_img ?? IMG_HOST
   const ossHost: string = ossParams.host ?? OSS_HOST
 
@@ -232,9 +293,10 @@ export default function SkinEntry() {
                       <div className="upload-btn" id="upload_cover">
                         <div className="upload-icon"></div>
                         <div className="upload-text">{i18nT('Change cover')}</div>
-                        <input type="file" name="file" id="file_cover" accept="image/jpeg, image/png" onChange={(e) => void onFile('cover', e)} />
-                        <input name="policy" type="hidden" value={String(pageData.policy_cover ?? '')} readOnly />
-                        <input name="signature" type="hidden" value={String(pageData.signature_cover ?? '')} readOnly />
+                        {Object.entries(imgCoverParams).map(([k, v]) => (
+                          <input name={k} type="hidden" value={String(v)} key={k} readOnly />
+                        ))}
+                        <input type="file" name="file" id="file_cover" accept="image/jpeg, image/png" disabled={uploading} onChange={(e) => void onFile('cover', e)} />
                       </div>
                     </form>
                   </div>
@@ -254,7 +316,7 @@ export default function SkinEntry() {
                         {Object.entries(ossParams).map(([k, v]) => (
                           <input name={k} type="hidden" value={String(v)} key={k} readOnly />
                         ))}
-                        <input type="file" name="file" id="file_skin" accept=".msz,.msp" onChange={(e) => void onFile('skin', e)} />
+                        <input type="file" name="file" id="file_skin" accept=".msz,.msp" disabled={uploading} onChange={(e) => void onFile('skin', e)} />
                       </div>
                     </form>
                   </div>
@@ -265,7 +327,7 @@ export default function SkinEntry() {
                 <div className="vtop value" id="preview_list">
                   {preview.map((img) => (
                     <div className="img-wrap" data-src={img} key={img}>
-                      <img src={img} alt="" />
+                      <img src={previewSrc(img)} alt="" />
                       <div className="toolbar">
                         <span className="icon icon-delete" title="Remove this image" onClick={() => void onDeletePreview(img)}></span>
                       </div>
@@ -276,9 +338,10 @@ export default function SkinEntry() {
                       <div className="upload-btn" id="upload_preview">
                         <div className="upload-icon"></div>
                         <div className="upload-text">{i18nT('Upload image')}</div>
-                        <input type="file" name="file" id="file_preview" accept="image/jpeg, image/png" onChange={(e) => void onFile('preview', e)} />
-                        <input name="policy" type="hidden" value={String(pageData.policy_preview ?? '')} readOnly />
-                        <input name="signature" type="hidden" value={String(pageData.signature_preview ?? '')} readOnly />
+                        {Object.entries(imgPreviewParams).map(([k, v]) => (
+                          <input name={k} type="hidden" value={String(v)} key={k} readOnly />
+                        ))}
+                        <input type="file" name="file" id="file_preview" accept="image/jpeg, image/png" disabled={uploading} onChange={(e) => void onFile('preview', e)} />
                       </div>
                     </form>
                   </div>

@@ -19,10 +19,6 @@ type ChartItem = {
   username?: string
   version?: string
   mode?: number
-  lastedit?: number
-  level?: number
-  bpm?: number
-  length?: number
   type?: number
 }
 
@@ -215,12 +211,6 @@ const syncUrl = (f: Filters, tag: number) => {
   if (f.order !== DEFAULT.order) q.set('order', f.order)
   const search = q.toString()
   window.history.replaceState(null, '', `${window.location.pathname}${search ? `?${search}` : ''}`)
-}
-
-const formatLength = (seconds: number) => {
-  if (seconds <= 0) return ''
-  const minutes = Math.floor(seconds / 60)
-  return `${minutes}:${String(seconds - minutes * 60).padStart(2, '0')}`
 }
 
 export default function AllChart() {
@@ -449,18 +439,6 @@ export default function AllChart() {
         <div id="maps">
           {loading && <SkeletonCards count={12} />}
           {!loading && items.map((it) => {
-            const level = num(it.level, 0)
-            const bpm = num(it.bpm, 0)
-            const seconds = num(it.length, 0)
-            const lastedit = num(it.lastedit, 0)
-            const versionText = it.version ?? ''
-            const updated = lastedit > 0 ? new Date(lastedit * 1000).toLocaleDateString() : ''
-            const extra = [
-              level > 0 && !/lv\./i.test(versionText) ? i18nT('Lv.{{value}}', { value: level }) : '',
-              bpm > 0 ? `${Math.round(bpm)} BPM` : '',
-              formatLength(seconds),
-              updated ? i18nT('Updated {{date}}', { date: updated }) : '',
-            ].filter(Boolean).join(' · ')
             return (
               <div className="g_map" key={it.id}>
                 <a
@@ -477,8 +455,7 @@ export default function AllChart() {
                   <span className={`status status-${num(it.type, 2)}`}></span>
                   <div className="meta">
                     <p className="title textfix">{it.title}</p>
-                    <p className="version textfix">{versionText}</p>
-                    <p className="extra textfix" title={extra}>{extra}</p>
+                    <p className="version textfix">{it.version}</p>
                   </div>
                 </a>
               </div>

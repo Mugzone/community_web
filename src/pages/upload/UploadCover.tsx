@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { Shell } from '../../components/Layout'
 import { num } from '../../utils/data'
 import { useLoad } from '../../lib/useLoad'
@@ -10,14 +11,15 @@ import type { Rec } from '../../utils/response'
 import { EMPTY_UPLOAD, IMG_HOST, fileChangeHandler, loadUploadPage, signFieldsOf, type UploadSong } from './uploadCommon'
 
 export default function UploadCover() {
-  const sid = new URLSearchParams(window.location.search).get('sid') ?? ''
+  const [sp] = useSearchParams()
+  const sid = sp.get('sid') ?? ''
   const [file, setFile] = useState<File | null>(null)
   const formRef = useRef<HTMLFormElement>(null)
 
-  const { data } = useLoad<Rec>(() => loadUploadPage('cover'), [], EMPTY_UPLOAD)
+  const { data } = useLoad<Rec>(() => loadUploadPage('cover', { sid }), [sid], EMPTY_UPLOAD)
 
   const song = (data.song ?? {}) as UploadSong
-  const songId = song.id ?? sid
+  const songId = num(song.id, 0) || num(sid, 0)
   const cover = String(song.cover_url ?? song.cover ?? '')
   const { policy, signature } = signFieldsOf(data)
   const onFile = fileChangeHandler(setFile)
@@ -27,7 +29,7 @@ export default function UploadCover() {
       <div className="g_title">{i18nT('Change Cover')}</div>
       <div className="g_cont">
         <div className="g_actbar">
-          <a href={URLS.song(songId)} className="g_btn">{i18nT('Cancel')}</a>
+          <a href={songId > 0 ? URLS.song(songId) : URLS.index} className="g_btn">{i18nT('Cancel')}</a>
         </div>
         {cover ? (
           <h1><label htmlFor="">{i18nT('Current')}</label><img src={coverUrl(cover)} alt="" /></h1>
@@ -41,7 +43,7 @@ export default function UploadCover() {
           encType="multipart/form-data"
           onSubmit={(e) => onUpyunSubmit(e, {
             form: formRef.current, file,
-            signParams: { type: 2, sid: num(songId, 0) },
+            signParams: { type: 2, sid: songId },
             defaultHost: IMG_HOST,
           })}
         >

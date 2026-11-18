@@ -350,7 +350,10 @@ export default function ChartPage() {
               {num(chart.pubmark, 0) === 1 && <em className="w" title={i18nT('Need further modification')}>Warn</em>}
               {chart.hide === true && <em className="h">Hide</em>}
               {num(chart.promote, 0) > 0 && <em className="p" title={i18nT('Promotion')}>PM</em>}
+              {/* mcver=1 是自由模式 MC 的功能徽标；freeStyle 只是展示/过滤标签，
+                  来自 GET chart/info，两者来源与语义不同，独立展示，勿合并判断 */}
               {num(chart.mcver, 0) === 1 && <em className="t2">Free</em>}
+              {num(chart.freeStyle, 0) === 1 && <em className="fs">{i18nT('Freestyle')}</em>}
               <span className="textfix artist">{data.songEx.artist}</span> - {data.songEx.title}
             </h2>
             <h2 className="mode">

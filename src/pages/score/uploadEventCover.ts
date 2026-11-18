@@ -12,8 +12,10 @@ export const uploadEventCover = async (eid: number, file: File): Promise<EventCo
   const res = await fetch(sign.url, { method: 'POST', body: formData })
   if (!res.ok) return { code: -2 }
 
-  let saveKey = ''
-  if (sign.meta.policy) {
+  // ali OSS 的 policy 没有 save-key，path 直接取服务端下发的 key。
+  // 仍保留又拍云 policy 解码作为旧响应的兼容分支。
+  let saveKey = String(sign.meta.key ?? '')
+  if (!saveKey && sign.meta.policy) {
     try {
       saveKey = (JSON.parse(atob(sign.meta.policy)) as { 'save-key'?: string })['save-key'] ?? ''
     } catch {

@@ -241,15 +241,6 @@ html[data-styles~="allchart"] .g_memo .chart_retry {
   font-size: 13px;
 }
 
-html[data-styles~="allchart"] #maps .g_map {
-  height: 236px;
-}
-
-html[data-styles~="allchart"] #maps .g_map .meta {
-  height: 52px;
-  margin-top: 6px;
-}
-
 html[data-styles~="allchart"] #maps .g_map .meta p {
   margin: 0;
   height: 16px;
@@ -262,13 +253,8 @@ html[data-styles~="allchart"] #maps .g_map .meta .title {
   color: #333;
 }
 
-html[data-styles~="allchart"] #maps .g_map .meta .version,
-html[data-styles~="allchart"] #maps .g_map .meta .extra {
+html[data-styles~="allchart"] #maps .g_map .meta .version {
   color: #6b829c;
-}
-
-html[data-styles~="allchart"] #maps .g_map .meta .extra {
-  font-size: 11px;
 }
 
 @media (max-width: 900px) {

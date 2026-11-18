@@ -1076,9 +1076,12 @@ export const clearChartRanking = (payload: { cid: number }) =>
     },
   })
 
+// 推广的业务返回码较多（-2002/-2004/-2008/-2009/-2010），交给页面按码提示，
+// 不让 handleBizCode 统一抛成 BizError('System error')。
 export const promoteChart = (payload: { cid: number }) =>
   postForm<PackBase>('/community/chart/promote', {
     body: { cid: payload.cid },
+    allowBizError: true,
   })
 
 export const saveChartInfo = (payload: {

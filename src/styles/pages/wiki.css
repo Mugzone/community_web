@@ -591,6 +591,11 @@ html[data-styles~="wiki"] #center .song_title .right .title em.p {
   border-color: #4190e7;
   color: #4190e7;
 }
+/* Free Style / RM Style 展示标签（chart.freeStyle），与 mcver 的 "Free" 徽标区分 */
+html[data-styles~="wiki"] #center .song_title .right .title em.fs {
+  background-color: #8f6fc4;
+  border-color: #8f6fc4;
+}
 html[data-styles~="wiki"] #center .song_title .right h3 {
   position: absolute;
   left: 242px;

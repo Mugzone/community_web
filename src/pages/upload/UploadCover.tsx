@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { Shell } from '../../components/Layout'
+import UploadProgress from '../../components/UploadProgress'
 import { num } from '../../utils/data'
 import { useLoad } from '../../lib/useLoad'
 import { URLS } from '../../lib/urls'
@@ -14,6 +15,7 @@ export default function UploadCover() {
   const [sp] = useSearchParams()
   const sid = sp.get('sid') ?? ''
   const [file, setFile] = useState<File | null>(null)
+  const [progress, setProgress] = useState<number | null>(null)
   const formRef = useRef<HTMLFormElement>(null)
 
   const { data } = useLoad<Rec>(() => loadUploadPage('cover', { sid }), [sid], EMPTY_UPLOAD)
@@ -45,12 +47,14 @@ export default function UploadCover() {
             form: formRef.current, file,
             signParams: { type: 2, sid: songId },
             defaultHost: IMG_HOST,
+            onProgress: setProgress,
           })}
         >
           <h1><label htmlFor="file">{i18nT('New cover')}</label><input type="file" name="file" accept="image/png, image/jpeg" onChange={onFile} /></h1>
           <input name="policy" type="hidden" value={policy} readOnly />
           <input name="signature" type="hidden" value={signature} readOnly />
-          <input type="submit" className="g_btn btn" value={i18nT('Save')} />
+          <UploadProgress percent={progress} />
+          <input type="submit" className="g_btn btn" value={i18nT('Save')} disabled={progress !== null} />
         </form>
       </div>
     </Shell>

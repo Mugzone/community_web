@@ -1,6 +1,7 @@
 import { useEffect, useState, type ChangeEvent } from 'react'
 import { useLocation } from 'react-router-dom'
 import { Shell } from '../../components/Layout'
+import UploadProgress from '../../components/UploadProgress'
 import { useSession } from '../../components/SessionProvider'
 import { LoadingBlock } from '../../components/fragments'
 import { num } from '../../utils/data'
@@ -83,6 +84,7 @@ export default function EventEdit() {
   const [createdId, setCreatedId] = useState(0)
   const [coverFile, setCoverFile] = useState<File | undefined>()
   const [coverUploading, setCoverUploading] = useState(false)
+  const [coverProgress, setCoverProgress] = useState<number | null>(null)
   const [coverMsg, setCoverMsg] = useState('')
   const [coverError, setCoverError] = useState('')
 
@@ -204,7 +206,7 @@ export default function EventEdit() {
     setCoverError('')
     setCoverMsg('')
     try {
-      const result = await uploadEventCover(effectiveEventId, coverFile)
+      const result = await uploadEventCover(effectiveEventId, coverFile, setCoverProgress)
       if (result.code !== 0) {
         const message = Math.abs(result.code) % 1000 === 3 ? i18nT('No permission to manage events') : i18nT('Upload failed')
         setCoverError(message)
@@ -361,6 +363,7 @@ export default function EventEdit() {
                   </a>
                 )}
               </div>
+              <UploadProgress percent={coverProgress} />
               <p className="event_hint">{i18nT('Event cover')}</p>
               {coverError && <p className="event_msg">{coverError}</p>}
               {coverMsg && <p className="event_msg ok">{coverMsg}</p>}

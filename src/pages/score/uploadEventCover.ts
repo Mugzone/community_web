@@ -1,16 +1,25 @@
 import { fetchEventCoverUpload, finishImageUpload } from '../../network/api'
+import { postFileToOSS } from '../../lib/ossUpload'
 
 export type EventCoverUploadResult = { code: number; cover?: string }
 
-export const uploadEventCover = async (eid: number, file: File): Promise<EventCoverUploadResult> => {
+export const uploadEventCover = async (
+  eid: number,
+  file: File,
+  onProgress?: (percent: number | null) => void,
+): Promise<EventCoverUploadResult> => {
   const sign = await fetchEventCoverUpload({ eid, type: 1 })
   if (sign.code !== 0 || !sign.url || !sign.meta) return { code: sign.code !== 0 ? sign.code : -1 }
 
-  const formData = new FormData()
-  Object.entries(sign.meta).forEach(([key, value]) => formData.append(key, value))
-  formData.append('file', file)
-  const res = await fetch(sign.url, { method: 'POST', body: formData })
-  if (!res.ok) return { code: -2 }
+  try {
+    await postFileToOSS(sign.url, sign.meta, file, (loaded, total) => {
+      onProgress?.(total > 0 ? Math.round((loaded / total) * 100) : 0)
+    })
+  } catch {
+    return { code: -2 }
+  } finally {
+    onProgress?.(null)
+  }
 
   // ali OSS 的 policy 没有 save-key，path 直接取服务端下发的 key。
   // 仍保留又拍云 policy 解码作为旧响应的兼容分支。

@@ -2,6 +2,7 @@ import type { FormEvent } from 'react'
 import { showNotify } from '../../lib/notify'
 import { fetchUploadSign } from '../../network/pageContent'
 import { finishImageUpload } from '../../network/api'
+import { postFileToOSS } from '../../lib/ossUpload'
 import type { AnyRec as Rec } from '../../utils/data'
 
 
@@ -12,6 +13,8 @@ export type UpyunSubmitOptions = {
   file: File | null
   signParams: SignParams
   defaultHost: string
+  // 上传进度百分比；结束时回传 null 让页面清除进度条。
+  onProgress?: (percent: number | null) => void
 }
 
 // OSS PostObject 只接受这些表单字段，多塞 host / expire 之类会被判为 Extra field。
@@ -37,27 +40,33 @@ const setHidden = (form: HTMLFormElement, name: string, value: string) => {
 
 // 图片新上传：ali OSS ma-img 桶的 PostObject 直传 + 主动确认落库。
 // key 由服务端下发（不带前导斜杠），/upload/finish 会补成 /avatar/<uid> 等前缀。
-const uploadToOSS = async (data: Rec, file: File, key: string, defaultHost: string) => {
+const uploadToOSS = async (
+  data: Rec,
+  file: File,
+  key: string,
+  defaultHost: string,
+  onProgress?: (percent: number | null) => void,
+) => {
   const meta: Rec = data.meta && typeof data.meta === 'object' && !Array.isArray(data.meta)
     ? (data.meta as Rec)
     : {}
-  const body = new FormData()
+  const fields: Record<string, string> = {}
   for (const name of OSS_FORM_FIELDS) {
     const value = meta[name] ?? data[name]
     if (value === undefined || value === null || value === '') {
       throw new Error(`missing OSS field: ${name}`)
     }
-    body.append(name, String(value))
+    fields[name] = String(value)
   }
-  body.append('file', file)
-  const res = await fetch(String(data.host || defaultHost), { method: 'POST', body })
-  if (!res.ok) throw new Error('oss upload failed')
+  await postFileToOSS(String(data.host || defaultHost), fields, file, (loaded, total) => {
+    onProgress?.(total > 0 ? Math.round((loaded / total) * 100) : 0)
+  })
   const finish = await finishImageUpload({ path: key })
   if (finish.code !== 0) throw new Error('upload finish failed')
 }
 
 export const submitUpyunForm = async (options: UpyunSubmitOptions): Promise<void> => {
-  const { form, file, signParams, defaultHost } = options
+  const { form, file, signParams, defaultHost, onProgress } = options
   if (!file) {
     showNotify('Please select a file', 'err')
     return
@@ -67,7 +76,7 @@ export const submitUpyunForm = async (options: UpyunSubmitOptions): Promise<void
     const data = payloadOf((await fetchUploadSign(signParams)) as Rec)
     const key = String(data.key ?? data?.meta?.key ?? '')
     if (key) {
-      await uploadToOSS(data, file, key, defaultHost)
+      await uploadToOSS(data, file, key, defaultHost, onProgress)
       showNotify('Upload succeeded', 'succ')
       window.setTimeout(() => window.location.reload(), 600)
       return
@@ -83,6 +92,8 @@ export const submitUpyunForm = async (options: UpyunSubmitOptions): Promise<void
     form.submit()
   } catch {
     showNotify('Upload failed', 'err')
+  } finally {
+    onProgress?.(null)
   }
 }
 

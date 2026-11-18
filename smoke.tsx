@@ -35,7 +35,7 @@ const ROUTES = [
   '/store/all', '/store/my', '/store/skin', '/store/skin/entry', '/store/skin/detail/1',
   '/submit/all',
   '/upload/cover', '/upload/internal', '/upload/banner', '/upload/avatar',
-  '/emiri/command', '/emiri/skinhash', '/lolicon/home',
+  '/emiri/command', '/emiri/skinhash', '/emiri/running', '/lolicon/home',
   '/403', '/404', '/500', '/ddos',
   '/talk/group', '/talk/group/1', '/talk/topic/1', '/accounts/config',
 ]

@@ -976,6 +976,74 @@ export const saveSkinHash = (payload: {
     allowBizError: true,
   })
 
+export type RunningConfigRow = {
+  id: number
+  key: string
+  val: string
+}
+
+export type RunningConfigGroup = {
+  type: number
+  name: string
+  rows: RunningConfigRow[]
+}
+
+export type RunningNewsRow = {
+  id: number
+  title: string
+  desc: string
+  link: string
+  time: number
+}
+
+export type RespRunningList = {
+  code: number
+  data?: { config?: RunningConfigGroup[]; news?: RunningNewsRow[] }
+}
+
+export const fetchRunningList = () =>
+  getJson<RespRunningList>('/emiria/running/list')
+
+export type RespRunningSave = { code: number }
+
+export const saveRunningConfig = (payload: {
+  act: 'del' | 'save'
+  target: number
+  id: number
+  key?: string
+  val?: string
+}) =>
+  postForm<RespRunningSave>('/emiria/running/save', {
+    body: {
+      type: 'web_config',
+      act: payload.act,
+      target: payload.target,
+      id: payload.id,
+      key: payload.key,
+      val: payload.val,
+    },
+    allowBizError: true,
+  })
+
+export const saveRunningNews = (payload: {
+  act: 'del' | 'save'
+  id: number
+  title?: string
+  desc?: string
+  link?: string
+}) =>
+  postForm<RespRunningSave>('/emiria/running/save', {
+    body: {
+      type: 'web_news',
+      act: payload.act,
+      id: payload.id,
+      title: payload.title,
+      desc: payload.desc,
+      link: payload.link,
+    },
+    allowBizError: true,
+  })
+
 export const finishImageUpload = (payload: { path: string }) =>
   postForm<PackBase>('/upload/finish', { body: { path: payload.path }, allowBizError: true })
 

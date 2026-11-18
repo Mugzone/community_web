@@ -1,10 +1,12 @@
 import { useEffect, useState, type ChangeEvent } from 'react'
 import { Shell } from '../../components/Layout'
+import UploadProgress from '../../components/UploadProgress'
 import { asArray, num } from '../../utils/data'
 import { useLoad } from '../../lib/useLoad'
 import { showNotify } from '../../lib/notify'
 import { fetchUploadSign, removeSkinPreview, setSkinStatus, submitSkin } from '../../network/pageContent'
 import { finishImageUpload } from '../../network/api'
+import { postFileToOSS } from '../../lib/ossUpload'
 import { t as i18nT } from '../../i18n'
 import './SkinEntry.css'
 
@@ -65,6 +67,7 @@ export default function SkinEntry() {
   const [skinLink, setSkinLink] = useState('')
   const [lock, setLock] = useState(false)
   const [uploading, setUploading] = useState(false)
+  const [progress, setProgress] = useState<number | null>(null)
 
   const { data: pageData } = useLoad<Record<string, any>>(
     async () => {
@@ -180,14 +183,13 @@ export default function SkinEntry() {
       const host = kind === 'skin'
         ? String(params.host ?? OSS_HOST)
         : String(data.upyun_host_img ?? IMG_HOST)
-      const body = new FormData()
+      const fields: Record<string, string> = {}
       Object.entries(params).forEach(([k, v]) => {
-        if (!SKIP_FORM_FIELDS.has(k)) body.append(k, String(v))
+        if (!SKIP_FORM_FIELDS.has(k)) fields[k] = String(v)
       })
-      body.append('file', file)
-
-      const res = await fetch(host, { method: 'POST', body })
-      if (!res.ok) throw new Error('oss upload failed')
+      await postFileToOSS(host, fields, file, (loaded, total) => {
+        setProgress(total > 0 ? Math.round((loaded / total) * 100) : 0)
+      })
 
       const finish = await finishImageUpload({ path: key })
       if (finish.code !== 0) throw new Error('upload finish failed')
@@ -201,6 +203,7 @@ export default function SkinEntry() {
       showNotify(TIP.UPLOAD_FAILED, 'err')
     } finally {
       setUploading(false)
+      setProgress(null)
     }
   }
 
@@ -350,6 +353,7 @@ export default function SkinEntry() {
             </>
           )}
         </div>
+        <UploadProgress percent={progress} />
         <div id="btn_bottom">
           <div className="g_btn btn" data-type="btn_save" onClick={() => void onSave()}>{skinId ? i18nT('Save') : i18nT('Next')}</div>
           {skinId && <div className="g_btn btn" data-type="btn_stable" onClick={() => void onStatus(2)}>Stable</div>}

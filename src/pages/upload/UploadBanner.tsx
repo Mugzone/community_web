@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react'
 import { Shell } from '../../components/Layout'
+import UploadProgress from '../../components/UploadProgress'
 import { num } from '../../utils/data'
 import { useLoad } from '../../lib/useLoad'
 import { showNotify } from '../../lib/notify'
@@ -12,6 +13,7 @@ import { EMPTY_UPLOAD, IMG_HOST, fileChangeHandler, loadUploadPage, signFieldsOf
 export default function UploadBanner() {
   const [file, setFile] = useState<File | null>(null)
   const [deleted, setDeleted] = useState(false)
+  const [progress, setProgress] = useState<number | null>(null)
   const formRef = useRef<HTMLFormElement>(null)
 
   const { data } = useLoad<Rec>(() => loadUploadPage('banner'), [], EMPTY_UPLOAD)
@@ -53,13 +55,15 @@ export default function UploadBanner() {
             form: formRef.current, file,
             signParams: { type: 1, uid: num(toUid, 0) },
             defaultHost: IMG_HOST,
+            onProgress: setProgress,
           })}
         >
           <h1><label htmlFor="file">{i18nT('New image')}</label><input type="file" name="file" accept="image/png, image/jpeg" onChange={onFile} /></h1>
           <input name="policy" type="hidden" value={policy} readOnly />
           <input name="signature" type="hidden" value={signature} readOnly />
+          <UploadProgress percent={progress} />
           <p className="line">
-            <input type="submit" className="g_btn btn" value={i18nT('Save')} />
+            <input type="submit" className="g_btn btn" value={i18nT('Save')} disabled={progress !== null} />
             {banner && (
               <a href="#" id="J_del" onClick={(e) => { e.preventDefault(); void onDelete() }}>{i18nT('Delete')}</a>
             )}

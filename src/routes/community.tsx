@@ -12,6 +12,7 @@ import SkinDetail from '../pages/store/SkinDetail'
 import SubmitAll from '../pages/store/SubmitAll'
 import Command from '../pages/admin/Command'
 import SkinHash from '../pages/admin/SkinHash'
+import Running from '../pages/admin/Running'
 
 export const scoreRoutes: RouteDef[] = [
   { path: '/score/event/edit', component: EventEdit },
@@ -33,4 +34,5 @@ export const storeRoutes: RouteDef[] = [
 export const adminRoutes: RouteDef[] = [
   { path: '/emiri/command', component: Command },
   { path: '/emiri/skinhash', component: SkinHash },
+  { path: '/emiri/running', component: Running },
 ]

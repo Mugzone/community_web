@@ -121,10 +121,6 @@ export function Shell({
       </div>
       <Footer extra={footerExtra} />
       <NotifyLayer notice={notice} />
-      <div id="g_loading" style={{ display: 'none' }}>
-        <div className="loading"></div>
-        <span>Wait...</span>
-      </div>
     </>
   )
 }

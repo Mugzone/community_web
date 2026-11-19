@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import App from './App'
 import { SessionProvider } from './components/SessionProvider'
+import GlobalLoading from './components/GlobalLoading'
 import { I18nProvider } from './i18n'
 import { installWindowUrls } from './lib/urls'
 import './styles/index.css'
@@ -17,6 +18,7 @@ if (root) {
         <SessionProvider>
           <I18nProvider>
             <App />
+            <GlobalLoading />
           </I18nProvider>
         </SessionProvider>
       </BrowserRouter>

@@ -1,3 +1,5 @@
+import { withGlobalLoading } from '../lib/loading'
+
 const API_BASE = (import.meta.env.VITE_API_BASE ?? 'https://api.mugzone.net/api').replace(/\/$/, '')
 const resolveApiOrigin = () => {
   if (typeof window === 'undefined') return undefined
@@ -147,6 +149,8 @@ const ensureSession = async (): Promise<AuthSession> => {
 
 type PostOptions = FetchOptions & {
   body?: Record<string, string | number | undefined>
+  /** 是否显示全局「发送中」浮层，默认 true。已有进度条等反馈的请求可关掉。 */
+  loading?: boolean
 }
 
 const CLIENT_VER = 1
@@ -201,7 +205,7 @@ const handleBizCode = (text: string, opts: { requiresAuth: boolean; allowBizErro
   }
 }
 
-export const postForm = async <T>(path: string, options?: PostOptions): Promise<T> => {
+const doPostForm = async <T>(path: string, options?: PostOptions): Promise<T> => {
   const requiresAuth = options?.auth ?? true
   const params: Record<string, string | number | undefined> = { ...(options?.params ?? {}) }
   const body: Record<string, string | number | undefined> = { ...(options?.body ?? {}) }
@@ -242,6 +246,16 @@ export const postForm = async <T>(path: string, options?: PostOptions): Promise<
   } catch {
     return text as T
   }
+}
+
+/**
+ * 本站所有 POST 的统一入口。默认接一层全局 loading 浮层：保存、回复、删除、
+ * 购买、登录等写操作在等待服务器时都有可见反馈，遮罩也会挡住重复点击。
+ * 上传流程末尾这类已有进度条反馈的请求可用 options.loading = false 跳过。
+ */
+export const postForm = async <T>(path: string, options?: PostOptions): Promise<T> => {
+  if (options?.loading === false) return doPostForm<T>(path, options)
+  return withGlobalLoading(() => doPostForm<T>(path, options))
 }
 
 export const getJson = async <T>(path: string, options?: FetchOptions): Promise<T> => {
@@ -1044,8 +1058,14 @@ export const saveRunningNews = (payload: {
     allowBizError: true,
   })
 
+// 上传流程的落库确认，不是用户直接触发的「保存/回复」：此时页面已显示
+// UploadProgress 进度条，再叠一层遮罩只会闪一下，故不进全局 loading。
 export const finishImageUpload = (payload: { path: string }) =>
-  postForm<PackBase>('/upload/finish', { body: { path: payload.path }, allowBizError: true })
+  postForm<PackBase>('/upload/finish', {
+    body: { path: payload.path },
+    allowBizError: true,
+    loading: false,
+  })
 
 export const fetchGlobalRank = (params: { mm?: number; mode?: number; from?: number; ver?: number; bver?: number }) =>
   getJson<RespGlobalRank>('/ranking/global', { params })

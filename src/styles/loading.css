@@ -1,0 +1,50 @@
+/* 全局「发送中」浮层。
+   刻意不加 html[data-styles~="main"] 前缀：ChartTalk 等 variant="simple" 的页面
+   同样会发 POST，而它们的 data-styles 是 "simple"，所有 main 作用域规则都会失效。
+   浮层通过 portal 挂到 body，因此也不受页面内 overflow / transform 影响。
+   半透明遮罩会吃掉点击，顺带挡住等待期间的重复提交。 */
+.wb-loading-mask {
+  position: fixed;
+  inset: 0;
+  z-index: 10000; /* 站内现有最高层级为 99（登录弹层、编辑器下拉） */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, .28);
+}
+
+.wb-loading-box {
+  min-width: 136px;
+  padding: 18px 22px 16px;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, .24);
+  text-align: center;
+  color: #4190e7;
+}
+
+.wb-loading-spin {
+  width: 34px;
+  height: 34px;
+  margin: 0 auto 10px;
+  border: 3px solid #4190e7;
+  border-left-color: transparent;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: wb-loading-rotate 1s linear infinite;
+}
+
+@keyframes wb-loading-rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wb-loading-spin { animation-duration: 2.5s; }
+}
+
+.wb-loading-text {
+  font-size: 14px;
+  line-height: 1.25;
+  white-space: nowrap;
+}

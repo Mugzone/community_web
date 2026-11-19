@@ -18,6 +18,10 @@ OVERRIDES = {
     'en': {
         'START::DASH': "Let's go!",
         'reg_success': 'Registered! Please check your email for the activation link.',
+        'Login expired, please sign in again.': 'Login expired, please sign in again.',
+        'Your account is restricted from editing right now.': 'Your account is restricted from editing right now.',
+        'Content is too long, please shorten it and try again.': 'Content is too long, please shorten it and try again.',
+        'Network error, please check your connection.': 'Network error, please check your connection.',
     },
     'zh-hans': {
         'START::DASH': '开始吧!!',
@@ -30,6 +34,10 @@ OVERRIDES = {
         'You do not have permission to push news.': '没有权限推送新闻。',
         'Badge': '徽章',
         'No badges': '暂无徽章',
+        'Login expired, please sign in again.': '登录已过期，请重新登录',
+        'Your account is restricted from editing right now.': '当前账号暂时无法编辑内容',
+        'Content is too long, please shorten it and try again.': '内容过长，请精简后重试',
+        'Network error, please check your connection.': '网络异常，请检查网络后重试',
     },
     'zh-hant': {
         'START::DASH': '開始吧!!',
@@ -47,6 +55,10 @@ OVERRIDES = {
         'You do not have permission to push news.': '沒有權限推送新聞。',
         'Badge': '徽章',
         'No badges': '暫無徽章',
+        'Login expired, please sign in again.': '登入已過期，請重新登入',
+        'Your account is restricted from editing right now.': '目前帳號暫時無法編輯內容',
+        'Content is too long, please shorten it and try again.': '內容過長，請精簡後重試',
+        'Network error, please check your connection.': '網路異常，請檢查連線後重試',
     },
     'ja': {
         'START::DASH': 'スタート::ダッシュ!!',
@@ -60,6 +72,10 @@ OVERRIDES = {
         'You do not have permission to push news.': 'ニュースを公開する権限がありません。',
         'Badge': 'バッジ',
         'No badges': 'バッジなし',
+        'Login expired, please sign in again.': 'ログインの有効期限が切れました。再度ログインしてください',
+        'Your account is restricted from editing right now.': '現在このアカウントでは編集できません',
+        'Content is too long, please shorten it and try again.': '内容が長すぎます。短くしてからもう一度お試しください',
+        'Network error, please check your connection.': '通信エラーです。接続を確認してもう一度お試しください',
     },
 }
 

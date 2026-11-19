@@ -76,6 +76,45 @@ export const wikiContentKey = (key: string, lang: WikiLang): string =>
     ? `${key}_${WIKI_LANG_INDEX[lang]}`
     : ''
 
+/* ------------------------------------------------------------------ *
+ * wiki 保存失败分类
+ * /api/community/wiki 的 SaveWiki 会返回 -1000(未登录)、-4(禁言/内容限制)、
+ * -5(无编辑权限)、-1(参数或落库失败)；HTTP 层还可能是 413/5xx/网络中断。
+ * 之前前端把所有异常一律吞成「Failed to save」，用户无法判断原因。
+ * ------------------------------------------------------------------ */
+
+export type WikiSaveFailureReason =
+  | 'not-login' | 'no-permission' | 'restricted' | 'too-large'
+  | 'server' | 'network' | 'unknown'
+
+export type WikiSaveFailure = {
+  reason: WikiSaveFailureReason
+  code: number | null
+  status: number | null
+}
+
+const HTTP_STATUS_RE = /Request failed: (\d{3})/
+
+export const classifyWikiSaveError = (error: unknown): WikiSaveFailure => {
+  const e = (error ?? {}) as { name?: unknown; code?: unknown; message?: unknown }
+  const isBiz = e?.name === 'BizError' && typeof e?.code === 'number'
+  const code = isBiz ? e.code as number : null
+  const message = typeof e?.message === 'string' ? e.message : ''
+  // 只有普通 HTTP 错误才带 "Request failed: <status>"；BizError 的默认消息
+  // 是 "Request failed: <负数 code>"，不能当成状态码解析。
+  const status = !isBiz ? (HTTP_STATUS_RE.exec(message)?.[1] ?? null) : null
+  const statusCode = status === null ? null : Number(status)
+
+  if (code === -1000) return { reason: 'not-login', code, status: statusCode }
+  if (code === -5) return { reason: 'no-permission', code, status: statusCode }
+  if (code === -4) return { reason: 'restricted', code, status: statusCode }
+  if (code === -1) return { reason: 'server', code, status: statusCode }
+  if (isBiz) return { reason: 'unknown', code, status: statusCode }
+  if (statusCode === 413) return { reason: 'too-large', code: null, status: statusCode }
+  if (statusCode !== null) return { reason: 'server', code: null, status: statusCode }
+  return { reason: 'network', code: null, status: null }
+}
+
 const BlockMode = {
   None: 0,
   List: 1,

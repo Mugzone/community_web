@@ -27,6 +27,8 @@ const TOOLS: Tool[] = [
 export default function UserpageEdit() {
   const { id = '' } = useParams()
   const [content, setContent] = useState('')
+  // null = 尚未预览。预览区在按钮行下方展开，编辑框始终可见。
+  const [previewHtml, setPreviewHtml] = useState<string | null>(null)
   const editorRef = useRef<HTMLTextAreaElement>(null)
 
   const { data } = useLoad<Model>(
@@ -44,7 +46,9 @@ export default function UserpageEdit() {
 
   useEffect(() => setContent(data.content ?? ''), [data.content])
 
-  const previewHtml = wikiToHtml(content, { ignoreTemplates: true }).html
+  const onPreview = (): void => {
+    setPreviewHtml(wikiToHtml(content, { ignoreTemplates: true }).html)
+  }
 
   const save = async () => {
     try {
@@ -116,6 +120,7 @@ export default function UserpageEdit() {
         </div>
         <div className="button">
           <div className="g_btn btn" data-type="save" onClick={() => void save()}>{i18nT('Save')}</div>
+          <a href="#" data-type="preview" onClick={(e) => { e.preventDefault(); onPreview() }}>{i18nT('Preview')}</a>
           <a href="#" className="btn" data-type="cancel" onClick={(e) => { e.preventDefault(); window.history.back() }}>{i18nT('Cancel')}</a>
         </div>
         <div className="g_tip">
@@ -125,9 +130,9 @@ export default function UserpageEdit() {
           <span className="err">{i18nT('Please check the category, read category guide if need help.')}</span>
           <span className="err">{i18nT('You are not permitted to edit this page.')}</span>
         </div>
-        <div className="preview" id="J_preview">
+        <div className="preview" id="J_preview" style={{ display: previewHtml === null ? 'none' : 'block' }}>
           <h1 className="msg">{i18nT('Preview')}</h1>
-          <div className="g_wiki" dangerouslySetInnerHTML={{ __html: previewHtml }}></div>
+          <div className="g_wiki" dangerouslySetInnerHTML={{ __html: previewHtml ?? '' }}></div>
         </div>
       </div>
     </Shell>
